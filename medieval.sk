@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины: случайный спавн при load + админ /evoruinspawn. Ключ портала (датапак) → ПКМ обсидиану в Оверворле → арена 100×100 в Незере над крышей (bedrock+barrier, стражи).
+  #   - Руины: случайный спавн при load + админ /evoruinspawn. Ключ: первый ПКМ по сундуку портала (рядом обсидиан) → ПКМ обсидиану → незер-арена 100×100 + стражи, /evoruinexit.
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -117,6 +117,42 @@ options:
     ruin_gate_nether_center_z: -500000
     ruin_gate_nether_floor_y: 200
     ruin_gate_nether_wall_height: 14
+
+# ----- Ключ разлома: без датапака — один раз при открытии сундука у разрушенного портала -----
+function ruinGateKeyItem() :: item:
+    set {_k} to compass
+    set name of {_k} to "&d&lКлюч разлома руин"
+    set lore of {_k} to "&7ПКМ по обсидиану портала в Оверворлде", "&7— зал руин в Незере", "&8/evoruinexit — выход"
+    return {_k}
+
+function ruinPortalChestNearObsidian(loc: location) :: boolean:
+    set {_n} to 0
+    loop blocks in radius 14 around {_loc}:
+        if loop-block is obsidian:
+            add 1 to {_n}
+        else if loop-block is crying obsidian:
+            add 1 to {_n}
+    if {_n} >= 8:
+        return true
+    return false
+
+on right click on chest or trapped chest:
+    if environment of world of player is not normal:
+        stop
+    set {_loc} to location of event-block
+    if ruinPortalChestNearObsidian({_loc}) is false:
+        stop
+    set {_w} to "%world of player%"
+    set {_x} to floor(x-coordinate of {_loc})
+    set {_y} to floor(y-coordinate of {_loc})
+    set {_z} to floor(z-coordinate of {_loc})
+    if {evo_ruin_key_given::%{_w}%::%{_x}%::%{_y}%::%{_z}%} is set:
+        stop
+    set {evo_ruin_key_given::%{_w}%::%{_x}%::%{_y}%::%{_z}%} to true
+    set {_key} to ruinGateKeyItem()
+    give {_key} to player
+    send "{@prefix} &dТы находишь &fКлюч разлома&d — обсидиан портала откроет путь." to player
+    play sound "block.enchantment_table.use" with volume 0.85 and pitch 1.15 at player for player
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
