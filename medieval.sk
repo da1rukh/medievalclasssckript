@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины: случайный спавн при load + админ /evoruinspawn. Ключ: первый ПКМ по сундуку портала (рядом обсидиан) → ПКМ обсидиану → незер-арена 100×100 + стражи, /evoruinexit.
+  #   - Руины: ключ пустоты у портала → Незер-арена; выход только «Ключ возврата» (echo shard) ПКМ по обсидиану в Незере — тратится. Сундуки с ключом ставятся в арене при постройке.
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -122,8 +122,24 @@ options:
 function ruinGateKeyItem() :: item:
     set {_k} to disc fragment 5
     set name of {_k} to "&8&lКлюч пустоты"
-    set lore of {_k} to "&7ПКМ по обсидиану разрушенного портала", "&7в Оверворлде — зал руин в Незере", "&8/evoruinexit — выход"
+    set lore of {_k} to "&7ПКМ по обсидиану разрушенного портала", "&7в Оверворлде — зал руин в Незере", "&8Выход: &fКлюч возврата &8(в сундуках арены)"
     return {_k}
+
+function ruinGateReturnKeyItem() :: item:
+    set {_r} to echo shard
+    set name of {_r} to "&b&lКлюч возврата"
+    set lore of {_r} to "&7Только в зале руин (Незер)", "&7ПКМ по обсидиану — &fодноразовый выход", "&7в точку входа в Оверворлд"
+    return {_r}
+
+function isRuinReturnKey(i: item) :: boolean:
+    if {_i} is not echo shard:
+        return false
+    set {_n} to name of {_i}
+    if {_n} is not set:
+        return false
+    if {_n} contains "возврат":
+        return true
+    return false
 
 function ruinPortalChestNearObsidian(loc: location) :: boolean:
     set {_n} to 0
@@ -306,7 +322,24 @@ function ruinGateFillNetherArena():
     execute console command "execute in minecraft:the_nether run fill %{_ix2}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:chiseled_polished_blackstone"
     execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
     execute console command "execute in minecraft:the_nether run fill %{_ix2}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
+    ruinGatePlaceReturnChests({_cx}, {_cz}, {_fy})
     set {evo_ruin_nether_arena_built} to true
+
+function ruinGatePlaceReturnChests(cx: number, cz: number, fy: number):
+    set {_w} to ruinGateNetherWorld()
+    set {_y} to {_fy} + 2
+    set {_l1} to location at {_cx} - 28, {_y}, {_cz} - 28 in {_w}
+    set {_l2} to location at {_cx} + 28, {_y}, {_cz} - 28 in {_w}
+    set {_l3} to location at {_cx} - 28, {_y}, {_cz} + 28 in {_w}
+    set {_l4} to location at {_cx} + 28, {_y}, {_cz} + 28 in {_w}
+    set block at {_l1} to chest
+    set block at {_l2} to chest
+    set block at {_l3} to chest
+    set block at {_l4} to chest
+    set slot 13 of inventory of block at {_l1} to ruinGateReturnKeyItem()
+    set slot 13 of inventory of block at {_l2} to ruinGateReturnKeyItem()
+    set slot 13 of inventory of block at {_l3} to ruinGateReturnKeyItem()
+    set slot 13 of inventory of block at {_l4} to ruinGateReturnKeyItem()
 
 function ruinGateSpawnArenaGuards(cx: number, cz: number, fy: number, w: world):
     loop 6 times:
@@ -350,6 +383,25 @@ function isRuinGateKey(i: item) :: boolean:
     return false
 
 on right click on obsidian or crying obsidian:
+    # ----- Выход из зала руин (Незер): Ключ возврата — тратится один раз -----
+    if environment of world of player is nether:
+        if isRuinReturnKey(player's tool) is false:
+            stop
+        if {ghost::%player's uuid%} is true:
+            send action bar "&cПризрак не может использовать ключ." to player
+            stop
+        set {_ret} to {ruin_gate_return::%player's uuid%}
+        if {_ret} is not set:
+            send "{@prefix} &cНет сохранённой точки возврата — зайди в зал через портал сначала." to player
+            stop
+        cancel event
+        remove 1 of player's tool from player
+        teleport player to {_ret}
+        delete {ruin_gate_return::%player's uuid%}
+        play sound "block.portal.travel" with volume 0.9 and pitch 1 at player for player
+        send "{@prefix} &aКлюч возврата сработал — ты в Оверворлде." to player
+        stop
+    # ----- Вход: Оверворлд + Ключ пустоты -----
     if environment of world of player is not normal:
         stop
     if isRuinGateKey(player's tool) is false:
@@ -387,7 +439,7 @@ on right click on obsidian or crying obsidian:
     teleport player to location at {_cx}, {_fy} + 2, {_cz} in {_nw}
     ruinGateSpawnArenaGuards({_cx}, {_cz}, {_fy}, {_nw})
     send title "&5&lРАЗЛОМ" with subtitle "&7Незер — зал руин. &8Стражи!" to player for 2 seconds
-    send "{@prefix} &7Выход: &e/evoruinexit &7(возврат туда, откуда вошёл) или &e/spawn&7." to player
+    send "{@prefix} &7Выход: найди &bКлюч возврата &7в сундуках по углам арены, ПКМ по обсидиану — &cтратится&7." to player
 
 # ==========================================
 # ФУНКЦИИ-ХЕЛПЕРЫ
@@ -6176,6 +6228,8 @@ command /evoruinlegspawn:
             send "{@prefix} &cНе удалось: нужен Оверворлд и твёрдая поверхность под колонкой X/Z."
 
 command /evoruinexit:
+    permission: evo.admin
+    permission message: {@prefix} &cУ игроков выход только ключом возврата (echo shard) ПКМ по обсидиану в Незере.
     trigger:
         set {_u} to player's uuid
         set {_ret} to {ruin_gate_return::%{_u}%}
@@ -6183,13 +6237,13 @@ command /evoruinexit:
             teleport player to {_ret}
             delete {ruin_gate_return::%{_u}%}
             play sound "block.portal.travel" with volume 0.7 and pitch 1.1 at player for player
-            send "{@prefix} &aТы вышел из разлома."
+            send "{@prefix} &a[Админ] Телепорт из разлома."
             stop
         if environment of world of player is nether:
             teleport player to spawn of world "world"
-            send "{@prefix} &7Точка входа не сохранена — отправил на спавн &fworld&7."
+            send "{@prefix} &7[Админ] Нет точки возврата — спавн &fworld&7."
             stop
-        send "{@prefix} &7Ты не в разломе (или уже выходил)."
+        send "{@prefix} &7Нет активной точки возврата."
 
 command /evoruinresetarena:
     permission: evo.admin
@@ -6217,6 +6271,7 @@ command /evo [<offline player>] [<text>] [<text>]:
             send "&e/evoruinspawn &7— тест: руина (тип как при спавне в мире)"
             send "&e/evoruinlegspawn &7— тест: &6легендарная&7 руина под ногами"
             send "&e/evoruinresetarena &7— сбросить постройку незер-арены (след. вход по ключу)"
+            send "&e/evoruinexit &7— &cадмин&7: выход из разлома без ключа возврата"
             send "&8&l----------------------------"
             stop
 
