@@ -310,7 +310,11 @@ function ruinGateFillNetherArena():
     execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_fy}% %{_wz2}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
     execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx1}% %{_yTop}% %{_wz2}% minecraft:bedrock"
     execute console command "execute in minecraft:the_nether run fill %{_wx2}% %{_fy}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
-    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_y1}% %{_wz1}% %{_wx2}% %{_yAirHi}% %{_wz2}% minecraft:air"
+    # Воздух внутри: один fill на весь объём >32768 блоков — команда падает; режем по слоям Y (~97×97 < лимит)
+    set {_yy} to {_y1}
+    while {_yy} <= {_yAirHi}:
+        execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_yy}% %{_iz1}% %{_ix2}% %{_yy}% %{_iz2}% minecraft:air"
+        add 1 to {_yy}
     execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:barrier"
     execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
     execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
@@ -421,7 +425,7 @@ on right click on obsidian or crying obsidian:
     set {ruin_gate_cd::%player's uuid%} to (unix timestamp of now) + 5
     if {evo_ruin_nether_arena_built} is not true:
         ruinGateForceloadArenaChunks()
-        wait 40 ticks
+        wait 80 ticks
         if {evo_ruin_nether_arena_built} is not true:
             ruinGateFillNetherArena()
     set {_cx} to "{@ruin_gate_nether_center_x}" parsed as number
