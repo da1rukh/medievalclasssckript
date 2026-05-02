@@ -6907,9 +6907,6 @@ on inventory click:
                 set {level::%{_u}%} to {_newLvl}
                 send "{@prefix} &cУровень: &fL%{_curLvl}% &c→ &fL%{_newLvl}% &7(-5 за смену перка)"
                 play sound "entity.wither.hurt" with volume 0.7 and pitch 1.4 at player for player
-                set {_perkOldN} to perkName({_oldPerk})
-                set {_perkNewN} to perkName({_newPerk})
-                send "{@prefix} &7Вы заметили смену перка: &f%{_perkOldN}% &8→ &f%{_perkNewN}%"
                 send "{@prefix} &eПерк изменён: &7%{_oldPerk}% &8→ &6%{_newPerk}%"
             else:
                 send "{@prefix} &aПерк выбран: &e%{_newPerk}%"
