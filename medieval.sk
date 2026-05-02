@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины: случайный спавн при load + админ /evoruinspawn. Датапack evo_ruin_gate: ключ в луте портала → ПКМ обсидиану (medieval.sk, ruin_gate_world).
+  #   - Руины: случайный спавн при load + админ /evoruinspawn. Ключ портала (датапак) → ПКМ обсидиану в Оверворле → арена 100×100 в Незере над крышей (bedrock+barrier, стражи).
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -112,8 +112,11 @@ options:
     artifact_ruin_region_chunks: 6
     artifact_ruin_min_spawn_blocks: 400
     artifact_ruin_legendary_chance_percent: 14
-    # Измерение «руин»: отдельный мир с таким именем (создай вручную: /mv create evo_ruins normal -g flat или аналог). Датапак evo_ruin_gate кладёт ключ в сундуки порталов.
-    ruin_gate_world: evo_ruins
+    # Арена «руин» в Незере (центр пола XZ, высота пола Y, внутри 100×100). Сдвинь если мешает постройкам (далеко от 0,0).
+    ruin_gate_nether_center_x: -500000
+    ruin_gate_nether_center_z: -500000
+    ruin_gate_nether_floor_y: 200
+    ruin_gate_nether_wall_height: 14
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -177,7 +180,94 @@ on chunk load:
         set {_wcz} to z coordinate of {_ch}
         artifactRuinTrySpawnChunk({_wcx}, {_wcz}, {_w})
 
-# ----- Ключ разлома руин: ПКМ обсидианом портала в Оверворлде с компасом-ключом → телепорт в мир {@ruin_gate_world} -----
+# ----- Ключ разлома руин: ПКМ обсидианом портала в Оверворлде → арена в Незере (однократная /fill через консоль) -----
+function ruinGateNetherWorld() :: world:
+    loop all worlds:
+        if environment of loop-world is nether:
+            return loop-world
+    set {_try} to world "world_nether"
+    if {_try} is set:
+        return {_try}
+    return world "world"
+
+function ruinGateEnsureNetherArena():
+    if {evo_ruin_nether_arena_built} is true:
+        stop
+    set {_cx} to "{@ruin_gate_nether_center_x}" parsed as number
+    set {_cz} to "{@ruin_gate_nether_center_z}" parsed as number
+    set {_fy} to "{@ruin_gate_nether_floor_y}" parsed as number
+    set {_hy} to "{@ruin_gate_nether_wall_height}" parsed as number
+    if {_cx} is not set:
+        set {_cx} to -500000
+    if {_cz} is not set:
+        set {_cz} to -500000
+    if {_fy} is not set:
+        set {_fy} to 200
+    if {_hy} is not set:
+        set {_hy} to 14
+    if {_hy} < 6:
+        set {_hy} to 6
+    if {_hy} > 40:
+        set {_hy} to 40
+    set {_wx1} to {_cx} - 50
+    set {_wx2} to {_cx} + 49
+    set {_wz1} to {_cz} - 50
+    set {_wz2} to {_cz} + 49
+    set {_yTop} to {_fy} + {_hy} + 1
+    set {_yAirHi} to {_fy} + {_hy}
+    set {_y1} to {_fy} + 1
+    set {_ix1} to {_wx1} + 1
+    set {_ix2} to {_wx2} - 1
+    set {_iz1} to {_wz1} + 1
+    set {_iz2} to {_wz2} - 1
+    # Пол и потолок — bedrock; внешние стены — bedrock; воздух внутри; пояс barrier у внутренней границы
+    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx2}% %{_fy}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_yTop}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz1}% minecraft:bedrock"
+    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_fy}% %{_wz2}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx1}% %{_yTop}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in minecraft:the_nether run fill %{_wx2}% %{_fy}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_y1}% %{_wz1}% %{_wx2}% %{_yAirHi}% %{_wz2}% minecraft:air"
+    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:barrier"
+    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
+    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
+    execute console command "execute in minecraft:the_nether run fill %{_ix2}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
+    # Пол внутри — чёрный камень (поверх bedrock сначала air в один слой не нужен: fill заменит верхний слой bedrock внутри — стоп, inner is air now. Replace floor inside ix1-ix2 at fy only)
+    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_fy}% %{_iz1}% %{_ix2}% %{_fy}% %{_iz2}% minecraft:polished_blackstone_bricks"
+    # Угловые колонны
+    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix1}% %{_yAirHi}% %{_iz1}% minecraft:chiseled_polished_blackstone"
+    execute console command "execute in minecraft:the_nether run fill %{_ix2}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:chiseled_polished_blackstone"
+    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
+    execute console command "execute in minecraft:the_nether run fill %{_ix2}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
+    set {evo_ruin_nether_arena_built} to true
+
+function ruinGateSpawnArenaGuards(cx: number, cz: number, fy: number, w: world):
+    loop 6 times:
+        set {_gx} to {_cx} + random integer between -35 and 35
+        set {_gz} to {_cz} + random integer between -35 and 35
+        spawn a vindicator at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set name of last spawned entity to "&4&lСтраж разлома"
+    loop 4 times:
+        set {_gx} to {_cx} + random integer between -35 and 35
+        set {_gz} to {_cz} + random integer between -35 and 35
+        spawn a pillager at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set name of last spawned entity to "&c&lЛучник руин"
+    loop 3 times:
+        set {_gx} to {_cx} + random integer between -35 and 35
+        set {_gz} to {_cz} + random integer between -35 and 35
+        spawn a piglin brute at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set name of last spawned entity to "&6&lИзувер руин"
+    chance of 50%:
+        set {_gx} to {_cx} + random integer between -20 and 20
+        set {_gz} to {_cz} + random integer between -20 and 20
+        spawn an evoker at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set name of last spawned entity to "&5&lАрхивариус руин"
+    loop 2 times:
+        set {_gx} to {_cx} + random integer between -25 and 25
+        set {_gz} to {_cz} + random integer between -25 and 25
+        spawn a blaze at location at {_gx}, {_fy} + 3, {_gz} in {_w}
+        set name of last spawned entity to "&e&lПламя хранилища"
+
 function isRuinGateKey(i: item) :: boolean:
     if {_i} is not compass:
         return false
@@ -196,10 +286,9 @@ on right click on obsidian or crying obsidian:
     if {ghost::%player's uuid%} is true:
         send action bar "&cПризрак не может войти в разлом." to player
         stop
-    set {_wn} to "{@ruin_gate_world}"
-    set {_rw} to world {_wn}
-    if {_rw} is not set:
-        send "{@prefix} &cМир измерения руин не найден: &f%{_wn}%&c. Создай мир с таким именем (например Multiverse: &e/mv create %{_wn}% normal -g flat&c)." to player
+    set {_nw} to ruinGateNetherWorld()
+    if environment of {_nw} is not nether:
+        send "{@prefix} &cНезер не найден — проверь миры сервера." to player
         stop
     set {_until} to {ruin_gate_cd::%player's uuid%} ? 0
     if {_until} > unix timestamp of now:
@@ -207,11 +296,23 @@ on right click on obsidian or crying obsidian:
         stop
     cancel event
     set {ruin_gate_cd::%player's uuid%} to (unix timestamp of now) + 5
+    ruinGateEnsureNetherArena()
+    set {_cx} to "{@ruin_gate_nether_center_x}" parsed as number
+    set {_cz} to "{@ruin_gate_nether_center_z}" parsed as number
+    set {_fy} to "{@ruin_gate_nether_floor_y}" parsed as number
+    if {_cx} is not set:
+        set {_cx} to -500000
+    if {_cz} is not set:
+        set {_cz} to -500000
+    if {_fy} is not set:
+        set {_fy} to 200
+    set {ruin_gate_return::%player's uuid%} to location of player
     play sound "block.portal.trigger" with volume 1 and pitch 0.85 at player for all players
     play sound "item.book.put" with volume 0.8 and pitch 1.2 at player for player
-    teleport player to location at 0, 200, 0 in {_rw}
-    send title "&5&lРАЗЛОМ" with subtitle "&7Ты в измерении руин — &f%{_wn}%" to player for 2 seconds
-    send "{@prefix} &7Вернись в Оверворлд: &e/spawn &7или портал домой, если настроишь." to player
+    teleport player to location at {_cx}, {_fy} + 2, {_cz} in {_nw}
+    ruinGateSpawnArenaGuards({_cx}, {_cz}, {_fy}, {_nw})
+    send title "&5&lРАЗЛОМ" with subtitle "&7Незер — зал руин. &8Стражи!" to player for 2 seconds
+    send "{@prefix} &7Выход: &e/evoruinexit &7(возврат туда, откуда вошёл) или &e/spawn&7." to player
 
 # ==========================================
 # ФУНКЦИИ-ХЕЛПЕРЫ
@@ -5999,6 +6100,29 @@ command /evoruinlegspawn:
         else:
             send "{@prefix} &cНе удалось: нужен Оверворлд и твёрдая поверхность под колонкой X/Z."
 
+command /evoruinexit:
+    trigger:
+        set {_u} to player's uuid
+        set {_ret} to {ruin_gate_return::%{_u}%}
+        if {_ret} is set:
+            teleport player to {_ret}
+            delete {ruin_gate_return::%{_u}%}
+            play sound "block.portal.travel" with volume 0.7 and pitch 1.1 at player for player
+            send "{@prefix} &aТы вышел из разлома."
+            stop
+        if environment of world of player is nether:
+            teleport player to spawn of world "world"
+            send "{@prefix} &7Точка входа не сохранена — отправил на спавн &fworld&7."
+            stop
+        send "{@prefix} &7Ты не в разломе (или уже выходил)."
+
+command /evoruinresetarena:
+    permission: evo.admin
+    permission message: {@prefix} &cУ вас нет прав!
+    trigger:
+        delete {evo_ruin_nether_arena_built}
+        send "{@prefix} &eАрена в Незере будет пересобрана при следующем входе по ключу."
+
 command /evo [<offline player>] [<text>] [<text>]:
     permission: evo.admin
     permission message: {@prefix} &cУ вас нет прав!
@@ -6017,6 +6141,7 @@ command /evo [<offline player>] [<text>] [<text>]:
             send "&e/evo <player> reset"
             send "&e/evoruinspawn &7— тест: руина (тип как при спавне в мире)"
             send "&e/evoruinlegspawn &7— тест: &6легендарная&7 руина под ногами"
+            send "&e/evoruinresetarena &7— сбросить постройку незер-арены (след. вход по ключу)"
             send "&8&l----------------------------"
             stop
 
