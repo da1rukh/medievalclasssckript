@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины: random-спавн + замена ruined portal (подгрузка чанка и генерация; в чанке ищем портал по obsidian), /evoruinspawn
+  #   - Руины: random-спавн + замена ruined portal (подгрузка чанка, ~6с задержка; в чанке ищем obsidian), /evoruinspawn
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -112,9 +112,11 @@ options:
     artifact_ruin_region_chunks: 6
     artifact_ruin_min_spawn_blocks: 400
     artifact_ruin_legendary_chance_percent: 14
-    # Замена разрушенного портала (Оверворлд) на руину при генерации чанка: бросок 1–100 — до L = легендарная, до C = обычная, иначе портал остаётся
+    # Замена разрушенного портала (Оверворлд) на руину: бросок 1–100 — до L = легендарная, до C = обычная, иначе портал остаётся
     artifact_ruin_portal_roll_legendary_max: 10
     artifact_ruin_portal_roll_common_max: 60
+    # Мин. расстояние от мирового спавна для замены портала (в блоках по XZ). 0 = без ограничения (ванильные порталы часто у спавна)
+    artifact_ruin_portal_min_spawn_blocks: 0
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -166,7 +168,7 @@ every 2 seconds:
     loop all players:
         syncProgress(loop-player)
 
-# Руины: on chunk load — подгрузка чанка (полёт, ходьба). Шанс случайной руины + замена ruined portal (старые чанки не проходят on chunk generate).
+# Руины: on chunk load — подгрузка чанка. Случайная руина + замена ruined portal (задержка ~6 с: структура портала догенерируется после load).
 on chunk load:
     set {_ch} to event-chunk
     set {_w} to world of {_ch}
@@ -177,13 +179,8 @@ on chunk load:
         set {_wcx} to x coordinate of {_ch}
         set {_wcz} to z coordinate of {_ch}
         artifactRuinTrySpawnChunk({_wcx}, {_wcz}, {_w})
-    wait 38 ticks
+    wait 120 ticks
     artifactRuinTryReplaceRuinedPortalFromChunk({_ch})
-
-# Разрушенный портал (Оверворлд): при генерации чанка — шанс заменить на руину (остальной шанс портал не трогаем)
-on chunk generate:
-    wait 35 ticks
-    artifactRuinTryReplaceRuinedPortalFromChunk(event-chunk)
 
 # ==========================================
 # ФУНКЦИИ-ХЕЛПЕРЫ
@@ -2907,6 +2904,21 @@ function artifactRuinFarFromSpawn(feet: location, w: world) :: boolean:
         return false
     return true
 
+function artifactRuinFarFromSpawnPortal(feet: location, w: world) :: boolean:
+    set {_min} to "{@artifact_ruin_portal_min_spawn_blocks}" parsed as number
+    if {_min} is not set:
+        set {_min} to 0
+    if {_min} <= 0:
+        return true
+    set {_sp} to spawn of {_w}
+    set {_dx} to x-coordinate of {_feet} - x-coordinate of {_sp}
+    set {_dz} to z-coordinate of {_feet} - z-coordinate of {_sp}
+    set {_d2} to {_dx} * {_dx} + {_dz} * {_dz}
+    set {_need} to {_min} * {_min}
+    if {_d2} < {_need}:
+        return false
+    return true
+
 function artifactRuinBuild(feet: location, kind: text) :: boolean:
     set {_w} to world of {_feet}
     set {_cx} to floor(x-coordinate of {_feet})
@@ -3383,8 +3395,8 @@ function artifactRuinFindRuinedPortalMidInChunk(ch: chunk) :: location:
     set {_wcz} to z coordinate of {_ch}
     set {_bx0} to {_wcx} * 16
     set {_bz0} to {_wcz} * 16
-    set {_y} to 4
-    while {_y} <= 220:
+    set {_y} to -62
+    while {_y} <= 315:
         set {_cx} to 0
         while {_cx} <= 15:
             set {_cz} to 0
@@ -3434,9 +3446,6 @@ function artifactRuinTryReplaceRuinedPortalFromChunk(ch: chunk):
     set {_wn} to "%{_w}%"
     if {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} is true:
         stop
-    if {evo_ruin_portal_attempted::%{_wn}%::%{_wcx}%::%{_wcz}%} is true:
-        stop
-    set {evo_ruin_portal_attempted::%{_wn}%::%{_wcx}%::%{_wcz}%} to true
     set {_mid} to artifactRuinFindRuinedPortalMidInChunk({_ch})
     if y-coordinate of {_mid} < -100:
         stop
@@ -3466,7 +3475,7 @@ function artifactRuinTryReplaceRuinedPortalFromChunk(ch: chunk):
     set {_preFeet} to artifactRuinFeetAtColumn({_spawnx}, {_spawnz}, {_w})
     if artifactRuinFeetValid({_preFeet}) is false:
         stop
-    if artifactRuinFarFromSpawn({_preFeet}, {_w}) is false:
+    if artifactRuinFarFromSpawnPortal({_preFeet}, {_w}) is false:
         stop
     set {_cx} to floor(x-coordinate of {_preFeet})
     set {_cz} to floor(z-coordinate of {_preFeet})
