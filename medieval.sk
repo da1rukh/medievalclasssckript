@@ -112,7 +112,7 @@ options:
     artifact_ruin_region_chunks: 6
     artifact_ruin_min_spawn_blocks: 400
     artifact_ruin_legendary_chance_percent: 14
-    # Арена в Незере (100×100): forceload + set block из Skript (без консольного fill — часто не срабатывает).
+    # Арена в Незере (100×100): бедрок снаружи, внутренние стены — чёрный бетон; свет — блоки света + декор.
     ruin_gate_nether_center_x: -500000
     ruin_gate_nether_center_z: -500000
     ruin_gate_nether_floor_y: 200
@@ -298,6 +298,49 @@ function ruinGateNetherConsoleFill(x1: number, y1: number, z1: number, x2: numbe
     set {_dk} to ruinGateNetherDimKey()
     execute console command "execute in %{_dk}% run fill %{_x1}% %{_y1}% %{_z1}% %{_x2}% %{_y2}% %{_z2}% %{_blockId}% replace air"
 
+function ruinGateNetherConsoleSetblock(x: number, y: number, z: number, blockSpec: text):
+    set {_dk} to ruinGateNetherDimKey()
+    execute console command "execute in %{_dk}% run setblock %{_x}% %{_y}% %{_z}% %{_blockSpec}% replace"
+
+# Световые блоки сеткой — уровень 15, почти не видны; подавляют спавн мобов по освещению
+function ruinGateArenaPlaceLightGrid(ix1: number, ix2: number, iz1: number, iz2: number, ly: number, step: number):
+    set {_lx} to {_ix1}
+    while {_lx} <= {_ix2}:
+        set {_lz} to {_iz1}
+        while {_lz} <= {_iz2}:
+            ruinGateNetherConsoleSetblock({_lx}, {_ly}, {_lz}, "minecraft:light[level=15]")
+            add {_step} to {_lz}
+        add {_step} to {_lx}
+
+function ruinGateArenaExtrasAndLighting(ix1: number, ix2: number, iz1: number, iz2: number, fy: number, y1: number, yAirHi: number, yTop: number):
+    set {_mid} to {_y1} + floor(({_yAirHi} - {_y1}) / 2)
+    if {_mid} < {_fy} + 2:
+        set {_mid} to {_fy} + 2
+    if {_mid} > {_yAirHi} - 1:
+        set {_mid} to {_yAirHi} - 1
+    # Полосы морских фонарей вдоль стен, на 1 блок внутри (воздух; стена — чёрный бетон)
+    ruinGateNetherConsoleFill({_ix1} + 3, {_mid}, {_iz1} + 1, {_ix2} - 3, {_mid}, {_iz1} + 1, "minecraft:sea_lantern")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_ix1} + 3, {_mid}, {_iz2} - 1, {_ix2} - 3, {_mid}, {_iz2} - 1, "minecraft:sea_lantern")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_ix1} + 1, {_mid}, {_iz1} + 3, {_ix1} + 1, {_mid}, {_iz2} - 3, "minecraft:sea_lantern")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_ix2} - 1, {_mid}, {_iz1} + 3, {_ix2} - 1, {_mid}, {_iz2} - 3, "minecraft:sea_lantern")
+    wait 1 tick
+    # Центральное кольцо декоративных блоков
+    ruinGateNetherConsoleFill({_ix1} + 25, {_fy} + 1, {_iz1} + 25, {_ix2} - 25, {_fy} + 1, {_iz2} - 25, "minecraft:gilded_blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_ix1} + 35, {_fy} + 1, {_iz1}, {_ix2} - 35, {_fy} + 1, {_iz2}, "minecraft:polished_blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_ix1}, {_fy} + 1, {_iz1} + 35, {_ix2}, {_fy} + 1, {_iz2} - 35, "minecraft:polished_blackstone")
+    wait 1 tick
+    # Блоки света: потолок под бедроком и средний ярус
+    ruinGateArenaPlaceLightGrid({_ix1} + 2, {_ix2} - 2, {_iz1} + 2, {_iz2} - 2, {_yTop} - 1, 7)
+    wait 1 tick
+    ruinGateArenaPlaceLightGrid({_ix1} + 2, {_ix2} - 2, {_iz1} + 2, {_iz2} - 2, {_mid}, 9)
+    wait 1 tick
+    ruinGateArenaPlaceLightGrid({_ix1} + 4, {_ix2} - 4, {_iz1} + 4, {_iz2} - 4, {_fy} + 3, 11)
+
 function ruinGateBuildNetherArenaRuins(cx: number, cz: number, fy: number):
     # Крупные «руины» из полноблоков (replace air — не затираем пол и стены)
     ruinGateNetherConsoleFill({_cx} - 42, {_fy} + 1, {_cz} - 7, {_cx} - 22, {_fy} + 6, {_cz} + 7, "blackstone")
@@ -385,18 +428,18 @@ function ruinGateFillNetherArena():
             add 1 to {_z}
         add 1 to {_y}
     wait 1 tick
-    # Воздух внутри не заливаем — над крышей Незера там и так пусто; только barrier по внутреннему периметру
+    # Внутренний периметр — чёрный бетон (обшивка); снаружи уже слой бедрока
     set {_y} to {_y1}
     while {_y} <= {_yAirHi}:
         set {_x} to {_ix1}
         while {_x} <= {_ix2}:
-            set block at location at {_x}, {_y}, {_iz1} in {_w} to barrier
-            set block at location at {_x}, {_y}, {_iz2} in {_w} to barrier
+            set block at location at {_x}, {_y}, {_iz1} in {_w} to black concrete
+            set block at location at {_x}, {_y}, {_iz2} in {_w} to black concrete
             add 1 to {_x}
         set {_z} to {_iz1}
         while {_z} <= {_iz2}:
-            set block at location at {_ix1}, {_y}, {_z} in {_w} to barrier
-            set block at location at {_ix2}, {_y}, {_z} in {_w} to barrier
+            set block at location at {_ix1}, {_y}, {_z} in {_w} to black concrete
+            set block at location at {_ix2}, {_y}, {_z} in {_w} to black concrete
             add 1 to {_z}
         add 1 to {_y}
     wait 1 tick
@@ -422,6 +465,8 @@ function ruinGateFillNetherArena():
         add 1 to {_y}
     wait 1 tick
     ruinGateBuildNetherArenaRuins({_cx}, {_cz}, {_fy})
+    wait 2 ticks
+    ruinGateArenaExtrasAndLighting({_ix1}, {_ix2}, {_iz1}, {_iz2}, {_fy}, {_y1}, {_yAirHi}, {_yTop})
     wait 2 ticks
     ruinGatePlaceArenaArtifactChests({_cx}, {_cz}, {_fy}, {_w})
     ruinGatePlaceReturnChests({_cx}, {_cz}, {_fy})
