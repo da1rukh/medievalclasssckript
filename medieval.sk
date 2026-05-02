@@ -3374,6 +3374,19 @@ function artifactRuinChunkLooksLikeRuinedPortal(mid: location) :: boolean:
         return false
     return true
 
+function artifactRuinNotifyPortalReplaced(feet: location, kind: text):
+    set {_w} to world of {_feet}
+    set {_tier} to "обычной"
+    if {_kind} is "legendary":
+        set {_tier} to "легендарной"
+    set {_x} to floor(x-coordinate of {_feet})
+    set {_z} to floor(z-coordinate of {_feet})
+    set {_wname} to name of {_w}
+    loop all players in radius 96 around {_feet}:
+        if world of loop-player is {_w}:
+            send "{@prefix} &7Ты замечаешь: разрушенный портал уступил место &e%{_tier}% &7руине &8— &7в сундуках ждут артефакты. &8(%{_wname}%: &f%{_x}%, %{_z}%&8)" to loop-player
+            play sound "block.enchantment_table.use" with volume 0.35 and pitch 1.2 at loop-player for loop-player
+
 function artifactRuinTryReplaceRuinedPortalFromChunk(ch: chunk):
     set {_w} to world of {_ch}
     if environment of {_w} is not normal:
@@ -3435,6 +3448,7 @@ function artifactRuinTryReplaceRuinedPortalFromChunk(ch: chunk):
     set {_feet} to artifactRuinFeetAtColumn({_spawnx}, {_spawnz}, {_w})
     if artifactRuinBuild({_feet}, {_kind}) is true:
         set {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} to true
+        artifactRuinNotifyPortalReplaced({_feet}, {_kind})
 
 function artifactRuinTrySpawnChunk(wcx: number, wcz: number, w: world):
     set {_rc} to "{@artifact_ruin_region_chunks}" parsed as number
