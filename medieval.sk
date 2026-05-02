@@ -302,13 +302,17 @@ function ruinGateNetherConsoleSetblock(x: number, y: number, z: number, blockSpe
     set {_dk} to ruinGateNetherDimKey()
     execute console command "execute in %{_dk}% run setblock %{_x}% %{_y}% %{_z}% %{_blockSpec}% replace"
 
-# Световые блоки сеткой — уровень 15, почти не видны; подавляют спавн мобов по освещению
+function ruinGateNetherConsoleSetblockKeepAir(x: number, y: number, z: number, blockSpec: text):
+    set {_dk} to ruinGateNetherDimKey()
+    execute console command "execute in %{_dk}% run setblock %{_x}% %{_y}% %{_z}% %{_blockSpec}% keep"
+
+# Световые блоки сеткой — только в воздухе (keep), чтобы не ломать руины
 function ruinGateArenaPlaceLightGrid(ix1: number, ix2: number, iz1: number, iz2: number, ly: number, step: number):
     set {_lx} to {_ix1}
     while {_lx} <= {_ix2}:
         set {_lz} to {_iz1}
         while {_lz} <= {_iz2}:
-            ruinGateNetherConsoleSetblock({_lx}, {_ly}, {_lz}, "minecraft:light[level=15]")
+            ruinGateNetherConsoleSetblockKeepAir({_lx}, {_ly}, {_lz}, "minecraft:light[level=15]")
             add {_step} to {_lz}
         add {_step} to {_lx}
 
