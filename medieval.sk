@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины: random при load; замена portal при chunk generate + медленный фон по loaded chunks + /evoruinportalchunk
+  #   - Руины: случайный спавн при подгрузке чанка (Оверворлд) + админ /evoruinspawn. Авто-замена ruined portal убрана (TPS/надёжность).
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -112,24 +112,6 @@ options:
     artifact_ruin_region_chunks: 6
     artifact_ruin_min_spawn_blocks: 400
     artifact_ruin_legendary_chance_percent: 14
-    # Замена разрушенного портала: бросок 1–100 — до L = легендарная, иначе обычная. 100 = при обнаружении портала всегда строим руину
-    artifact_ruin_portal_roll_legendary_max: 10
-    artifact_ruin_portal_roll_common_max: 100
-    # Мин. расстояние от мирового спавна для замены портала (в блоках по XZ). 0 = без ограничения (ванильные порталы часто у спавна)
-    artifact_ruin_portal_min_spawn_blocks: 0
-    # Поиск портала в чанке: шаг по X/Z и по Y (меньше — точнее, но дороже для TPS). Руинированный портал обычно недалеко от «поверхности» чанка
-    artifact_ruin_portal_scan_xz_step: 2
-    artifact_ruin_portal_scan_y_step: 6
-    artifact_ruin_portal_scan_below_surface: 110
-    artifact_ruin_portal_scan_above_surface: 40
-    # Замена ruined portal при генерации чанка: 1 = да, 0 = выключить (остаётся только фон или /evoruinportalchunk)
-    artifact_ruin_portal_replace_on_generate: 1
-    # Тики ожидания после генерации чанка (структура портала подгружается позже — 40 часто мало)
-    artifact_ruin_portal_generate_delay_ticks: 100
-    # Фон: раз в столько тиков проверять один загруженный чанк Оверворла (накопление +10 каждые 10 тиков). 0 = выкл
-    artifact_ruin_portal_background_ticks: 300
-    # Второй проход скана если грубый шаг промахнулся (xz=1, меньший шаг по Y)
-    artifact_ruin_portal_scan_refine_y_step: 3
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -181,7 +163,7 @@ every 2 seconds:
     loop all players:
         syncProgress(loop-player)
 
-# Руины: on chunk load — только случайная руина (лёгко). Замена ruined portal НЕ здесь: при входе грузятся сотни чанков → очереди wait + скан = вылет TPS.
+# Руины: on chunk load — случайная руина в Оверворлде (шанс 1/denominator).
 on chunk load:
     set {_ch} to event-chunk
     set {_w} to world of {_ch}
@@ -192,79 +174,6 @@ on chunk load:
         set {_wcx} to x coordinate of {_ch}
         set {_wcz} to z coordinate of {_ch}
         artifactRuinTrySpawnChunk({_wcx}, {_wcz}, {_w})
-
-# Разрушенный портал → руина: при первой генерации чанка (долгая задержка — пока доп. куски структуры догрузятся).
-on chunk generate:
-    set {_ppt} to "{@artifact_ruin_portal_replace_on_generate}" parsed as number
-    if {_ppt} is not set:
-        set {_ppt} to 1
-    if {_ppt} <= 0:
-        stop
-    set {_gd} to "{@artifact_ruin_portal_generate_delay_ticks}" parsed as number
-    if {_gd} is not set:
-        set {_gd} to 100
-    if {_gd} < 20:
-        set {_gd} to 20
-    if {_gd} > 600:
-        set {_gd} to 600
-    wait "%{_gd}% ticks" parsed as timespan
-    artifactRuinTryReplaceRuinedPortalFromChunk(event-chunk)
-
-# Фон: медленный обход загруженных чанков (интервал — options artifact_ruin_portal_background_ticks)
-every 10 ticks:
-    set {_bgt} to "{@artifact_ruin_portal_background_ticks}" parsed as number
-    if {_bgt} is not set:
-        set {_bgt} to 300
-    if {_bgt} <= 0:
-        stop
-    add 10 to {evo_ruin_bg_acc}
-    if {evo_ruin_bg_acc} < {_bgt}:
-        stop
-    delete {evo_ruin_bg_acc}
-    set {_wIdx} to {evo_ruin_bg_wi} ? 0
-    set {_wN} to 0
-    delete {_normW::*}
-    loop all worlds:
-        if environment of loop-world is normal:
-            add 1 to {_wN}
-            add loop-world to {_normW::*}
-    if {_wN} < 1:
-        stop
-    if {_wIdx} < 0:
-        set {_wIdx} to 0
-    if {_wIdx} >= {_wN}:
-        set {_wIdx} to 0
-    set {_w} to {_normW::%{_wIdx}%}
-    set {_wname} to name of {_w}
-    set {_chunks::*} to loaded chunks of {_w}
-    set {_cListN} to 0
-    loop {_chunks::*}:
-        add 1 to {_cListN}
-    if {_cListN} < 1:
-        add 1 to {_wIdx}
-        if {_wIdx} >= {_wN}:
-            set {_wIdx} to 0
-        set {evo_ruin_bg_wi} to {_wIdx}
-        stop
-    set {_cIdx} to {evo_ruin_bg_ci::%{_wname}%} ? 0
-    if {_cIdx} < 0:
-        set {_cIdx} to 0
-    if {_cIdx} >= {_cListN}:
-        set {_cIdx} to 0
-    set {_ci} to 0
-    loop {_chunks::*}:
-        if {_ci} is {_cIdx}:
-            artifactRuinTryReplaceRuinedPortalFromChunk(loop-value)
-            stop loop
-        add 1 to {_ci}
-    add 1 to {_cIdx}
-    if {_cIdx} >= {_cListN}:
-        set {_cIdx} to 0
-        add 1 to {_wIdx}
-        if {_wIdx} >= {_wN}:
-            set {_wIdx} to 0
-    set {evo_ruin_bg_ci::%{_wname}%} to {_cIdx}
-    set {evo_ruin_bg_wi} to {_wIdx}
 
 # ==========================================
 # ФУНКЦИИ-ХЕЛПЕРЫ
@@ -2988,21 +2897,6 @@ function artifactRuinFarFromSpawn(feet: location, w: world) :: boolean:
         return false
     return true
 
-function artifactRuinFarFromSpawnPortal(feet: location, w: world) :: boolean:
-    set {_min} to "{@artifact_ruin_portal_min_spawn_blocks}" parsed as number
-    if {_min} is not set:
-        set {_min} to 0
-    if {_min} <= 0:
-        return true
-    set {_sp} to spawn of {_w}
-    set {_dx} to x-coordinate of {_feet} - x-coordinate of {_sp}
-    set {_dz} to z-coordinate of {_feet} - z-coordinate of {_sp}
-    set {_d2} to {_dx} * {_dx} + {_dz} * {_dz}
-    set {_need} to {_min} * {_min}
-    if {_d2} < {_need}:
-        return false
-    return true
-
 function artifactRuinBuild(feet: location, kind: text) :: boolean:
     set {_w} to world of {_feet}
     set {_cx} to floor(x-coordinate of {_feet})
@@ -3325,303 +3219,6 @@ function artifactRuinAdminSpawnHereKind(p: player, kind: text) :: boolean:
 function artifactRuinAdminSpawnHere(p: player) :: boolean:
     set {_rk} to artifactRuinRandomKind()
     return artifactRuinAdminSpawnHereKind({_p}, {_rk})
-
-function artifactRuinGoodNeighborForNetherrack(nb: block) :: boolean:
-    if {_nb} is not set:
-        return false
-    if {_nb} is air:
-        return false
-    if {_nb} is cave air:
-        return false
-    if {_nb} is void air:
-        return false
-    if {_nb} is water:
-        return false
-    if {_nb} is lava:
-        return false
-    if {_nb} is netherrack:
-        return false
-    if {_nb} is obsidian:
-        return false
-    if {_nb} is crying obsidian:
-        return false
-    if {_nb} is gold block:
-        return false
-    if {_nb} is gold ore:
-        return false
-    if {_nb} is nether gold ore:
-        return false
-    if {_nb} is magma block:
-        return false
-    if {_nb} is chest:
-        return false
-    if {_nb} is trapped chest:
-        return false
-    if {_nb} is iron bars:
-        return false
-    if "%type of {_nb}%" is "minecraft:chain":
-        return false
-    if {_nb} is stone bricks:
-        return false
-    if {_nb} is cracked stone bricks:
-        return false
-    if {_nb} is chiseled stone bricks:
-        return false
-    if {_nb} is mossy stone bricks:
-        return false
-    if {_nb} is stone brick slab:
-        return false
-    if {_nb} is stone brick stairs:
-        return false
-    if {_nb} is stone brick wall:
-        return false
-    set {_ty} to "%type of {_nb}%"
-    if {_ty} contains "minecraft:blackstone":
-        return false
-    return true
-
-function artifactRuinRemoveRuinedPortalScrap(center: location):
-    set {_w} to world of {_center}
-    loop blocks in radius 26 around {_center}:
-        set {_ty} to "%type of loop-block%"
-        if {_ty} contains "minecraft:blackstone":
-            set loop-block to air
-        else if loop-block is stone bricks:
-            set loop-block to air
-        else if loop-block is cracked stone bricks:
-            set loop-block to air
-        else if loop-block is chiseled stone bricks:
-            set loop-block to air
-        else if loop-block is mossy stone bricks:
-            set loop-block to air
-        else if loop-block is stone brick slab:
-            set loop-block to air
-        else if loop-block is stone brick stairs:
-            set loop-block to air
-        else if loop-block is stone brick wall:
-            set loop-block to air
-        else if loop-block is obsidian:
-            set loop-block to air
-        else if loop-block is crying obsidian:
-            set loop-block to air
-        else if loop-block is gold block:
-            set loop-block to air
-        else if loop-block is gold ore:
-            set loop-block to air
-        else if loop-block is nether gold ore:
-            set loop-block to air
-        else if loop-block is magma block:
-            set loop-block to air
-        else if loop-block is lava:
-            set loop-block to air
-        else if loop-block is iron bars:
-            set loop-block to air
-        else if loop-block is chest:
-            set loop-block to air
-        else if loop-block is trapped chest:
-            set loop-block to air
-        else if "%type of loop-block%" is "minecraft:chain":
-            set loop-block to air
-
-function artifactRuinHealNetherrackAround(center: location):
-    set {_w} to world of {_center}
-    loop blocks in radius 26 around {_center}:
-        if loop-block is netherrack:
-            set {_bx} to floor(x-coordinate of location of loop-block)
-            set {_by} to floor(y-coordinate of location of loop-block)
-            set {_bz} to floor(z-coordinate of location of loop-block)
-            set {_nb} to block at location at {_bx} + 1, {_by}, {_bz} in {_w}
-            if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                set loop-block to {_nb}
-            else:
-                set {_nb} to block at location at {_bx} - 1, {_by}, {_bz} in {_w}
-                if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                    set loop-block to {_nb}
-                else:
-                    set {_nb} to block at location at {_bx}, {_by} + 1, {_bz} in {_w}
-                    if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                        set loop-block to {_nb}
-                    else:
-                        set {_nb} to block at location at {_bx}, {_by} - 1, {_bz} in {_w}
-                        if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                            set loop-block to {_nb}
-                        else:
-                            set {_nb} to block at location at {_bx}, {_by}, {_bz} + 1 in {_w}
-                            if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                                set loop-block to {_nb}
-                            else:
-                                set {_nb} to block at location at {_bx}, {_by}, {_bz} - 1 in {_w}
-                                if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                                    set loop-block to {_nb}
-                                else:
-                                    set loop-block to stone
-
-function artifactRuinChunkLooksLikeRuinedPortal(mid: location) :: boolean:
-    set {_cry} to 0
-    set {_obs} to 0
-    loop blocks in radius 20 around {_mid}:
-        if loop-block is crying obsidian:
-            add 1 to {_cry}
-        else if loop-block is obsidian:
-            add 1 to {_obs}
-    if {_cry} < 1:
-        return false
-    if {_obs} < 2:
-        return false
-    if {_cry} + {_obs} < 6:
-        return false
-    return true
-
-# Скан чанка на ruined portal (sxz/syStep задаются вызывающим — грубый проход vs refine).
-function artifactRuinFindRuinedPortalMidInChunkScan(ch: chunk, sxz: number, syStep: number) :: location:
-    set {_w} to world of {_ch}
-    set {_wcx} to x coordinate of {_ch}
-    set {_wcz} to z coordinate of {_ch}
-    set {_bx0} to {_wcx} * 16
-    set {_bz0} to {_wcz} * 16
-    set {_sxzU} to {_sxz}
-    if {_sxzU} < 1:
-        set {_sxzU} to 1
-    if {_sxzU} > 8:
-        set {_sxzU} to 8
-    set {_syU} to {_syStep}
-    if {_syU} < 1:
-        set {_syU} to 1
-    if {_syU} > 16:
-        set {_syU} to 16
-    set {_below} to "{@artifact_ruin_portal_scan_below_surface}" parsed as number
-    if {_below} is not set:
-        set {_below} to 110
-    if {_below} < 10:
-        set {_below} to 10
-    set {_above} to "{@artifact_ruin_portal_scan_above_surface}" parsed as number
-    if {_above} is not set:
-        set {_above} to 40
-    if {_above} < 5:
-        set {_above} to 5
-    set {_yMin} to -62
-    set {_yMax} to 315
-    set {_pcx} to {_bx0} + 8
-    set {_pcz} to {_bz0} + 8
-    set {_sur} to artifactRuinSurfaceY({_pcx}, {_pcz}, {_w})
-    if {_sur} > -90:
-        set {_yMin} to {_sur} - {_below}
-        if {_yMin} < -62:
-            set {_yMin} to -62
-        set {_yMax} to {_sur} + {_above}
-        if {_yMax} > 315:
-            set {_yMax} to 315
-    set {_y} to {_yMin}
-    while {_y} <= {_yMax}:
-        set {_cx} to 0
-        while {_cx} <= 15:
-            set {_cz} to 0
-            while {_cz} <= 15:
-                set {_bx} to {_bx0} + {_cx}
-                set {_bz} to {_bz0} + {_cz}
-                set {_bl} to block at location at {_bx}, {_y}, {_bz} in {_w}
-                if {_bl} is obsidian:
-                    set {_mid} to location at {_bx}, {_y}, {_bz} in {_w}
-                    if artifactRuinChunkLooksLikeRuinedPortal({_mid}) is true:
-                        return {_mid}
-                else if {_bl} is crying obsidian:
-                    set {_mid} to location at {_bx}, {_y}, {_bz} in {_w}
-                    if artifactRuinChunkLooksLikeRuinedPortal({_mid}) is true:
-                        return {_mid}
-                add {_sxzU} to {_cz}
-            add {_sxzU} to {_cx}
-        add {_syU} to {_y}
-    return location at 0, -512, 0 in {_w}
-
-function artifactRuinFindRuinedPortalMidInChunk(ch: chunk) :: location:
-    set {_sxz} to "{@artifact_ruin_portal_scan_xz_step}" parsed as number
-    if {_sxz} is not set:
-        set {_sxz} to 2
-    set {_sy} to "{@artifact_ruin_portal_scan_y_step}" parsed as number
-    if {_sy} is not set:
-        set {_sy} to 6
-    if {_sy} < 2:
-        set {_sy} to 2
-    set {_mid} to artifactRuinFindRuinedPortalMidInChunkScan({_ch}, {_sxz}, {_sy})
-    if y-coordinate of {_mid} > -100:
-        return {_mid}
-    set {_ry} to "{@artifact_ruin_portal_scan_refine_y_step}" parsed as number
-    if {_ry} is not set:
-        set {_ry} to 3
-    if {_ry} < 1:
-        set {_ry} to 1
-    set {_mid2} to artifactRuinFindRuinedPortalMidInChunkScan({_ch}, 1, {_ry})
-    return {_mid2}
-
-function artifactRuinNotifyPortalReplaced(feet: location, kind: text):
-    set {_w} to world of {_feet}
-    set {_tier} to "обычной"
-    if {_kind} is "legendary":
-        set {_tier} to "легендарной"
-    set {_x} to floor(x-coordinate of {_feet})
-    set {_z} to floor(z-coordinate of {_feet})
-    set {_wname} to name of {_w}
-    loop all players in radius 96 around {_feet}:
-        if world of loop-player is {_w}:
-            send "{@prefix} &7Ты замечаешь: разрушенный портал уступил место &e%{_tier}% &7руине &8— &7в сундуках ждут артефакты. &8(%{_wname}%: &f%{_x}%, %{_z}%&8)" to loop-player
-            play sound "block.enchantment_table.use" with volume 0.35 and pitch 1.2 at loop-player for loop-player
-
-function artifactRuinTryReplaceRuinedPortalFromChunk(ch: chunk):
-    set {_w} to world of {_ch}
-    if environment of {_w} is not normal:
-        stop
-    set {_wcx} to x coordinate of {_ch}
-    set {_wcz} to z coordinate of {_ch}
-    set {_rc} to "{@artifact_ruin_region_chunks}" parsed as number
-    if {_rc} is not set:
-        set {_rc} to 6
-    if {_rc} < 1:
-        set {_rc} to 6
-    set {_rx} to floor({_wcx} / {_rc})
-    set {_rz} to floor({_wcz} / {_rc})
-    set {_wn} to "%{_w}%"
-    # Не проверяем evo_ruin_reg здесь: случайная руина (chunk load) могла занять регион — портал в том же квадрате тогда никогда не менялся
-    set {_mid} to artifactRuinFindRuinedPortalMidInChunk({_ch})
-    if y-coordinate of {_mid} < -100:
-        stop
-    set {_legMax} to "{@artifact_ruin_portal_roll_legendary_max}" parsed as number
-    set {_comMax} to "{@artifact_ruin_portal_roll_common_max}" parsed as number
-    if {_legMax} is not set:
-        set {_legMax} to 10
-    if {_comMax} is not set:
-        set {_comMax} to 60
-    set {_spawnx} to floor(x-coordinate of {_mid})
-    set {_spawnz} to floor(z-coordinate of {_mid})
-    loop blocks in radius 24 around {_mid}:
-        if loop-block is chest:
-            set {_spawnx} to floor(x-coordinate of location of loop-block)
-            set {_spawnz} to floor(z-coordinate of location of loop-block)
-            exit loop
-        if loop-block is trapped chest:
-            set {_spawnx} to floor(x-coordinate of location of loop-block)
-            set {_spawnz} to floor(z-coordinate of location of loop-block)
-            exit loop
-    set {_roll} to random integer between 1 and 100
-    if {_roll} > {_comMax}:
-        stop
-    set {_kind} to "common"
-    if {_roll} <= {_legMax}:
-        set {_kind} to "legendary"
-    set {_preFeet} to artifactRuinFeetAtColumn({_spawnx}, {_spawnz}, {_w})
-    if artifactRuinFeetValid({_preFeet}) is false:
-        stop
-    if artifactRuinFarFromSpawnPortal({_preFeet}, {_w}) is false:
-        stop
-    set {_cx} to floor(x-coordinate of {_preFeet})
-    set {_cz} to floor(z-coordinate of {_preFeet})
-    if artifactRuinTerrainTooSteep({_cx}, {_cz}, 9, {_w}) is true:
-        stop
-    artifactRuinRemoveRuinedPortalScrap({_mid})
-    artifactRuinHealNetherrackAround({_mid})
-    set {_feet} to artifactRuinFeetAtColumn({_spawnx}, {_spawnz}, {_w})
-    if artifactRuinBuild({_feet}, {_kind}) is true:
-        set {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} to true
-        artifactRuinNotifyPortalReplaced({_feet}, {_kind})
 
 function artifactRuinTrySpawnChunk(wcx: number, wcz: number, w: world):
     set {_rc} to "{@artifact_ruin_region_chunks}" parsed as number
@@ -6354,16 +5951,6 @@ command /evoruinspawn:
         else:
             send "{@prefix} &cНе удалось: нужен Оверворлд и твёрдая поверхность под колонкой X/Z."
 
-command /evoruinportalchunk:
-    permission: evo.admin
-    permission message: {@prefix} &cУ вас нет прав!
-    aliases: /evoportalfix
-    trigger:
-        # Одна попытка замены ruined portal в чанке под ногами (старый мир без новой генерации).
-        set {_ch} to chunk at player
-        artifactRuinTryReplaceRuinedPortalFromChunk({_ch})
-        send "{@prefix} &7Попытка замены портала в этом чанке выполнена &8(если не было портала/условий — без изменений)."
-
 command /evoruinlegspawn:
     permission: evo.admin
     permission message: {@prefix} &cУ вас нет прав!
@@ -6392,7 +5979,6 @@ command /evo [<offline player>] [<text>] [<text>]:
             send "&e/evo <player> reset"
             send "&e/evoruinspawn &7— тест: руина (тип как при спавне в мире)"
             send "&e/evoruinlegspawn &7— тест: &6легендарная&7 руина под ногами"
-            send "&e/evoruinportalchunk &7— замена ruined portal в &eчанке под ногами &7(старый мир)"
             send "&8&l----------------------------"
             stop
 
