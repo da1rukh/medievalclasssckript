@@ -117,6 +117,8 @@ options:
     ruin_gate_nether_center_z: -500000
     ruin_gate_nether_floor_y: 200
     ruin_gate_nether_wall_height: 14
+    # Ключ измерения для /execute in … (если не строит — попробуй world_nether как у твоего мира)
+    ruin_gate_nether_dimension: minecraft:the_nether
 
 # ----- Ключ разлома: без датапака — один раз при открытии сундука у разрушенного портала -----
 function ruinGateKeyItem() :: item:
@@ -256,7 +258,14 @@ function ruinGateArenaCoords() :: location:
     return location at {_cx}, {_fy}, {_cz} in {_nw}
 
 # Чанки должны быть загружены — иначе /fill в далёких координатах не ставит блоки
+function ruinGateNetherDimKey() :: text:
+    set {_d} to "{@ruin_gate_nether_dimension}"
+    if {_d} is not set:
+        set {_d} to "minecraft:the_nether"
+    return {_d}
+
 function ruinGateForceloadArenaChunks():
+    set {_dk} to ruinGateNetherDimKey()
     set {_loc} to ruinGateArenaCoords()
     set {_cx} to floor(x-coordinate of {_loc})
     set {_cz} to floor(z-coordinate of {_loc})
@@ -276,11 +285,12 @@ function ruinGateForceloadArenaChunks():
     while {_chx} <= {_chx2}:
         set {_chz} to {_chz1}
         while {_chz} <= {_chz2}:
-            execute console command "execute in minecraft:the_nether run forceload add %{_chx}% %{_chz}%"
+            execute console command "execute in %{_dk}% run forceload add %{_chx}% %{_chz}%"
             add 1 to {_chz}
         add 1 to {_chx}
 
 function ruinGateFillNetherArena():
+    set {_dk} to ruinGateNetherDimKey()
     set {_loc} to ruinGateArenaCoords()
     set {_cx} to floor(x-coordinate of {_loc})
     set {_cz} to floor(z-coordinate of {_loc})
@@ -303,29 +313,33 @@ function ruinGateFillNetherArena():
     set {_ix2} to {_wx2} - 1
     set {_iz1} to {_wz1} + 1
     set {_iz2} to {_wz2} - 1
-    # Пол и потолок — bedrock; внешние стены — bedrock; воздух внутри; пояс barrier у внутренней границы
-    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx2}% %{_fy}% %{_wz2}% minecraft:bedrock"
-    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_yTop}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
-    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz1}% minecraft:bedrock"
-    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_fy}% %{_wz2}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
-    execute console command "execute in minecraft:the_nether run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx1}% %{_yTop}% %{_wz2}% minecraft:bedrock"
-    execute console command "execute in minecraft:the_nether run fill %{_wx2}% %{_fy}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
-    # Воздух внутри: один fill на весь объём >32768 блоков — команда падает; режем по слоям Y (~97×97 < лимит)
+    # Пол/потолок/стены — через {@ruin_gate_nether_dimension}; воздух — полосами (97×97 на слой всё ещё может отклоняться на части сборок)
+    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx2}% %{_fy}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_yTop}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz1}% minecraft:bedrock"
+    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz2}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx1}% %{_yTop}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in %{_dk}% run fill %{_wx2}% %{_fy}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
     set {_yy} to {_y1}
     while {_yy} <= {_yAirHi}:
-        execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_yy}% %{_iz1}% %{_ix2}% %{_yy}% %{_iz2}% minecraft:air"
+        set {_sx} to {_ix1}
+        while {_sx} <= {_ix2}:
+            set {_sx2} to {_sx} + 23
+            if {_sx2} > {_ix2}:
+                set {_sx2} to {_ix2}
+            execute console command "execute in %{_dk}% run fill %{_sx}% %{_yy}% %{_iz1}% %{_sx2}% %{_yy}% %{_iz2}% minecraft:air"
+            set {_sx} to {_sx2} + 1
+        wait 1 tick
         add 1 to {_yy}
-    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:barrier"
-    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
-    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
-    execute console command "execute in minecraft:the_nether run fill %{_ix2}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
-    # Пол внутри — чёрный камень (поверх bedrock сначала air в один слой не нужен: fill заменит верхний слой bedrock внутри — стоп, inner is air now. Replace floor inside ix1-ix2 at fy only)
-    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_fy}% %{_iz1}% %{_ix2}% %{_fy}% %{_iz2}% minecraft:polished_blackstone_bricks"
-    # Угловые колонны
-    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix1}% %{_yAirHi}% %{_iz1}% minecraft:chiseled_polished_blackstone"
-    execute console command "execute in minecraft:the_nether run fill %{_ix2}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:chiseled_polished_blackstone"
-    execute console command "execute in minecraft:the_nether run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
-    execute console command "execute in minecraft:the_nether run fill %{_ix2}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:barrier"
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
+    execute console command "execute in %{_dk}% run fill %{_ix2}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_fy}% %{_iz1}% %{_ix2}% %{_fy}% %{_iz2}% minecraft:polished_blackstone_bricks"
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix1}% %{_yAirHi}% %{_iz1}% minecraft:chiseled_polished_blackstone"
+    execute console command "execute in %{_dk}% run fill %{_ix2}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:chiseled_polished_blackstone"
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
+    execute console command "execute in %{_dk}% run fill %{_ix2}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
     ruinGatePlaceReturnChests({_cx}, {_cz}, {_fy})
     set {evo_ruin_nether_arena_built} to true
 
