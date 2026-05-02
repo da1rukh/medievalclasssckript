@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины: случайный спавн при подгрузке чанка (Оверворлд) + админ /evoruinspawn. Авто-замена ruined portal убрана (TPS/надёжность).
+  #   - Руины: случайный спавн при load + админ /evoruinspawn. Датапack evo_ruin_gate: ключ в луте портала → ПКМ обсидиану (medieval.sk, ruin_gate_world).
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -112,6 +112,8 @@ options:
     artifact_ruin_region_chunks: 6
     artifact_ruin_min_spawn_blocks: 400
     artifact_ruin_legendary_chance_percent: 14
+    # Измерение «руин»: отдельный мир с таким именем (создай вручную: /mv create evo_ruins normal -g flat или аналог). Датапак evo_ruin_gate кладёт ключ в сундуки порталов.
+    ruin_gate_world: "evo_ruins"
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -174,6 +176,42 @@ on chunk load:
         set {_wcx} to x coordinate of {_ch}
         set {_wcz} to z coordinate of {_ch}
         artifactRuinTrySpawnChunk({_wcx}, {_wcz}, {_w})
+
+# ----- Ключ разлома руин: ПКМ обсидианом портала в Оверворлде с компасом-ключом → телепорт в мир {@ruin_gate_world} -----
+function isRuinGateKey(i: item) :: boolean:
+    if {_i} is not compass:
+        return false
+    set {_n} to name of {_i}
+    if {_n} is not set:
+        return false
+    if {_n} contains "Ключ разлома":
+        return true
+    return false
+
+on right click on obsidian or crying obsidian:
+    if environment of world of player is not normal:
+        stop
+    if isRuinGateKey(player's tool) is false:
+        stop
+    if {ghost::%player's uuid%} is true:
+        send action bar "&cПризрак не может войти в разлом." to player
+        stop
+    set {_wn} to "{@ruin_gate_world}"
+    set {_rw} to world {_wn}
+    if {_rw} is not set:
+        send "{@prefix} &cМир измерения руин не найден: &f%{_wn}%&c. Создай мир с таким именем (например Multiverse: &e/mv create %{_wn}% normal -g flat&c)."
+        stop
+    set {_until} to {ruin_gate_cd::%player's uuid%} ? 0
+    if {_until} > unix timestamp of now:
+        send action bar "&7Разлом на перезарядке..." to player
+        stop
+    cancel event
+    set {ruin_gate_cd::%player's uuid%} to (unix timestamp of now) + 5
+    play sound "block.portal.trigger" with volume 1 and pitch 0.85 at player for all players
+    play sound "item.book.put" with volume 0.8 and pitch 1.2 at player for player
+    teleport player to location at 0, 200, 0 in {_rw}
+    send title "&5&lРАЗЛОМ" with subtitle "&7Ты в измерении руин — &f%{_wn}%" to player for 2 seconds
+    send "{@prefix} &7Вернись в Оверворлд: &e/spawn &7или портал домой, если настроишь."
 
 # ==========================================
 # ФУНКЦИИ-ХЕЛПЕРЫ
