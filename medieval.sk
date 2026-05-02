@@ -112,7 +112,7 @@ options:
     artifact_ruin_region_chunks: 6
     artifact_ruin_min_spawn_blocks: 400
     artifact_ruin_legendary_chance_percent: 14
-    # Арена «руин» в Незере (центр пола XZ, высота пола Y, внутри 100×100). Сдвинь если мешает постройкам (далеко от 0,0).
+    # Арена в Незере (100×100). При первом входе чанки forceload + пауза 2с, затем /fill. Если пусто — /evoruinresetarena и зайди снова.
     ruin_gate_nether_center_x: -500000
     ruin_gate_nether_center_z: -500000
     ruin_gate_nether_floor_y: 200
@@ -226,19 +226,50 @@ function ruinGateNetherWorld() :: world:
         return {_try}
     return world "world"
 
-function ruinGateEnsureNetherArena():
-    if {evo_ruin_nether_arena_built} is true:
-        stop
+function ruinGateArenaCoords() :: location:
     set {_cx} to "{@ruin_gate_nether_center_x}" parsed as number
     set {_cz} to "{@ruin_gate_nether_center_z}" parsed as number
     set {_fy} to "{@ruin_gate_nether_floor_y}" parsed as number
-    set {_hy} to "{@ruin_gate_nether_wall_height}" parsed as number
     if {_cx} is not set:
         set {_cx} to -500000
     if {_cz} is not set:
         set {_cz} to -500000
     if {_fy} is not set:
         set {_fy} to 200
+    set {_nw} to ruinGateNetherWorld()
+    return location at {_cx}, {_fy}, {_cz} in {_nw}
+
+# Чанки должны быть загружены — иначе /fill в далёких координатах не ставит блоки
+function ruinGateForceloadArenaChunks():
+    set {_loc} to ruinGateArenaCoords()
+    set {_cx} to floor(x-coordinate of {_loc})
+    set {_cz} to floor(z-coordinate of {_loc})
+    set {_chx1} to floor(({_cx} - 52) / 16)
+    set {_chx2} to floor(({_cx} + 51) / 16)
+    set {_chz1} to floor(({_cz} - 52) / 16)
+    set {_chz2} to floor(({_cz} + 51) / 16)
+    if {_chx1} > {_chx2}:
+        set {_t} to {_chx1}
+        set {_chx1} to {_chx2}
+        set {_chx2} to {_t}
+    if {_chz1} > {_chz2}:
+        set {_t} to {_chz1}
+        set {_chz1} to {_chz2}
+        set {_chz2} to {_t}
+    set {_chx} to {_chx1}
+    while {_chx} <= {_chx2}:
+        set {_chz} to {_chz1}
+        while {_chz} <= {_chz2}:
+            execute console command "execute in minecraft:the_nether run forceload add %{_chx}% %{_chz}%"
+            add 1 to {_chz}
+        add 1 to {_chx}
+
+function ruinGateFillNetherArena():
+    set {_loc} to ruinGateArenaCoords()
+    set {_cx} to floor(x-coordinate of {_loc})
+    set {_cz} to floor(z-coordinate of {_loc})
+    set {_fy} to floor(y-coordinate of {_loc})
+    set {_hy} to "{@ruin_gate_nether_wall_height}" parsed as number
     if {_hy} is not set:
         set {_hy} to 14
     if {_hy} < 6:
@@ -336,7 +367,11 @@ on right click on obsidian or crying obsidian:
         stop
     cancel event
     set {ruin_gate_cd::%player's uuid%} to (unix timestamp of now) + 5
-    ruinGateEnsureNetherArena()
+    if {evo_ruin_nether_arena_built} is not true:
+        ruinGateForceloadArenaChunks()
+        wait 40 ticks
+        if {evo_ruin_nether_arena_built} is not true:
+            ruinGateFillNetherArena()
     set {_cx} to "{@ruin_gate_nether_center_x}" parsed as number
     set {_cz} to "{@ruin_gate_nether_center_z}" parsed as number
     set {_fy} to "{@ruin_gate_nether_floor_y}" parsed as number
