@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины: random-спавн при load; замена ruined portal только при chunk generate (не при load — нагрузка). /evoruinspawn
+  #   - Руины: random при load; замена portal при chunk generate + медленный фон по loaded chunks + /evoruinportalchunk
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -122,8 +122,14 @@ options:
     artifact_ruin_portal_scan_y_step: 6
     artifact_ruin_portal_scan_below_surface: 110
     artifact_ruin_portal_scan_above_surface: 40
-    # Замена ruined portal при генерации чанка: 1 = да, 0 = выключить полностью (если сервер всё ещё не тянет)
+    # Замена ruined portal при генерации чанка: 1 = да, 0 = выключить (остаётся только фон или /evoruinportalchunk)
     artifact_ruin_portal_replace_on_generate: 1
+    # Тики ожидания после генерации чанка (структура портала подгружается позже — 40 часто мало)
+    artifact_ruin_portal_generate_delay_ticks: 100
+    # Фон: раз в столько тиков проверять один загруженный чанк Оверворла (накопление +10 каждые 10 тиков). 0 = выкл
+    artifact_ruin_portal_background_ticks: 300
+    # Второй проход скана если грубый шаг промахнулся (xz=1, меньший шаг по Y)
+    artifact_ruin_portal_scan_refine_y_step: 3
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -187,15 +193,78 @@ on chunk load:
         set {_wcz} to z coordinate of {_ch}
         artifactRuinTrySpawnChunk({_wcx}, {_wcz}, {_w})
 
-# Разрушенный портал → руина: только когда чанк впервые генерируется (редко, не при каждом логине).
+# Разрушенный портал → руина: при первой генерации чанка (долгая задержка — пока доп. куски структуры догрузятся).
 on chunk generate:
     set {_ppt} to "{@artifact_ruin_portal_replace_on_generate}" parsed as number
     if {_ppt} is not set:
         set {_ppt} to 1
     if {_ppt} <= 0:
         stop
-    wait 40 ticks
+    set {_gd} to "{@artifact_ruin_portal_generate_delay_ticks}" parsed as number
+    if {_gd} is not set:
+        set {_gd} to 100
+    if {_gd} < 20:
+        set {_gd} to 20
+    if {_gd} > 600:
+        set {_gd} to 600
+    wait {_gd} ticks
     artifactRuinTryReplaceRuinedPortalFromChunk(event-chunk)
+
+# Фон: медленный обход загруженных чанков (интервал — options artifact_ruin_portal_background_ticks)
+every 10 ticks:
+    set {_bgt} to "{@artifact_ruin_portal_background_ticks}" parsed as number
+    if {_bgt} is not set:
+        set {_bgt} to 300
+    if {_bgt} <= 0:
+        stop
+    add 10 to {evo_ruin_bg_acc}
+    if {evo_ruin_bg_acc} < {_bgt}:
+        stop
+    delete {evo_ruin_bg_acc}
+    set {_wIdx} to {evo_ruin_bg_wi} ? 0
+    set {_wN} to 0
+    delete {_normW::*}
+    loop all worlds:
+        if environment of loop-world is normal:
+            add 1 to {_wN}
+            add loop-world to {_normW::*}
+    if {_wN} < 1:
+        stop
+    if {_wIdx} < 0:
+        set {_wIdx} to 0
+    if {_wIdx} >= {_wN}:
+        set {_wIdx} to 0
+    set {_w} to {_normW::%{_wIdx}%}
+    set {_wname} to name of {_w}
+    set {_chunks::*} to loaded chunks of {_w}
+    set {_cListN} to 0
+    loop {_chunks::*}:
+        add 1 to {_cListN}
+    if {_cListN} < 1:
+        add 1 to {_wIdx}
+        if {_wIdx} >= {_wN}:
+            set {_wIdx} to 0
+        set {evo_ruin_bg_wi} to {_wIdx}
+        stop
+    set {_cIdx} to {evo_ruin_bg_ci::%{_wname}%} ? 0
+    if {_cIdx} < 0:
+        set {_cIdx} to 0
+    if {_cIdx} >= {_cListN}:
+        set {_cIdx} to 0
+    set {_ci} to 0
+    loop {_chunks::*}:
+        if {_ci} is {_cIdx}:
+            artifactRuinTryReplaceRuinedPortalFromChunk(loop-value)
+            stop loop
+        add 1 to {_ci}
+    add 1 to {_cIdx}
+    if {_cIdx} >= {_cListN}:
+        set {_cIdx} to 0
+        add 1 to {_wIdx}
+        if {_wIdx} >= {_wN}:
+            set {_wIdx} to 0
+    set {evo_ruin_bg_ci::%{_wname}%} to {_cIdx}
+    set {evo_ruin_bg_wi} to {_wIdx}
 
 # ==========================================
 # ФУНКЦИИ-ХЕЛПЕРЫ
@@ -3403,27 +3472,23 @@ function artifactRuinChunkLooksLikeRuinedPortal(mid: location) :: boolean:
         return false
     return true
 
-# Центр для проверки портала: быстрый разреженный проход (полный перебор чанка = ~100k getBlock → лаги при массовой подгрузке).
-function artifactRuinFindRuinedPortalMidInChunk(ch: chunk) :: location:
+# Скан чанка на ruined portal (sxz/syStep задаются вызывающим — грубый проход vs refine).
+function artifactRuinFindRuinedPortalMidInChunkScan(ch: chunk, sxz: number, syStep: number) :: location:
     set {_w} to world of {_ch}
     set {_wcx} to x coordinate of {_ch}
     set {_wcz} to z coordinate of {_ch}
     set {_bx0} to {_wcx} * 16
     set {_bz0} to {_wcz} * 16
-    set {_sxz} to "{@artifact_ruin_portal_scan_xz_step}" parsed as number
-    if {_sxz} is not set:
-        set {_sxz} to 2
-    if {_sxz} < 1:
-        set {_sxz} to 1
-    if {_sxz} > 8:
-        set {_sxz} to 8
-    set {_syStep} to "{@artifact_ruin_portal_scan_y_step}" parsed as number
-    if {_syStep} is not set:
-        set {_syStep} to 6
-    if {_syStep} < 2:
-        set {_syStep} to 2
-    if {_syStep} > 16:
-        set {_syStep} to 16
+    set {_sxzU} to {_sxz}
+    if {_sxzU} < 1:
+        set {_sxzU} to 1
+    if {_sxzU} > 8:
+        set {_sxzU} to 8
+    set {_syU} to {_syStep}
+    if {_syU} < 1:
+        set {_syU} to 1
+    if {_syU} > 16:
+        set {_syU} to 16
     set {_below} to "{@artifact_ruin_portal_scan_below_surface}" parsed as number
     if {_below} is not set:
         set {_below} to 110
@@ -3463,10 +3528,30 @@ function artifactRuinFindRuinedPortalMidInChunk(ch: chunk) :: location:
                     set {_mid} to location at {_bx}, {_y}, {_bz} in {_w}
                     if artifactRuinChunkLooksLikeRuinedPortal({_mid}) is true:
                         return {_mid}
-                add {_sxz} to {_cz}
-            add {_sxz} to {_cx}
-        add {_syStep} to {_y}
+                add {_sxzU} to {_cz}
+            add {_sxzU} to {_cx}
+        add {_syU} to {_y}
     return location at 0, -512, 0 in {_w}
+
+function artifactRuinFindRuinedPortalMidInChunk(ch: chunk) :: location:
+    set {_sxz} to "{@artifact_ruin_portal_scan_xz_step}" parsed as number
+    if {_sxz} is not set:
+        set {_sxz} to 2
+    set {_sy} to "{@artifact_ruin_portal_scan_y_step}" parsed as number
+    if {_sy} is not set:
+        set {_sy} to 6
+    if {_sy} < 2:
+        set {_sy} to 2
+    set {_mid} to artifactRuinFindRuinedPortalMidInChunkScan({_ch}, {_sxz}, {_sy})
+    if y-coordinate of {_mid} > -100:
+        return {_mid}
+    set {_ry} to "{@artifact_ruin_portal_scan_refine_y_step}" parsed as number
+    if {_ry} is not set:
+        set {_ry} to 3
+    if {_ry} < 1:
+        set {_ry} to 1
+    set {_mid2} to artifactRuinFindRuinedPortalMidInChunkScan({_ch}, 1, {_ry})
+    return {_mid2}
 
 function artifactRuinNotifyPortalReplaced(feet: location, kind: text):
     set {_w} to world of {_feet}
