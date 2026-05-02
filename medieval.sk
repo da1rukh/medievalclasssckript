@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины: загрузка чанков + при генерации замена ruined portal на руину (см. artifact_ruin_portal_roll_*), /evoruinspawn
+  #   - Руины: ключ пустоты у портала → Незер-арена; выход только «Ключ возврата» (echo shard) ПКМ по обсидиану в Незере — тратится. Сундуки с ключом ставятся в арене при постройке.
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -112,9 +112,65 @@ options:
     artifact_ruin_region_chunks: 6
     artifact_ruin_min_spawn_blocks: 400
     artifact_ruin_legendary_chance_percent: 14
-    # Замена разрушенного портала (Оверворлд) на руину при генерации чанка: бросок 1–100 — до L = легендарная, до C = обычная, иначе портал остаётся
-    artifact_ruin_portal_roll_legendary_max: 10
-    artifact_ruin_portal_roll_common_max: 60
+    # Арена в Незере (100×100). При первом входе чанки forceload + пауза 2с, затем /fill. Если пусто — /evoruinresetarena и зайди снова.
+    ruin_gate_nether_center_x: -500000
+    ruin_gate_nether_center_z: -500000
+    ruin_gate_nether_floor_y: 200
+    ruin_gate_nether_wall_height: 14
+    # Ключ измерения для /execute in … (если не строит — попробуй world_nether как у твоего мира)
+    ruin_gate_nether_dimension: minecraft:the_nether
+
+# ----- Ключ разлома: без датапака — один раз при открытии сундука у разрушенного портала -----
+function ruinGateKeyItem() :: item:
+    set {_k} to disc fragment 5
+    set name of {_k} to "&8&lКлюч пустоты"
+    set lore of {_k} to "&7ПКМ по обсидиану разрушенного портала", "&7в Оверворлде — зал руин в Незере", "&8Выход: &fКлюч возврата &8(в сундуках арены)"
+    return {_k}
+
+function ruinGateReturnKeyItem() :: item:
+    set {_r} to echo shard
+    set name of {_r} to "&b&lКлюч возврата"
+    set lore of {_r} to "&7Только в зале руин (Незер)", "&7ПКМ по обсидиану — &fодноразовый выход", "&7в точку входа в Оверворлд"
+    return {_r}
+
+function isRuinReturnKey(i: item) :: boolean:
+    if {_i} is not echo shard:
+        return false
+    set {_n} to name of {_i}
+    if {_n} is not set:
+        return false
+    if {_n} contains "возврат":
+        return true
+    return false
+
+function ruinPortalChestNearObsidian(loc: location) :: boolean:
+    set {_n} to 0
+    loop blocks in radius 14 around {_loc}:
+        if loop-block is obsidian:
+            add 1 to {_n}
+        else if loop-block is crying obsidian:
+            add 1 to {_n}
+    if {_n} >= 8:
+        return true
+    return false
+
+on right click on chest or trapped chest:
+    if environment of world of player is not normal:
+        stop
+    set {_loc} to location of event-block
+    if ruinPortalChestNearObsidian({_loc}) is false:
+        stop
+    set {_w} to "%world of player%"
+    set {_x} to floor(x-coordinate of {_loc})
+    set {_y} to floor(y-coordinate of {_loc})
+    set {_z} to floor(z-coordinate of {_loc})
+    if {evo_ruin_key_given::%{_w}%::%{_x}%::%{_y}%::%{_z}%} is set:
+        stop
+    set {evo_ruin_key_given::%{_w}%::%{_x}%::%{_y}%::%{_z}%} to true
+    set {_key} to ruinGateKeyItem()
+    give {_key} to player
+    send "{@prefix} &dТы находишь &8Ключ пустоты&d — обсидиан портала откроет путь." to player
+    play sound "block.enchantment_table.use" with volume 0.85 and pitch 1.15 at player for player
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -166,22 +222,242 @@ every 2 seconds:
     loop all players:
         syncProgress(loop-player)
 
-# Руины: on chunk load — срабатывает при подгрузке чанка (полёт, ходьба, новый мир). on chunk generate не вызывается для уже сгенерированных чанков, поэтому раньше в старом мире руин не было.
+# Руины: on chunk load — случайная руина в Оверворлде (шанс 1/denominator).
 on chunk load:
-    wait 2 ticks
     set {_ch} to event-chunk
     set {_w} to world of {_ch}
     if environment of {_w} is not normal:
         stop
+    wait 2 ticks
     chance of 1/{@artifact_ruin_denominator}:
         set {_wcx} to x coordinate of {_ch}
         set {_wcz} to z coordinate of {_ch}
         artifactRuinTrySpawnChunk({_wcx}, {_wcz}, {_w})
 
-# Разрушенный портал (Оверворлд): при генерации чанка — шанс заменить на руину (остальной шанс портал не трогаем)
-on chunk generate:
-    wait 35 ticks
-    artifactRuinTryReplaceRuinedPortalFromChunk(event-chunk)
+# ----- Ключ разлома руин: ПКМ обсидианом портала в Оверворлде → арена в Незере (однократная /fill через консоль) -----
+function ruinGateNetherWorld() :: world:
+    loop all worlds:
+        if environment of loop-world is nether:
+            return loop-world
+    set {_try} to world "world_nether"
+    if {_try} is set:
+        return {_try}
+    return world "world"
+
+function ruinGateArenaCoords() :: location:
+    set {_cx} to "{@ruin_gate_nether_center_x}" parsed as number
+    set {_cz} to "{@ruin_gate_nether_center_z}" parsed as number
+    set {_fy} to "{@ruin_gate_nether_floor_y}" parsed as number
+    if {_cx} is not set:
+        set {_cx} to -500000
+    if {_cz} is not set:
+        set {_cz} to -500000
+    if {_fy} is not set:
+        set {_fy} to 200
+    set {_nw} to ruinGateNetherWorld()
+    return location at {_cx}, {_fy}, {_cz} in {_nw}
+
+# Чанки должны быть загружены — иначе /fill в далёких координатах не ставит блоки
+function ruinGateNetherDimKey() :: text:
+    set {_d} to "{@ruin_gate_nether_dimension}"
+    if {_d} is not set:
+        set {_d} to "minecraft:the_nether"
+    return {_d}
+
+function ruinGateForceloadArenaChunks():
+    set {_dk} to ruinGateNetherDimKey()
+    set {_loc} to ruinGateArenaCoords()
+    set {_cx} to floor(x-coordinate of {_loc})
+    set {_cz} to floor(z-coordinate of {_loc})
+    set {_chx1} to floor(({_cx} - 52) / 16)
+    set {_chx2} to floor(({_cx} + 51) / 16)
+    set {_chz1} to floor(({_cz} - 52) / 16)
+    set {_chz2} to floor(({_cz} + 51) / 16)
+    if {_chx1} > {_chx2}:
+        set {_t} to {_chx1}
+        set {_chx1} to {_chx2}
+        set {_chx2} to {_t}
+    if {_chz1} > {_chz2}:
+        set {_t} to {_chz1}
+        set {_chz1} to {_chz2}
+        set {_chz2} to {_t}
+    set {_chx} to {_chx1}
+    while {_chx} <= {_chx2}:
+        set {_chz} to {_chz1}
+        while {_chz} <= {_chz2}:
+            execute console command "execute in %{_dk}% run forceload add %{_chx}% %{_chz}%"
+            add 1 to {_chz}
+        add 1 to {_chx}
+
+function ruinGateFillNetherArena():
+    set {_dk} to ruinGateNetherDimKey()
+    set {_loc} to ruinGateArenaCoords()
+    set {_cx} to floor(x-coordinate of {_loc})
+    set {_cz} to floor(z-coordinate of {_loc})
+    set {_fy} to floor(y-coordinate of {_loc})
+    set {_hy} to "{@ruin_gate_nether_wall_height}" parsed as number
+    if {_hy} is not set:
+        set {_hy} to 14
+    if {_hy} < 6:
+        set {_hy} to 6
+    if {_hy} > 40:
+        set {_hy} to 40
+    set {_wx1} to {_cx} - 50
+    set {_wx2} to {_cx} + 49
+    set {_wz1} to {_cz} - 50
+    set {_wz2} to {_cz} + 49
+    set {_yTop} to {_fy} + {_hy} + 1
+    set {_yAirHi} to {_fy} + {_hy}
+    set {_y1} to {_fy} + 1
+    set {_ix1} to {_wx1} + 1
+    set {_ix2} to {_wx2} - 1
+    set {_iz1} to {_wz1} + 1
+    set {_iz2} to {_wz2} - 1
+    # Пол/потолок/стены — через {@ruin_gate_nether_dimension}; воздух — полосами (97×97 на слой всё ещё может отклоняться на части сборок)
+    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx2}% %{_fy}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_yTop}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz1}% minecraft:bedrock"
+    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz2}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx1}% %{_yTop}% %{_wz2}% minecraft:bedrock"
+    execute console command "execute in %{_dk}% run fill %{_wx2}% %{_fy}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
+    set {_yy} to {_y1}
+    while {_yy} <= {_yAirHi}:
+        set {_sx} to {_ix1}
+        while {_sx} <= {_ix2}:
+            set {_sx2} to {_sx} + 23
+            if {_sx2} > {_ix2}:
+                set {_sx2} to {_ix2}
+            execute console command "execute in %{_dk}% run fill %{_sx}% %{_yy}% %{_iz1}% %{_sx2}% %{_yy}% %{_iz2}% minecraft:air"
+            set {_sx} to {_sx2} + 1
+        wait 1 tick
+        add 1 to {_yy}
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:barrier"
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
+    execute console command "execute in %{_dk}% run fill %{_ix2}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_fy}% %{_iz1}% %{_ix2}% %{_fy}% %{_iz2}% minecraft:polished_blackstone_bricks"
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix1}% %{_yAirHi}% %{_iz1}% minecraft:chiseled_polished_blackstone"
+    execute console command "execute in %{_dk}% run fill %{_ix2}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:chiseled_polished_blackstone"
+    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
+    execute console command "execute in %{_dk}% run fill %{_ix2}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
+    ruinGatePlaceReturnChests({_cx}, {_cz}, {_fy})
+    set {evo_ruin_nether_arena_built} to true
+
+function ruinGatePlaceReturnChests(cx: number, cz: number, fy: number):
+    set {_w} to ruinGateNetherWorld()
+    set {_y} to {_fy} + 2
+    set {_l1} to location at {_cx} - 28, {_y}, {_cz} - 28 in {_w}
+    set {_l2} to location at {_cx} + 28, {_y}, {_cz} - 28 in {_w}
+    set {_l3} to location at {_cx} - 28, {_y}, {_cz} + 28 in {_w}
+    set {_l4} to location at {_cx} + 28, {_y}, {_cz} + 28 in {_w}
+    set block at {_l1} to chest
+    set block at {_l2} to chest
+    set block at {_l3} to chest
+    set block at {_l4} to chest
+    set slot 13 of inventory of block at {_l1} to ruinGateReturnKeyItem()
+    set slot 13 of inventory of block at {_l2} to ruinGateReturnKeyItem()
+    set slot 13 of inventory of block at {_l3} to ruinGateReturnKeyItem()
+    set slot 13 of inventory of block at {_l4} to ruinGateReturnKeyItem()
+
+function ruinGateSpawnArenaGuards(cx: number, cz: number, fy: number, w: world):
+    loop 6 times:
+        set {_gx} to {_cx} + random integer between -35 and 35
+        set {_gz} to {_cz} + random integer between -35 and 35
+        spawn a vindicator at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set name of last spawned entity to "&4&lСтраж разлома"
+    loop 4 times:
+        set {_gx} to {_cx} + random integer between -35 and 35
+        set {_gz} to {_cz} + random integer between -35 and 35
+        spawn a pillager at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set name of last spawned entity to "&c&lЛучник руин"
+    loop 3 times:
+        set {_gx} to {_cx} + random integer between -35 and 35
+        set {_gz} to {_cz} + random integer between -35 and 35
+        spawn a piglin brute at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set name of last spawned entity to "&6&lИзувер руин"
+    chance of 50%:
+        set {_gx} to {_cx} + random integer between -20 and 20
+        set {_gz} to {_cz} + random integer between -20 and 20
+        spawn an evoker at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set name of last spawned entity to "&5&lАрхивариус руин"
+    loop 2 times:
+        set {_gx} to {_cx} + random integer between -25 and 25
+        set {_gz} to {_cz} + random integer between -25 and 25
+        spawn a blaze at location at {_gx}, {_fy} + 3, {_gz} in {_w}
+        set name of last spawned entity to "&e&lПламя хранилища"
+
+function isRuinGateKey(i: item) :: boolean:
+    set {_ty} to "%type of {_i}%"
+    if {_ty} contains "disc_fragment_5":
+        set {_n} to name of {_i}
+        if {_n} is set:
+            if {_n} contains "Пустот":
+                return true
+    if {_i} is disc fragment 5:
+        set {_n} to name of {_i}
+        if {_n} is set:
+            if {_n} contains "Пустот":
+                return true
+    return false
+
+on right click on obsidian or crying obsidian:
+    # ----- Выход из зала руин (Незер): Ключ возврата — тратится один раз -----
+    if environment of world of player is nether:
+        if isRuinReturnKey(player's tool) is false:
+            stop
+        if {ghost::%player's uuid%} is true:
+            send action bar "&cПризрак не может использовать ключ." to player
+            stop
+        set {_ret} to {ruin_gate_return::%player's uuid%}
+        if {_ret} is not set:
+            send "{@prefix} &cНет сохранённой точки возврата — зайди в зал через портал сначала." to player
+            stop
+        cancel event
+        remove 1 of player's tool from player
+        teleport player to {_ret}
+        delete {ruin_gate_return::%player's uuid%}
+        play sound "block.portal.travel" with volume 0.9 and pitch 1 at player for player
+        send "{@prefix} &aКлюч возврата сработал — ты в Оверворлде." to player
+        stop
+    # ----- Вход: Оверворлд + Ключ пустоты -----
+    if environment of world of player is not normal:
+        stop
+    if isRuinGateKey(player's tool) is false:
+        stop
+    if {ghost::%player's uuid%} is true:
+        send action bar "&cПризрак не может войти в разлом." to player
+        stop
+    set {_nw} to ruinGateNetherWorld()
+    if environment of {_nw} is not nether:
+        send "{@prefix} &cНезер не найден — проверь миры сервера." to player
+        stop
+    set {_until} to {ruin_gate_cd::%player's uuid%} ? 0
+    if {_until} > unix timestamp of now:
+        send action bar "&7Разлом на перезарядке..." to player
+        stop
+    cancel event
+    set {ruin_gate_cd::%player's uuid%} to (unix timestamp of now) + 5
+    if {evo_ruin_nether_arena_built} is not true:
+        ruinGateForceloadArenaChunks()
+        wait 80 ticks
+        if {evo_ruin_nether_arena_built} is not true:
+            ruinGateFillNetherArena()
+    set {_cx} to "{@ruin_gate_nether_center_x}" parsed as number
+    set {_cz} to "{@ruin_gate_nether_center_z}" parsed as number
+    set {_fy} to "{@ruin_gate_nether_floor_y}" parsed as number
+    if {_cx} is not set:
+        set {_cx} to -500000
+    if {_cz} is not set:
+        set {_cz} to -500000
+    if {_fy} is not set:
+        set {_fy} to 200
+    set {ruin_gate_return::%player's uuid%} to location of player
+    play sound "block.portal.trigger" with volume 1 and pitch 0.85 at player for all players
+    play sound "item.book.put" with volume 0.8 and pitch 1.2 at player for player
+    teleport player to location at {_cx}, {_fy} + 2, {_cz} in {_nw}
+    ruinGateSpawnArenaGuards({_cx}, {_cz}, {_fy}, {_nw})
+    send title "&5&lРАЗЛОМ" with subtitle "&7Незер — зал руин. &8Стражи!" to player for 2 seconds
+    send "{@prefix} &7Выход: найди &bКлюч возврата &7в сундуках по углам арены, ПКМ по обсидиану — &cтратится&7." to player
 
 # ==========================================
 # ФУНКЦИИ-ХЕЛПЕРЫ
@@ -3228,214 +3504,6 @@ function artifactRuinAdminSpawnHere(p: player) :: boolean:
     set {_rk} to artifactRuinRandomKind()
     return artifactRuinAdminSpawnHereKind({_p}, {_rk})
 
-function artifactRuinGoodNeighborForNetherrack(nb: block) :: boolean:
-    if {_nb} is not set:
-        return false
-    if {_nb} is air:
-        return false
-    if {_nb} is cave air:
-        return false
-    if {_nb} is void air:
-        return false
-    if {_nb} is water:
-        return false
-    if {_nb} is lava:
-        return false
-    if {_nb} is netherrack:
-        return false
-    if {_nb} is obsidian:
-        return false
-    if {_nb} is crying obsidian:
-        return false
-    if {_nb} is gold block:
-        return false
-    if {_nb} is gold ore:
-        return false
-    if {_nb} is nether gold ore:
-        return false
-    if {_nb} is magma block:
-        return false
-    if {_nb} is chest:
-        return false
-    if {_nb} is trapped chest:
-        return false
-    if {_nb} is iron bars:
-        return false
-    if "%type of {_nb}%" is "minecraft:chain":
-        return false
-    if {_nb} is stone bricks:
-        return false
-    if {_nb} is cracked stone bricks:
-        return false
-    if {_nb} is chiseled stone bricks:
-        return false
-    if {_nb} is mossy stone bricks:
-        return false
-    if {_nb} is stone brick slab:
-        return false
-    if {_nb} is stone brick stairs:
-        return false
-    if {_nb} is stone brick wall:
-        return false
-    set {_ty} to "%type of {_nb}%"
-    if {_ty} contains "minecraft:blackstone":
-        return false
-    return true
-
-function artifactRuinRemoveRuinedPortalScrap(center: location):
-    set {_w} to world of {_center}
-    loop blocks in radius 26 around {_center}:
-        set {_ty} to "%type of loop-block%"
-        if {_ty} contains "minecraft:blackstone":
-            set loop-block to air
-        else if loop-block is stone bricks:
-            set loop-block to air
-        else if loop-block is cracked stone bricks:
-            set loop-block to air
-        else if loop-block is chiseled stone bricks:
-            set loop-block to air
-        else if loop-block is mossy stone bricks:
-            set loop-block to air
-        else if loop-block is stone brick slab:
-            set loop-block to air
-        else if loop-block is stone brick stairs:
-            set loop-block to air
-        else if loop-block is stone brick wall:
-            set loop-block to air
-        else if loop-block is obsidian:
-            set loop-block to air
-        else if loop-block is crying obsidian:
-            set loop-block to air
-        else if loop-block is gold block:
-            set loop-block to air
-        else if loop-block is gold ore:
-            set loop-block to air
-        else if loop-block is nether gold ore:
-            set loop-block to air
-        else if loop-block is magma block:
-            set loop-block to air
-        else if loop-block is lava:
-            set loop-block to air
-        else if loop-block is iron bars:
-            set loop-block to air
-        else if loop-block is chest:
-            set loop-block to air
-        else if loop-block is trapped chest:
-            set loop-block to air
-        else if "%type of loop-block%" is "minecraft:chain":
-            set loop-block to air
-
-function artifactRuinHealNetherrackAround(center: location):
-    set {_w} to world of {_center}
-    loop blocks in radius 26 around {_center}:
-        if loop-block is netherrack:
-            set {_bx} to floor(x-coordinate of location of loop-block)
-            set {_by} to floor(y-coordinate of location of loop-block)
-            set {_bz} to floor(z-coordinate of location of loop-block)
-            set {_nb} to block at location at {_bx} + 1, {_by}, {_bz} in {_w}
-            if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                set loop-block to {_nb}
-            else:
-                set {_nb} to block at location at {_bx} - 1, {_by}, {_bz} in {_w}
-                if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                    set loop-block to {_nb}
-                else:
-                    set {_nb} to block at location at {_bx}, {_by} + 1, {_bz} in {_w}
-                    if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                        set loop-block to {_nb}
-                    else:
-                        set {_nb} to block at location at {_bx}, {_by} - 1, {_bz} in {_w}
-                        if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                            set loop-block to {_nb}
-                        else:
-                            set {_nb} to block at location at {_bx}, {_by}, {_bz} + 1 in {_w}
-                            if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                                set loop-block to {_nb}
-                            else:
-                                set {_nb} to block at location at {_bx}, {_by}, {_bz} - 1 in {_w}
-                                if artifactRuinGoodNeighborForNetherrack({_nb}) is true:
-                                    set loop-block to {_nb}
-                                else:
-                                    set loop-block to stone
-
-function artifactRuinChunkLooksLikeRuinedPortal(mid: location) :: boolean:
-    set {_cry} to 0
-    set {_obs} to 0
-    loop blocks in radius 20 around {_mid}:
-        if loop-block is crying obsidian:
-            add 1 to {_cry}
-        else if loop-block is obsidian:
-            add 1 to {_obs}
-    if {_cry} < 1:
-        return false
-    if {_obs} < 2:
-        return false
-    if {_cry} + {_obs} < 6:
-        return false
-    return true
-
-function artifactRuinTryReplaceRuinedPortalFromChunk(ch: chunk):
-    set {_w} to world of {_ch}
-    if environment of {_w} is not normal:
-        stop
-    set {_wcx} to x coordinate of {_ch}
-    set {_wcz} to z coordinate of {_ch}
-    set {_rc} to "{@artifact_ruin_region_chunks}" parsed as number
-    if {_rc} is not set:
-        set {_rc} to 6
-    if {_rc} < 1:
-        set {_rc} to 6
-    set {_rx} to floor({_wcx} / {_rc})
-    set {_rz} to floor({_wcz} / {_rc})
-    set {_wn} to "%{_w}%"
-    if {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} is true:
-        stop
-    set {_bx} to {_wcx} * 16 + 8
-    set {_bz} to {_wcz} * 16 + 8
-    set {_sy} to artifactRuinSurfaceY({_bx}, {_bz}, {_w})
-    if {_sy} < -90:
-        stop
-    set {_mid} to location at {_bx}, {_sy} + 2, {_bz} in {_w}
-    if artifactRuinChunkLooksLikeRuinedPortal({_mid}) is false:
-        stop
-    set {_legMax} to "{@artifact_ruin_portal_roll_legendary_max}" parsed as number
-    set {_comMax} to "{@artifact_ruin_portal_roll_common_max}" parsed as number
-    if {_legMax} is not set:
-        set {_legMax} to 10
-    if {_comMax} is not set:
-        set {_comMax} to 60
-    set {_spawnx} to {_bx}
-    set {_spawnz} to {_bz}
-    loop blocks in radius 24 around {_mid}:
-        if loop-block is chest:
-            set {_spawnx} to floor(x-coordinate of location of loop-block)
-            set {_spawnz} to floor(z-coordinate of location of loop-block)
-            exit loop
-        if loop-block is trapped chest:
-            set {_spawnx} to floor(x-coordinate of location of loop-block)
-            set {_spawnz} to floor(z-coordinate of location of loop-block)
-            exit loop
-    set {_roll} to random integer between 1 and 100
-    if {_roll} > {_comMax}:
-        stop
-    set {_kind} to "common"
-    if {_roll} <= {_legMax}:
-        set {_kind} to "legendary"
-    set {_preFeet} to artifactRuinFeetAtColumn({_spawnx}, {_spawnz}, {_w})
-    if artifactRuinFeetValid({_preFeet}) is false:
-        stop
-    if artifactRuinFarFromSpawn({_preFeet}, {_w}) is false:
-        stop
-    set {_cx} to floor(x-coordinate of {_preFeet})
-    set {_cz} to floor(z-coordinate of {_preFeet})
-    if artifactRuinTerrainTooSteep({_cx}, {_cz}, 9, {_w}) is true:
-        stop
-    artifactRuinRemoveRuinedPortalScrap({_mid})
-    artifactRuinHealNetherrackAround({_mid})
-    set {_feet} to artifactRuinFeetAtColumn({_spawnx}, {_spawnz}, {_w})
-    if artifactRuinBuild({_feet}, {_kind}) is true:
-        set {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} to true
-
 function artifactRuinTrySpawnChunk(wcx: number, wcz: number, w: world):
     set {_rc} to "{@artifact_ruin_region_chunks}" parsed as number
     if {_rc} is not set:
@@ -6177,6 +6245,31 @@ command /evoruinlegspawn:
         else:
             send "{@prefix} &cНе удалось: нужен Оверворлд и твёрдая поверхность под колонкой X/Z."
 
+command /evoruinexit:
+    permission: evo.admin
+    permission message: {@prefix} &cУ игроков выход только ключом возврата (echo shard) ПКМ по обсидиану в Незере.
+    trigger:
+        set {_u} to player's uuid
+        set {_ret} to {ruin_gate_return::%{_u}%}
+        if {_ret} is set:
+            teleport player to {_ret}
+            delete {ruin_gate_return::%{_u}%}
+            play sound "block.portal.travel" with volume 0.7 and pitch 1.1 at player for player
+            send "{@prefix} &a[Админ] Телепорт из разлома."
+            stop
+        if environment of world of player is nether:
+            teleport player to spawn of world "world"
+            send "{@prefix} &7[Админ] Нет точки возврата — спавн &fworld&7."
+            stop
+        send "{@prefix} &7Нет активной точки возврата."
+
+command /evoruinresetarena:
+    permission: evo.admin
+    permission message: {@prefix} &cУ вас нет прав!
+    trigger:
+        delete {evo_ruin_nether_arena_built}
+        send "{@prefix} &eАрена в Незере будет пересобрана при следующем входе по ключу."
+
 command /evo [<offline player>] [<text>] [<text>]:
     permission: evo.admin
     permission message: {@prefix} &cУ вас нет прав!
@@ -6195,6 +6288,8 @@ command /evo [<offline player>] [<text>] [<text>]:
             send "&e/evo <player> reset"
             send "&e/evoruinspawn &7— тест: руина (тип как при спавне в мире)"
             send "&e/evoruinlegspawn &7— тест: &6легендарная&7 руина под ногами"
+            send "&e/evoruinresetarena &7— сбросить постройку незер-арены (след. вход по ключу)"
+            send "&e/evoruinexit &7— &cадмин&7: выход из разлома без ключа возврата"
             send "&8&l----------------------------"
             stop
 
