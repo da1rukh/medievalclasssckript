@@ -120,9 +120,9 @@ options:
 
 # ----- Ключ разлома: без датапака — один раз при открытии сундука у разрушенного портала -----
 function ruinGateKeyItem() :: item:
-    set {_k} to compass
-    set name of {_k} to "&d&lКлюч разлома руин"
-    set lore of {_k} to "&7ПКМ по обсидиану портала в Оверворлде", "&7— зал руин в Незере", "&8/evoruinexit — выход"
+    set {_k} to disc fragment 5
+    set name of {_k} to "&8&lКлюч пустоты"
+    set lore of {_k} to "&7ПКМ по обсидиану разрушенного портала", "&7в Оверворлде — зал руин в Незере", "&8/evoruinexit — выход"
     return {_k}
 
 function ruinPortalChestNearObsidian(loc: location) :: boolean:
@@ -151,7 +151,7 @@ on right click on chest or trapped chest:
     set {evo_ruin_key_given::%{_w}%::%{_x}%::%{_y}%::%{_z}%} to true
     set {_key} to ruinGateKeyItem()
     give {_key} to player
-    send "{@prefix} &dТы находишь &fКлюч разлома&d — обсидиан портала откроет путь." to player
+    send "{@prefix} &dТы находишь &8Ключ пустоты&d — обсидиан портала откроет путь." to player
     play sound "block.enchantment_table.use" with volume 0.85 and pitch 1.15 at player for player
 
 # ==========================================
@@ -305,13 +305,17 @@ function ruinGateSpawnArenaGuards(cx: number, cz: number, fy: number, w: world):
         set name of last spawned entity to "&e&lПламя хранилища"
 
 function isRuinGateKey(i: item) :: boolean:
-    if {_i} is not compass:
-        return false
-    set {_n} to name of {_i}
-    if {_n} is not set:
-        return false
-    if {_n} contains "Ключ разлома":
-        return true
+    set {_ty} to "%type of {_i}%"
+    if {_ty} contains "disc_fragment_5":
+        set {_n} to name of {_i}
+        if {_n} is set:
+            if {_n} contains "Пустот":
+                return true
+    if {_i} is disc fragment 5:
+        set {_n} to name of {_i}
+        if {_n} is set:
+            if {_n} contains "Пустот":
+                return true
     return false
 
 on right click on obsidian or crying obsidian:
