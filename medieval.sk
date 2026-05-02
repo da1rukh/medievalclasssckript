@@ -113,7 +113,7 @@ options:
     artifact_ruin_min_spawn_blocks: 400
     artifact_ruin_legendary_chance_percent: 14
     # Измерение «руин»: отдельный мир с таким именем (создай вручную: /mv create evo_ruins normal -g flat или аналог). Датапак evo_ruin_gate кладёт ключ в сундуки порталов.
-    ruin_gate_world: "evo_ruins"
+    ruin_gate_world: evo_ruins
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -199,7 +199,7 @@ on right click on obsidian or crying obsidian:
     set {_wn} to "{@ruin_gate_world}"
     set {_rw} to world {_wn}
     if {_rw} is not set:
-        send "{@prefix} &cМир измерения руин не найден: &f%{_wn}%&c. Создай мир с таким именем (например Multiverse: &e/mv create %{_wn}% normal -g flat&c)."
+        send "{@prefix} &cМир измерения руин не найден: &f%{_wn}%&c. Создай мир с таким именем (например Multiverse: &e/mv create %{_wn}% normal -g flat&c)." to player
         stop
     set {_until} to {ruin_gate_cd::%player's uuid%} ? 0
     if {_until} > unix timestamp of now:
@@ -211,7 +211,7 @@ on right click on obsidian or crying obsidian:
     play sound "item.book.put" with volume 0.8 and pitch 1.2 at player for player
     teleport player to location at 0, 200, 0 in {_rw}
     send title "&5&lРАЗЛОМ" with subtitle "&7Ты в измерении руин — &f%{_wn}%" to player for 2 seconds
-    send "{@prefix} &7Вернись в Оверворлд: &e/spawn &7или портал домой, если настроишь."
+    send "{@prefix} &7Вернись в Оверворлд: &e/spawn &7или портал домой, если настроишь." to player
 
 # ==========================================
 # ФУНКЦИИ-ХЕЛПЕРЫ
