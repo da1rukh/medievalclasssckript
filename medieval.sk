@@ -207,7 +207,7 @@ on chunk generate:
         set {_gd} to 20
     if {_gd} > 600:
         set {_gd} to 600
-    wait {_gd} ticks
+    wait "%{_gd}% ticks" parsed as timespan
     artifactRuinTryReplaceRuinedPortalFromChunk(event-chunk)
 
 # Фон: медленный обход загруженных чанков (интервал — options artifact_ruin_portal_background_ticks)
