@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины: random-спавн + замена ruined portal (подгрузка чанка, ~6с задержка; в чанке ищем obsidian), /evoruinspawn
+  #   - Руины: random-спавн при load; замена ruined portal только при chunk generate (не при load — нагрузка). /evoruinspawn
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -122,6 +122,8 @@ options:
     artifact_ruin_portal_scan_y_step: 6
     artifact_ruin_portal_scan_below_surface: 110
     artifact_ruin_portal_scan_above_surface: 40
+    # Замена ruined portal при генерации чанка: 1 = да, 0 = выключить полностью (если сервер всё ещё не тянет)
+    artifact_ruin_portal_replace_on_generate: 1
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -173,7 +175,7 @@ every 2 seconds:
     loop all players:
         syncProgress(loop-player)
 
-# Руины: on chunk load — подгрузка чанка. Случайная руина + замена ruined portal (задержка ~6 с: структура портала догенерируется после load).
+# Руины: on chunk load — только случайная руина (лёгко). Замена ruined portal НЕ здесь: при входе грузятся сотни чанков → очереди wait + скан = вылет TPS.
 on chunk load:
     set {_ch} to event-chunk
     set {_w} to world of {_ch}
@@ -184,8 +186,16 @@ on chunk load:
         set {_wcx} to x coordinate of {_ch}
         set {_wcz} to z coordinate of {_ch}
         artifactRuinTrySpawnChunk({_wcx}, {_wcz}, {_w})
-    wait 120 ticks
-    artifactRuinTryReplaceRuinedPortalFromChunk({_ch})
+
+# Разрушенный портал → руина: только когда чанк впервые генерируется (редко, не при каждом логине).
+on chunk generate:
+    set {_ppt} to "{@artifact_ruin_portal_replace_on_generate}" parsed as number
+    if {_ppt} is not set:
+        set {_ppt} to 1
+    if {_ppt} <= 0:
+        stop
+    wait 40 ticks
+    artifactRuinTryReplaceRuinedPortalFromChunk(event-chunk)
 
 # ==========================================
 # ФУНКЦИИ-ХЕЛПЕРЫ
@@ -6259,6 +6269,16 @@ command /evoruinspawn:
         else:
             send "{@prefix} &cНе удалось: нужен Оверворлд и твёрдая поверхность под колонкой X/Z."
 
+command /evoruinportalchunk:
+    permission: evo.admin
+    permission message: {@prefix} &cУ вас нет прав!
+    aliases: /evoportalfix
+    trigger:
+        # Одна попытка замены ruined portal в чанке под ногами (старый мир без новой генерации).
+        set {_ch} to chunk at player
+        artifactRuinTryReplaceRuinedPortalFromChunk({_ch})
+        send "{@prefix} &7Попытка замены портала в этом чанке выполнена &8(если не было портала/условий — без изменений)."
+
 command /evoruinlegspawn:
     permission: evo.admin
     permission message: {@prefix} &cУ вас нет прав!
@@ -6287,6 +6307,7 @@ command /evo [<offline player>] [<text>] [<text>]:
             send "&e/evo <player> reset"
             send "&e/evoruinspawn &7— тест: руина (тип как при спавне в мире)"
             send "&e/evoruinlegspawn &7— тест: &6легендарная&7 руина под ногами"
+            send "&e/evoruinportalchunk &7— замена ruined portal в &eчанке под ногами &7(старый мир)"
             send "&8&l----------------------------"
             stop
 
