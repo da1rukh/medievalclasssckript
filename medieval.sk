@@ -238,7 +238,7 @@ on chunk load:
         set {_wcz} to z coordinate of {_ch}
         artifactRuinTrySpawnChunk({_wcx}, {_wcz}, {_w})
 
-# ----- Ключ разлома руин: ПКМ обсидианом портала в Оверворлде → арена в Незере (однократная /fill через консоль) -----
+# ----- Ключ разлома руин: ПКМ обсидианом портала в Оверворлде → арена в Незере (forceload + set block + малые fill для руин) -----
 function ruinGateNetherWorld() :: world:
     loop all worlds:
         if environment of loop-world is nether:
@@ -292,6 +292,49 @@ function ruinGateForceloadArenaChunks():
             execute console command "execute in %{_dk}% run forceload add %{_chx}% %{_chz}%"
             add 1 to {_chz}
         add 1 to {_chx}
+
+# Один слой / небольшой объём через консоль (до ~32k блоков); чанки должны быть forceload.
+function ruinGateNetherConsoleFill(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, blockId: text):
+    set {_dk} to ruinGateNetherDimKey()
+    execute console command "execute in %{_dk}% run fill %{_x1}% %{_y1}% %{_z1}% %{_x2}% %{_y2}% %{_z2}% %{_blockId}% replace air"
+
+function ruinGateBuildNetherArenaRuins(cx: number, cz: number, fy: number):
+    # Крупные «руины» из полноблоков (replace air — не затираем пол и стены)
+    ruinGateNetherConsoleFill({_cx} - 42, {_fy} + 1, {_cz} - 7, {_cx} - 22, {_fy} + 6, {_cz} + 7, "blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 22, {_fy} + 1, {_cz} - 7, {_cx} + 42, {_fy} + 6, {_cz} + 7, "blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 8, {_fy} + 1, {_cz} + 20, {_cx} + 8, {_fy} + 5, {_cz} + 40, "deepslate_bricks")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 8, {_fy} + 1, {_cz} - 40, {_cx} + 8, {_fy} + 5, {_cz} - 20, "deepslate_bricks")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 14, {_fy} + 1, {_cz} - 14, {_cx} + 13, {_fy} + 4, {_cz} + 13, "cracked_polished_blackstone_bricks")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 6, {_fy} + 5, {_cz} - 6, {_cx} + 5, {_fy} + 9, {_cz} + 5, "polished_blackstone_bricks")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 30, {_fy} + 1, {_cz} - 28, {_cx} - 24, {_fy} + 8, {_cz} - 22, "polished_basalt")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 24, {_fy} + 1, {_cz} + 22, {_cx} + 30, {_fy} + 8, {_cz} + 28, "polished_basalt")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 3, {_fy} + 1, {_cz} - 3, {_cx} + 2, {_fy} + 12, {_cz} + 2, "chiseled_polished_blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 18, {_fy} + 7, {_cz} + 2, {_cx} - 16, {_fy} + 10, {_cz} + 4, "soul_lantern")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 16, {_fy} + 7, {_cz} - 4, {_cx} + 18, {_fy} + 10, {_cz} - 2, "soul_lantern")
+
+function ruinGatePlaceArenaArtifactChests(cx: number, cz: number, fy: number, w: world):
+    set {_n} to random integer between 1 and 3
+    set {_lc1} to location at {_cx} - 24, {_fy} + 2, {_cz} + 12 in {_w}
+    set {_lc2} to location at {_cx} + 22, {_fy} + 2, {_cz} - 14 in {_w}
+    set {_lc3} to location at {_cx} - 10, {_fy} + 2, {_cz} - 26 in {_w}
+    set block at {_lc1} to chest
+    artifactRuinFillChestBoss({_lc1}, artifactRuinRandomKind())
+    if {_n} >= 2:
+        set block at {_lc2} to chest
+        artifactRuinFillChestBoss({_lc2}, artifactRuinRandomKind())
+    if {_n} >= 3:
+        set block at {_lc3} to chest
+        artifactRuinFillChestBoss({_lc3}, artifactRuinRandomKind())
 
 function ruinGateFillNetherArena():
     set {_loc} to ruinGateArenaCoords()
@@ -366,6 +409,9 @@ function ruinGateFillNetherArena():
             add 1 to {_z}
         add 1 to {_x}
     wait 1 tick
+    # Слой бедрока под внутренним полом (один fill — в пределах лимита)
+    ruinGateNetherConsoleFill({_ix1}, {_fy} - 1, {_iz1}, {_ix2}, {_fy} - 1, {_iz2}, "bedrock")
+    wait 1 tick
     # Углы — колонны
     set {_y} to {_y1}
     while {_y} <= {_yAirHi}:
@@ -374,6 +420,10 @@ function ruinGateFillNetherArena():
         set block at location at {_ix1}, {_y}, {_iz2} in {_w} to chiseled polished blackstone
         set block at location at {_ix2}, {_y}, {_iz2} in {_w} to chiseled polished blackstone
         add 1 to {_y}
+    wait 1 tick
+    ruinGateBuildNetherArenaRuins({_cx}, {_cz}, {_fy})
+    wait 2 ticks
+    ruinGatePlaceArenaArtifactChests({_cx}, {_cz}, {_fy}, {_w})
     ruinGatePlaceReturnChests({_cx}, {_cz}, {_fy})
     set {evo_ruin_nether_arena_built} to true
 
@@ -490,7 +540,7 @@ on right click on obsidian or crying obsidian:
         remove 1 of player's off hand tool from player
     if {evo_ruin_nether_arena_built} is not true:
         ruinGateForceloadArenaChunks()
-        wait 80 ticks
+        wait 120 ticks
         if {evo_ruin_nether_arena_built} is not true:
             ruinGateFillNetherArena()
     set {_cx} to "{@ruin_gate_nether_center_x}" parsed as number
