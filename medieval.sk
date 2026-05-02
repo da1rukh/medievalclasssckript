@@ -112,7 +112,7 @@ options:
     artifact_ruin_region_chunks: 6
     artifact_ruin_min_spawn_blocks: 400
     artifact_ruin_legendary_chance_percent: 14
-    # Арена в Незере (100×100). При первом входе чанки forceload + пауза 2с, затем /fill. Если пусто — /evoruinresetarena и зайди снова.
+    # Арена в Незере (100×100): forceload + set block из Skript (без консольного fill — часто не срабатывает).
     ruin_gate_nether_center_x: -500000
     ruin_gate_nether_center_z: -500000
     ruin_gate_nether_floor_y: 200
@@ -140,6 +140,10 @@ function isRuinReturnKey(i: item) :: boolean:
     if {_n} is not set:
         return false
     if {_n} contains "возврат":
+        return true
+    if {_n} contains "Возврат":
+        return true
+    if {_n} contains "Ключ":
         return true
     return false
 
@@ -290,8 +294,8 @@ function ruinGateForceloadArenaChunks():
         add 1 to {_chx}
 
 function ruinGateFillNetherArena():
-    set {_dk} to ruinGateNetherDimKey()
     set {_loc} to ruinGateArenaCoords()
+    set {_w} to world of {_loc}
     set {_cx} to floor(x-coordinate of {_loc})
     set {_cz} to floor(z-coordinate of {_loc})
     set {_fy} to floor(y-coordinate of {_loc})
@@ -313,33 +317,63 @@ function ruinGateFillNetherArena():
     set {_ix2} to {_wx2} - 1
     set {_iz1} to {_wz1} + 1
     set {_iz2} to {_wz2} - 1
-    # Пол/потолок/стены — через {@ruin_gate_nether_dimension}; воздух — полосами (97×97 на слой всё ещё может отклоняться на части сборок)
-    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx2}% %{_fy}% %{_wz2}% minecraft:bedrock"
-    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_yTop}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
-    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz1}% minecraft:bedrock"
-    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz2}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
-    execute console command "execute in %{_dk}% run fill %{_wx1}% %{_fy}% %{_wz1}% %{_wx1}% %{_yTop}% %{_wz2}% minecraft:bedrock"
-    execute console command "execute in %{_dk}% run fill %{_wx2}% %{_fy}% %{_wz1}% %{_wx2}% %{_yTop}% %{_wz2}% minecraft:bedrock"
-    set {_yy} to {_y1}
-    while {_yy} <= {_yAirHi}:
-        set {_sx} to {_ix1}
-        while {_sx} <= {_ix2}:
-            set {_sx2} to {_sx} + 23
-            if {_sx2} > {_ix2}:
-                set {_sx2} to {_ix2}
-            execute console command "execute in %{_dk}% run fill %{_sx}% %{_yy}% %{_iz1}% %{_sx2}% %{_yy}% %{_iz2}% minecraft:air"
-            set {_sx} to {_sx2} + 1
-        wait 1 tick
-        add 1 to {_yy}
-    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:barrier"
-    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
-    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
-    execute console command "execute in %{_dk}% run fill %{_ix2}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:barrier"
-    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_fy}% %{_iz1}% %{_ix2}% %{_fy}% %{_iz2}% minecraft:polished_blackstone_bricks"
-    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz1}% %{_ix1}% %{_yAirHi}% %{_iz1}% minecraft:chiseled_polished_blackstone"
-    execute console command "execute in %{_dk}% run fill %{_ix2}% %{_y1}% %{_iz1}% %{_ix2}% %{_yAirHi}% %{_iz1}% minecraft:chiseled_polished_blackstone"
-    execute console command "execute in %{_dk}% run fill %{_ix1}% %{_y1}% %{_iz2}% %{_ix1}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
-    execute console command "execute in %{_dk}% run fill %{_ix2}% %{_y1}% %{_iz2}% %{_ix2}% %{_yAirHi}% %{_iz2}% minecraft:chiseled_polished_blackstone"
+    # Наружный пол и потолок (bedrock) — set block, без консоли
+    set {_x} to {_wx1}
+    while {_x} <= {_wx2}:
+        set {_z} to {_wz1}
+        while {_z} <= {_wz2}:
+            set block at location at {_x}, {_fy}, {_z} in {_w} to bedrock
+            set block at location at {_x}, {_yTop}, {_z} in {_w} to bedrock
+            add 1 to {_z}
+        add 1 to {_x}
+    wait 1 tick
+    # Четыре стены (внешний периметр)
+    set {_y} to {_fy}
+    while {_y} <= {_yTop}:
+        set {_x} to {_wx1}
+        while {_x} <= {_wx2}:
+            set block at location at {_x}, {_y}, {_wz1} in {_w} to bedrock
+            set block at location at {_x}, {_y}, {_wz2} in {_w} to bedrock
+            add 1 to {_x}
+        set {_z} to {_wz1}
+        while {_z} <= {_wz2}:
+            set block at location at {_wx1}, {_y}, {_z} in {_w} to bedrock
+            set block at location at {_wx2}, {_y}, {_z} in {_w} to bedrock
+            add 1 to {_z}
+        add 1 to {_y}
+    wait 1 tick
+    # Воздух внутри не заливаем — над крышей Незера там и так пусто; только barrier по внутреннему периметру
+    set {_y} to {_y1}
+    while {_y} <= {_yAirHi}:
+        set {_x} to {_ix1}
+        while {_x} <= {_ix2}:
+            set block at location at {_x}, {_y}, {_iz1} in {_w} to barrier
+            set block at location at {_x}, {_y}, {_iz2} in {_w} to barrier
+            add 1 to {_x}
+        set {_z} to {_iz1}
+        while {_z} <= {_iz2}:
+            set block at location at {_ix1}, {_y}, {_z} in {_w} to barrier
+            set block at location at {_ix2}, {_y}, {_z} in {_w} to barrier
+            add 1 to {_z}
+        add 1 to {_y}
+    wait 1 tick
+    # Пол внутри — чёрный камень
+    set {_x} to {_ix1}
+    while {_x} <= {_ix2}:
+        set {_z} to {_iz1}
+        while {_z} <= {_iz2}:
+            set block at location at {_x}, {_fy}, {_z} in {_w} to polished blackstone bricks
+            add 1 to {_z}
+        add 1 to {_x}
+    wait 1 tick
+    # Углы — колонны
+    set {_y} to {_y1}
+    while {_y} <= {_yAirHi}:
+        set block at location at {_ix1}, {_y}, {_iz1} in {_w} to chiseled polished blackstone
+        set block at location at {_ix2}, {_y}, {_iz1} in {_w} to chiseled polished blackstone
+        set block at location at {_ix1}, {_y}, {_iz2} in {_w} to chiseled polished blackstone
+        set block at location at {_ix2}, {_y}, {_iz2} in {_w} to chiseled polished blackstone
+        add 1 to {_y}
     ruinGatePlaceReturnChests({_cx}, {_cz}, {_fy})
     set {evo_ruin_nether_arena_built} to true
 
@@ -393,10 +427,18 @@ function isRuinGateKey(i: item) :: boolean:
         if {_n} is set:
             if {_n} contains "Пустот":
                 return true
+            if {_n} contains "пустот":
+                return true
+            if {_n} contains "Ключ":
+                return true
     if {_i} is disc fragment 5:
         set {_n} to name of {_i}
         if {_n} is set:
             if {_n} contains "Пустот":
+                return true
+            if {_n} contains "пустот":
+                return true
+            if {_n} contains "Ключ":
                 return true
     return false
 
@@ -404,7 +446,8 @@ on right click on obsidian or crying obsidian:
     # ----- Выход из зала руин (Незер): Ключ возврата — тратится один раз -----
     if environment of world of player is nether:
         if isRuinReturnKey(player's tool) is false:
-            stop
+            if isRuinReturnKey(player's off hand tool) is false:
+                stop
         if {ghost::%player's uuid%} is true:
             send action bar "&cПризрак не может использовать ключ." to player
             stop
@@ -413,7 +456,10 @@ on right click on obsidian or crying obsidian:
             send "{@prefix} &cНет сохранённой точки возврата — зайди в зал через портал сначала." to player
             stop
         cancel event
-        remove 1 of player's tool from player
+        if isRuinReturnKey(player's tool) is true:
+            remove 1 of player's tool from player
+        else if isRuinReturnKey(player's off hand tool) is true:
+            remove 1 of player's off hand tool from player
         teleport player to {_ret}
         delete {ruin_gate_return::%player's uuid%}
         play sound "block.portal.travel" with volume 0.9 and pitch 1 at player for player
@@ -423,7 +469,8 @@ on right click on obsidian or crying obsidian:
     if environment of world of player is not normal:
         stop
     if isRuinGateKey(player's tool) is false:
-        stop
+        if isRuinGateKey(player's off hand tool) is false:
+            stop
     if {ghost::%player's uuid%} is true:
         send action bar "&cПризрак не может войти в разлом." to player
         stop
@@ -437,6 +484,10 @@ on right click on obsidian or crying obsidian:
         stop
     cancel event
     set {ruin_gate_cd::%player's uuid%} to (unix timestamp of now) + 5
+    if isRuinGateKey(player's tool) is true:
+        remove 1 of player's tool from player
+    else:
+        remove 1 of player's off hand tool from player
     if {evo_ruin_nether_arena_built} is not true:
         ruinGateForceloadArenaChunks()
         wait 80 ticks
