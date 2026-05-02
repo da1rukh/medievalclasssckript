@@ -117,6 +117,11 @@ options:
     artifact_ruin_portal_roll_common_max: 100
     # Мин. расстояние от мирового спавна для замены портала (в блоках по XZ). 0 = без ограничения (ванильные порталы часто у спавна)
     artifact_ruin_portal_min_spawn_blocks: 0
+    # Поиск портала в чанке: шаг по X/Z и по Y (меньше — точнее, но дороже для TPS). Руинированный портал обычно недалеко от «поверхности» чанка
+    artifact_ruin_portal_scan_xz_step: 2
+    artifact_ruin_portal_scan_y_step: 6
+    artifact_ruin_portal_scan_below_surface: 110
+    artifact_ruin_portal_scan_above_surface: 40
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -3388,15 +3393,51 @@ function artifactRuinChunkLooksLikeRuinedPortal(mid: location) :: boolean:
         return false
     return true
 
-# Центр для проверки портала: раньше брали центр чанка на поверхности — подземные ruined portal не попадали в радиус.
+# Центр для проверки портала: быстрый разреженный проход (полный перебор чанка = ~100k getBlock → лаги при массовой подгрузке).
 function artifactRuinFindRuinedPortalMidInChunk(ch: chunk) :: location:
     set {_w} to world of {_ch}
     set {_wcx} to x coordinate of {_ch}
     set {_wcz} to z coordinate of {_ch}
     set {_bx0} to {_wcx} * 16
     set {_bz0} to {_wcz} * 16
-    set {_y} to -62
-    while {_y} <= 315:
+    set {_sxz} to "{@artifact_ruin_portal_scan_xz_step}" parsed as number
+    if {_sxz} is not set:
+        set {_sxz} to 2
+    if {_sxz} < 1:
+        set {_sxz} to 1
+    if {_sxz} > 8:
+        set {_sxz} to 8
+    set {_syStep} to "{@artifact_ruin_portal_scan_y_step}" parsed as number
+    if {_syStep} is not set:
+        set {_syStep} to 6
+    if {_syStep} < 2:
+        set {_syStep} to 2
+    if {_syStep} > 16:
+        set {_syStep} to 16
+    set {_below} to "{@artifact_ruin_portal_scan_below_surface}" parsed as number
+    if {_below} is not set:
+        set {_below} to 110
+    if {_below} < 10:
+        set {_below} to 10
+    set {_above} to "{@artifact_ruin_portal_scan_above_surface}" parsed as number
+    if {_above} is not set:
+        set {_above} to 40
+    if {_above} < 5:
+        set {_above} to 5
+    set {_yMin} to -62
+    set {_yMax} to 315
+    set {_pcx} to {_bx0} + 8
+    set {_pcz} to {_bz0} + 8
+    set {_sur} to artifactRuinSurfaceY({_pcx}, {_pcz}, {_w})
+    if {_sur} > -90:
+        set {_yMin} to {_sur} - {_below}
+        if {_yMin} < -62:
+            set {_yMin} to -62
+        set {_yMax} to {_sur} + {_above}
+        if {_yMax} > 315:
+            set {_yMax} to 315
+    set {_y} to {_yMin}
+    while {_y} <= {_yMax}:
         set {_cx} to 0
         while {_cx} <= 15:
             set {_cz} to 0
@@ -3412,9 +3453,9 @@ function artifactRuinFindRuinedPortalMidInChunk(ch: chunk) :: location:
                     set {_mid} to location at {_bx}, {_y}, {_bz} in {_w}
                     if artifactRuinChunkLooksLikeRuinedPortal({_mid}) is true:
                         return {_mid}
-                add 1 to {_cz}
-            add 1 to {_cx}
-        add 1 to {_y}
+                add {_sxz} to {_cz}
+            add {_sxz} to {_cx}
+        add {_syStep} to {_y}
     return location at 0, -512, 0 in {_w}
 
 function artifactRuinNotifyPortalReplaced(feet: location, kind: text):
