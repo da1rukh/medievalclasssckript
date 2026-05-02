@@ -112,9 +112,9 @@ options:
     artifact_ruin_region_chunks: 6
     artifact_ruin_min_spawn_blocks: 400
     artifact_ruin_legendary_chance_percent: 14
-    # Замена разрушенного портала (Оверворлд) на руину: бросок 1–100 — до L = легендарная, до C = обычная, иначе портал остаётся
+    # Замена разрушенного портала: бросок 1–100 — до L = легендарная, иначе обычная. 100 = при обнаружении портала всегда строим руину
     artifact_ruin_portal_roll_legendary_max: 10
-    artifact_ruin_portal_roll_common_max: 60
+    artifact_ruin_portal_roll_common_max: 100
     # Мин. расстояние от мирового спавна для замены портала (в блоках по XZ). 0 = без ограничения (ванильные порталы часто у спавна)
     artifact_ruin_portal_min_spawn_blocks: 0
 
@@ -3444,8 +3444,7 @@ function artifactRuinTryReplaceRuinedPortalFromChunk(ch: chunk):
     set {_rx} to floor({_wcx} / {_rc})
     set {_rz} to floor({_wcz} / {_rc})
     set {_wn} to "%{_w}%"
-    if {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} is true:
-        stop
+    # Не проверяем evo_ruin_reg здесь: случайная руина (chunk load) могла занять регион — портал в том же квадрате тогда никогда не менялся
     set {_mid} to artifactRuinFindRuinedPortalMidInChunk({_ch})
     if y-coordinate of {_mid} < -100:
         stop
