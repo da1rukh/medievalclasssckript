@@ -683,11 +683,9 @@ function ruinGateSpawnArenaGuards(cx: number, cz: number, fy: number, w: world):
         set name of last spawned entity to "&e&lПламя хранилища"
     set {ruin_gate_script_spawn} to false
 
-# В зоне любой построенной арены в Незере — только мобы из ruinGateSpawnArenaGuards (флаг на время спавна)
-on spawn:
-    if event-entity is not a living entity:
-        stop
-    if world of event-entity is not nether:
+# Только живые существа (общий on spawn даёт не-entity и ломает world of event-entity)
+on spawn of a living entity:
+    if environment of world of event-entity is not nether:
         stop
     if event-entity is a player:
         stop
