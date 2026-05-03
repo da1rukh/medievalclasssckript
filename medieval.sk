@@ -298,6 +298,61 @@ function ruinGateNetherConsoleFill(x1: number, y1: number, z1: number, x2: numbe
     set {_dk} to ruinGateNetherDimKey()
     execute console command "execute in %{_dk}% run fill %{_x1}% %{_y1}% %{_z1}% %{_x2}% %{_y2}% %{_z2}% %{_blockId}% replace air"
 
+# Прямоугольная «комната» только из стен (без потолка): пол игрока fy, стены fy+1 … fy+h
+function ruinGateWallRoomNoCeiling(cx: number, cz: number, fy: number, ox1: number, oz1: number, ox2: number, oz2: number, h: number, mat: text):
+    set {_wxa} to {_cx} + {_ox1}
+    set {_wxb} to {_cx} + {_ox2}
+    set {_wza} to {_cz} + {_oz1}
+    set {_wzb} to {_cz} + {_oz2}
+    set {_wx1} to {_wxa}
+    set {_wx2} to {_wxb}
+    set {_wz1} to {_wza}
+    set {_wz2} to {_wzb}
+    if {_wxa} > {_wxb}:
+        set {_wx1} to {_wxb}
+        set {_wx2} to {_wxa}
+    if {_wza} > {_wzb}:
+        set {_wz1} to {_wzb}
+        set {_wz2} to {_wza}
+    set {_yLo} to {_fy} + 1
+    set {_yHi} to {_fy} + {_h}
+    ruinGateNetherConsoleFill({_wx1}, {_yLo}, {_wz1}, {_wx2}, {_yHi}, {_wz1}, {_mat})
+    wait 1 tick
+    ruinGateNetherConsoleFill({_wx1}, {_yLo}, {_wz2}, {_wx2}, {_yHi}, {_wz2}, {_mat})
+    wait 1 tick
+    if {_wz2} > {_wz1} + 1:
+        ruinGateNetherConsoleFill({_wx1}, {_yLo}, {_wz1} + 1, {_wx1}, {_yHi}, {_wz2} - 1, {_mat})
+        wait 1 tick
+        ruinGateNetherConsoleFill({_wx2}, {_yLo}, {_wz1} + 1, {_wx2}, {_yHi}, {_wz2} - 1, {_mat})
+        wait 1 tick
+
+# Башня: полые стены без крыши + площадка наверху + сундук; лестница — решётки по углу (не задыхаются мобы)
+function ruinGateBuildArenaTower(cx: number, cz: number, fy: number):
+    set {_wx1} to {_cx} + 22
+    set {_wx2} to {_cx} + 28
+    set {_wz1} to {_cz} - 24
+    set {_wz2} to {_cz} - 18
+    set {_yLo} to {_fy} + 1
+    set {_yHi} to {_fy} + 10
+    ruinGateNetherConsoleFill({_wx1}, {_yLo}, {_wz1}, {_wx2}, {_yHi}, {_wz1}, "minecraft:blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_wx1}, {_yLo}, {_wz2}, {_wx2}, {_yHi}, {_wz2}, "minecraft:blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_wx1}, {_yLo}, {_wz1} + 1, {_wx1}, {_yHi}, {_wz2} - 1, "minecraft:blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_wx2}, {_yLo}, {_wz1} + 1, {_wx2}, {_yHi}, {_wz2} - 1, "minecraft:blackstone")
+    wait 1 tick
+    set {_lx} to {_wx1} + 1
+    set {_lz} to {_wz1} + 3
+    set {_y} to {_yLo}
+    while {_y} <= {_yHi} - 1:
+        ruinGateNetherConsoleSetblock({_lx}, {_y}, {_lz}, "minecraft:iron_bars")
+        add 1 to {_y}
+    wait 1 tick
+    ruinGateNetherConsoleFill({_wx1} + 1, {_fy} + 11, {_wz1} + 1, {_wx2} - 1, {_fy} + 11, {_wz2} - 1, "minecraft:polished_blackstone_bricks")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_wx1} + 2, {_fy} + 12, {_wz1} + 2, {_wx2} - 2, {_fy} + 12, {_wz2} - 2, "minecraft:sea_lantern")
+
 function ruinGateNetherConsoleSetblock(x: number, y: number, z: number, blockSpec: text):
     set {_dk} to ruinGateNetherDimKey()
     execute console command "execute in %{_dk}% run setblock %{_x}% %{_y}% %{_z}% %{_blockSpec}% replace"
@@ -348,92 +403,110 @@ function ruinGateArenaExtrasAndLighting(ix1: number, ix2: number, iz1: number, i
     ruinGateArenaPlaceLightGrid({_ix1} + 4, {_ix2} - 4, {_iz1} + 4, {_iz2} - 4, {_fy} + 3, 11)
 
 function ruinGateBuildNetherArenaRuins(cx: number, cz: number, fy: number):
-    # Много мелких кластеров у периметра; центр (~±14 от середины) без массивных блоков — не застревать при входе
+    # Открытые «комнаты» — только стены до высоты h, без потолка (не закапывают мобов)
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, -42, -30, -38, -24, 5, "minecraft:blackstone")
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, -41, 14, -37, 22, 4, "minecraft:deepslate_bricks")
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, 36, -34, 42, -26, 5, "minecraft:cracked_polished_blackstone_bricks")
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, 34, 18, 40, 26, 4, "minecraft:polished_blackstone_bricks")
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, -14, 34, -8, 40, 5, "minecraft:blackstone")
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, 10, 34, 16, 40, 4, "minecraft:deepslate_bricks")
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, -24, -42, -18, -36, 5, "minecraft:polished_blackstone_bricks")
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, 14, -42, 20, -36, 4, "minecraft:cracked_polished_blackstone_bricks")
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, -30, -12, -26, -6, 4, "minecraft:blackstone")
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, 24, 6, 30, 12, 5, "minecraft:deepslate_bricks")
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, -8, -22, -2, -16, 4, "minecraft:gilded_blackstone")
+    ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, 4, -18, 10, -12, 4, "minecraft:blackstone")
+    wait 2 ticks
+    ruinGateBuildArenaTower({_cx}, {_cz}, {_fy})
+    wait 2 ticks
+    # Тонкие перегородки / столбики вместо больших коробок
     set {_b} to {_fy} + 1
-    # Западная сторона
-    ruinGateNetherConsoleFill({_cx} - 44, {_b}, {_cz} - 32, {_cx} - 41, {_b} + 2, {_cz} - 30, "minecraft:blackstone")
-    ruinGateNetherConsoleFill({_cx} - 43, {_b} + 3, {_cz} - 31, {_cx} - 42, {_b} + 5, {_cz} - 31, "minecraft:cracked_polished_blackstone_bricks")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 45, {_b}, {_cz} + 8, {_cx} - 43, {_b} + 1, {_cz} + 10, "minecraft:polished_blackstone_bricks")
-    ruinGateNetherConsoleFill({_cx} - 44, {_b} + 2, {_cz} + 9, {_cx} - 44, {_b} + 4, {_cz} + 9, "minecraft:chiseled_polished_blackstone")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 40, {_b}, {_cz} - 12, {_cx} - 38, {_b} + 2, {_cz} - 10, "minecraft:deepslate_bricks")
-    ruinGateNetherConsoleFill({_cx} - 39, {_b} + 3, {_cz} - 11, {_cx} - 39, {_b} + 5, {_cz} - 11, "minecraft:polished_basalt")
-    wait 1 tick
-    # Восток
-    ruinGateNetherConsoleFill({_cx} + 41, {_b}, {_cz} - 36, {_cx} + 44, {_b} + 2, {_cz} - 34, "minecraft:blackstone")
-    ruinGateNetherConsoleFill({_cx} + 42, {_b} + 3, {_cz} - 35, {_cx} + 43, {_b} + 4, {_cz} - 35, "minecraft:blackstone")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 43, {_b}, {_cz} + 18, {_cx} + 45, {_b} + 2, {_cz} + 20, "minecraft:deepslate_bricks")
-    ruinGateNetherConsoleFill({_cx} + 44, {_b} + 3, {_cz} + 19, {_cx} + 44, {_b} + 5, {_cz} + 19, "minecraft:cracked_deepslate_bricks")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 39, {_b}, {_cz} - 8, {_cx} + 41, {_b} + 1, {_cz} - 6, "minecraft:polished_blackstone_bricks")
-    ruinGateNetherConsoleFill({_cx} + 40, {_b} + 2, {_cz} - 7, {_cx} + 40, {_b} + 3, {_cz} - 7, "minecraft:soul_lantern")
-    wait 1 tick
-    # Север / юг
-    ruinGateNetherConsoleFill({_cx} - 18, {_b}, {_cz} + 42, {_cx} - 16, {_b} + 2, {_cz} + 44, "minecraft:blackstone")
-    ruinGateNetherConsoleFill({_cx} - 17, {_b} + 3, {_cz} + 43, {_cx} - 17, {_b} + 5, {_cz} + 43, "minecraft:polished_basalt")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 12, {_b}, {_cz} + 40, {_cx} + 14, {_b} + 3, {_cz} + 42, "minecraft:cracked_polished_blackstone_bricks")
-    ruinGateNetherConsoleFill({_cx} + 13, {_b} + 4, {_cz} + 41, {_cx} + 13, {_b} + 5, {_cz} + 41, "minecraft:sea_lantern")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 22, {_b}, {_cz} - 44, {_cx} - 20, {_b} + 2, {_cz} - 42, "minecraft:deepslate_bricks")
-    ruinGateNetherConsoleFill({_cx} - 21, {_b} + 3, {_cz} - 43, {_cx} - 21, {_b} + 4, {_cz} - 43, "minecraft:gilded_blackstone")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 20, {_b}, {_cz} - 41, {_cx} + 22, {_b} + 2, {_cz} - 39, "minecraft:blackstone")
-    ruinGateNetherConsoleFill({_cx} + 21, {_b} + 3, {_cz} - 40, {_cx} + 21, {_b} + 5, {_cz} - 40, "minecraft:chiseled_polished_blackstone")
-    wait 1 tick
-    # Углы арены (мелко)
-    ruinGateNetherConsoleFill({_cx} - 46, {_b}, {_cz} - 46, {_cx} - 44, {_b} + 2, {_cz} - 44, "minecraft:polished_blackstone_bricks")
-    ruinGateNetherConsoleFill({_cx} - 45, {_b} + 3, {_cz} - 45, {_cx} - 45, {_b} + 4, {_cz} - 45, "minecraft:soul_lantern")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 44, {_b}, {_cz} - 46, {_cx} + 46, {_b} + 2, {_cz} - 44, "minecraft:blackstone")
-    ruinGateNetherConsoleFill({_cx} + 45, {_b} + 3, {_cz} - 45, {_cx} + 45, {_b} + 4, {_cz} - 45, "minecraft:polished_basalt")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 46, {_b}, {_cz} + 44, {_cx} - 44, {_b} + 2, {_cz} + 46, "minecraft:cracked_polished_blackstone_bricks")
-    ruinGateNetherConsoleFill({_cx} - 45, {_b} + 3, {_cz} + 45, {_cx} - 45, {_b} + 4, {_cz} + 45, "minecraft:sea_lantern")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 44, {_b}, {_cz} + 44, {_cx} + 46, {_b} + 2, {_cz} + 46, "minecraft:deepslate_bricks")
-    ruinGateNetherConsoleFill({_cx} + 45, {_b} + 3, {_cz} + 45, {_cx} + 45, {_b} + 4, {_cz} + 45, "minecraft:gilded_blackstone")
-    wait 1 tick
-    # Среднее кольцо — только обломки 2–4 блока
-    ruinGateNetherConsoleFill({_cx} - 28, {_b}, {_cz} + 24, {_cx} - 26, {_b} + 1, {_cz} + 25, "minecraft:blackstone")
-    ruinGateNetherConsoleFill({_cx} - 27, {_b} + 2, {_cz} + 24, {_cx} - 27, {_b} + 3, {_cz} + 24, "minecraft:iron_bars")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 26, {_b}, {_cz} + 26, {_cx} + 28, {_b} + 2, {_cz} + 27, "minecraft:polished_blackstone_bricks")
-    ruinGateNetherConsoleFill({_cx} + 27, {_b} + 3, {_cz} + 26, {_cx} + 27, {_b} + 4, {_cz} + 26, "minecraft:soul_lantern")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 30, {_b}, {_cz} - 20, {_cx} - 28, {_b} + 1, {_cz} - 18, "minecraft:deepslate_bricks")
-    ruinGateNetherConsoleFill({_cx} - 29, {_b} + 2, {_cz} - 19, {_cx} - 29, {_b} + 3, {_cz} - 19, "minecraft:cracked_polished_blackstone_bricks")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 28, {_b}, {_cz} - 28, {_cx} + 30, {_b} + 2, {_cz} - 26, "minecraft:blackstone")
-    ruinGateNetherConsoleFill({_cx} + 29, {_b} + 3, {_cz} - 27, {_cx} + 29, {_b} + 4, {_cz} - 27, "minecraft:polished_basalt")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 12, {_b}, {_cz} + 32, {_cx} - 10, {_b} + 2, {_cz} + 33, "minecraft:cracked_polished_blackstone_bricks")
-    ruinGateNetherConsoleFill({_cx} - 11, {_b} + 3, {_cz} + 32, {_cx} - 11, {_b} + 4, {_cz} + 32, "minecraft:sea_lantern")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 8, {_b}, {_cz} - 34, {_cx} + 10, {_b} + 1, {_cz} - 32, "minecraft:deepslate_bricks")
-    ruinGateNetherConsoleFill({_cx} + 9, {_b} + 2, {_cz} - 33, {_cx} + 9, {_b} + 3, {_cz} - 33, "minecraft:gilded_blackstone")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 34, {_b}, {_cz} + 6, {_cx} - 32, {_b} + 2, {_cz} + 8, "minecraft:blackstone")
-    ruinGateNetherConsoleFill({_cx} - 33, {_b} + 3, {_cz} + 7, {_cx} - 33, {_b} + 4, {_cz} + 7, "minecraft:chiseled_polished_blackstone")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 32, {_b}, {_cz} + 10, {_cx} + 34, {_b} + 1, {_cz} + 12, "minecraft:polished_blackstone_bricks")
-    ruinGateNetherConsoleFill({_cx} + 33, {_b} + 2, {_cz} + 11, {_cx} + 33, {_b} + 3, {_cz} + 11, "minecraft:soul_lantern")
+    ruinGateNetherConsoleFill({_cx} - 18, {_b}, {_cz} + 8, {_cx} - 18, {_b} + 3, {_cz} + 8, "minecraft:iron_bars")
+    ruinGateNetherConsoleFill({_cx} + 14, {_b}, {_cz} - 10, {_cx} + 14, {_b} + 3, {_cz} - 10, "minecraft:iron_bars")
+    ruinGateNetherConsoleFill({_cx} - 6, {_b}, {_cz} + 18, {_cx} - 6, {_b} + 2, {_cz} + 18, "minecraft:soul_lantern")
+    ruinGateNetherConsoleFill({_cx} + 8, {_b}, {_cz} + 22, {_cx} + 8, {_b} + 2, {_cz} + 22, "minecraft:soul_lantern")
 
-function ruinGatePlaceArenaArtifactChests(cx: number, cz: number, fy: number, w: world):
-    set {_n} to random integer between 1 and 3
-    set {_lc1} to location at {_cx} - 24, {_fy} + 2, {_cz} + 12 in {_w}
-    set {_lc2} to location at {_cx} + 22, {_fy} + 2, {_cz} - 14 in {_w}
-    set {_lc3} to location at {_cx} - 10, {_fy} + 2, {_cz} - 26 in {_w}
-    set block at {_lc1} to chest
-    artifactRuinFillChestBoss({_lc1}, artifactRuinRandomKind())
-    if {_n} >= 2:
-        set block at {_lc2} to chest
-        artifactRuinFillChestBoss({_lc2}, artifactRuinRandomKind())
-    if {_n} >= 3:
-        set block at {_lc3} to chest
-        artifactRuinFillChestBoss({_lc3}, artifactRuinRandomKind())
+function ruinGatePlaceRuinChestMaterials(loc: location):
+    artifactRuinFillChest({_loc}, "modest")
+
+function ruinGateRoomChestLocation(cx: number, cz: number, fy: number, w: world, ox1: number, oz1: number, ox2: number, oz2: number, slot: number) :: location:
+    set {_wxa} to {_cx} + {_ox1}
+    set {_wxb} to {_cx} + {_ox2}
+    set {_wza} to {_cz} + {_oz1}
+    set {_wzb} to {_cz} + {_oz2}
+    set {_x1} to {_wxa}
+    set {_x2} to {_wxb}
+    set {_z1} to {_wza}
+    set {_z2} to {_wzb}
+    if {_wxa} > {_wxb}:
+        set {_x1} to {_wxb}
+        set {_x2} to {_wxa}
+    if {_wza} > {_wzb}:
+        set {_z1} to {_wzb}
+        set {_z2} to {_wza}
+    set {_ix1} to {_x1} + 2
+    set {_ix2} to {_x2} - 2
+    set {_iz1} to {_z1} + 2
+    set {_iz2} to {_z2} - 2
+    if {_ix2} < {_ix1}:
+        set {_ix2} to {_ix1}
+    if {_iz2} < {_iz1}:
+        set {_iz2} to {_iz1}
+    set {_mx} to floor(({_ix1} + {_ix2}) / 2)
+    set {_mz} to floor(({_iz1} + {_iz2}) / 2)
+    set {_y} to {_fy} + 2
+    if {_slot} is 1:
+        return location at {_ix1}, {_y}, {_iz1} in {_w}
+    if {_slot} is 2:
+        return location at {_ix2}, {_y}, {_iz2} in {_w}
+    if {_slot} is 3:
+        return location at {_mx}, {_y}, {_mz} in {_w}
+    if {_slot} is 4:
+        return location at {_ix2}, {_y}, {_iz1} in {_w}
+    return location at {_ix1}, {_y}, {_iz2} in {_w}
+
+# Сундуки внутри комнаты; слоты 1–5 — углы и центр; копит локации для раздачи артефактов
+function ruinGatePlaceChestsInRoom(cx: number, cz: number, fy: number, w: world, ox1: number, oz1: number, ox2: number, oz2: number, n: number):
+    loop 5 times:
+        if loop-number > {_n}:
+            stop loop
+        set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, {_ox1}, {_oz1}, {_ox2}, {_oz2}, loop-number)
+        set block at {_loc} to chest
+        ruinGatePlaceRuinChestMaterials({_loc})
+        add {_loc} to {ruin_gate_arena_loot_chests::*}
+
+function ruinGatePlaceArenaLootChests(fy: number, cx: number, cz: number, w: world):
+    delete {ruin_gate_arena_loot_chests::*}
+    set {_nPer} to random integer between 3 and 5
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -42, -30, -38, -24, {_nPer})
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -41, 14, -37, 22, {_nPer})
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 36, -34, 42, -26, {_nPer})
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 34, 18, 40, 26, {_nPer})
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -14, 34, -8, 40, {_nPer})
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 10, 34, 16, 40, {_nPer})
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -24, -42, -18, -36, {_nPer})
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 14, -42, 20, -36, {_nPer})
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -30, -12, -26, -6, {_nPer})
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 24, 6, 30, 12, {_nPer})
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -8, -22, -2, -16, {_nPer})
+    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 4, -18, 10, -12, {_nPer})
+    # Пол башни на fy+11 — сундук на площадке (не в слое морских фонарей fy+12)
+    set {_tw} to {_fy} + 11
+    set {_towerChest} to location at {_cx} + 25, {_tw}, {_cz} - 21 in {_w}
+    set block at {_towerChest} to chest
+    ruinGatePlaceRuinChestMaterials({_towerChest})
+    add {_towerChest} to {ruin_gate_arena_loot_chests::*}
+    set {_artN} to random integer between 1 and 3
+    loop {_artN} times:
+        set {_ns} to size of {ruin_gate_arena_loot_chests::*}
+        if {_ns} < 1:
+            stop loop
+        set {_ri} to random integer between 1 and {_ns}
+        set {_pick} to {ruin_gate_arena_loot_chests::%{_ri}%}
+        artifactRuinFillChestBoss({_pick}, artifactRuinRandomKind())
+        set {ruin_gate_arena_loot_chests::%{_ri}%} to {ruin_gate_arena_loot_chests::%{_ns}%}
+        delete {ruin_gate_arena_loot_chests::%{_ns}%}
+    delete {ruin_gate_arena_loot_chests::*}
 
 function ruinGateFillNetherArena():
     set {_loc} to ruinGateArenaCoords()
@@ -511,20 +584,11 @@ function ruinGateFillNetherArena():
     # Слой бедрока под внутренним полом (один fill — в пределах лимита)
     ruinGateNetherConsoleFill({_ix1}, {_fy} - 1, {_iz1}, {_ix2}, {_fy} - 1, {_iz2}, "bedrock")
     wait 1 tick
-    # Углы — колонны
-    set {_y} to {_y1}
-    while {_y} <= {_yAirHi}:
-        set block at location at {_ix1}, {_y}, {_iz1} in {_w} to chiseled polished blackstone
-        set block at location at {_ix2}, {_y}, {_iz1} in {_w} to chiseled polished blackstone
-        set block at location at {_ix1}, {_y}, {_iz2} in {_w} to chiseled polished blackstone
-        set block at location at {_ix2}, {_y}, {_iz2} in {_w} to chiseled polished blackstone
-        add 1 to {_y}
-    wait 1 tick
     ruinGateBuildNetherArenaRuins({_cx}, {_cz}, {_fy})
     wait 2 ticks
     ruinGateArenaExtrasAndLighting({_ix1}, {_ix2}, {_iz1}, {_iz2}, {_fy}, {_y1}, {_yAirHi}, {_yTop})
     wait 2 ticks
-    ruinGatePlaceArenaArtifactChests({_cx}, {_cz}, {_fy}, {_w})
+    ruinGatePlaceArenaLootChests({_fy}, {_cx}, {_cz}, {_w})
     ruinGatePlaceReturnChests({_cx}, {_cz}, {_fy})
     set {evo_ruin_nether_arena_built} to true
 
@@ -546,29 +610,29 @@ function ruinGatePlaceReturnChests(cx: number, cz: number, fy: number):
 
 function ruinGateSpawnArenaGuards(cx: number, cz: number, fy: number, w: world):
     loop 6 times:
-        set {_gx} to {_cx} + random integer between -35 and 35
-        set {_gz} to {_cz} + random integer between -35 and 35
-        spawn a vindicator at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set {_gx} to {_cx} + random integer between -38 and 38
+        set {_gz} to {_cz} + random integer between -38 and 38
+        spawn a vindicator at location at {_gx}, {_fy} + 3, {_gz} in {_w}
         set name of last spawned entity to "&4&lСтраж разлома"
     loop 4 times:
-        set {_gx} to {_cx} + random integer between -35 and 35
-        set {_gz} to {_cz} + random integer between -35 and 35
-        spawn a pillager at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set {_gx} to {_cx} + random integer between -38 and 38
+        set {_gz} to {_cz} + random integer between -38 and 38
+        spawn a pillager at location at {_gx}, {_fy} + 3, {_gz} in {_w}
         set name of last spawned entity to "&c&lЛучник руин"
     loop 3 times:
-        set {_gx} to {_cx} + random integer between -35 and 35
-        set {_gz} to {_cz} + random integer between -35 and 35
-        spawn a piglin brute at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set {_gx} to {_cx} + random integer between -38 and 38
+        set {_gz} to {_cz} + random integer between -38 and 38
+        spawn a piglin brute at location at {_gx}, {_fy} + 3, {_gz} in {_w}
         set name of last spawned entity to "&6&lИзувер руин"
     chance of 50%:
-        set {_gx} to {_cx} + random integer between -20 and 20
-        set {_gz} to {_cz} + random integer between -20 and 20
-        spawn an evoker at location at {_gx}, {_fy} + 2, {_gz} in {_w}
+        set {_gx} to {_cx} + random integer between -22 and 22
+        set {_gz} to {_cz} + random integer between -22 and 22
+        spawn an evoker at location at {_gx}, {_fy} + 3, {_gz} in {_w}
         set name of last spawned entity to "&5&lАрхивариус руин"
     loop 2 times:
-        set {_gx} to {_cx} + random integer between -25 and 25
-        set {_gz} to {_cz} + random integer between -25 and 25
-        spawn a blaze at location at {_gx}, {_fy} + 3, {_gz} in {_w}
+        set {_gx} to {_cx} + random integer between -28 and 28
+        set {_gz} to {_cz} + random integer between -28 and 28
+        spawn a blaze at location at {_gx}, {_fy} + 4, {_gz} in {_w}
         set name of last spawned entity to "&e&lПламя хранилища"
 
 function isRuinGateKey(i: item) :: boolean:
