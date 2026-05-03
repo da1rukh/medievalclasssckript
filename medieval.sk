@@ -1396,9 +1396,8 @@ function warriorLegSpatialAirSlash(p: player):
                         if distance between loop-entity and {_hitLoc} <= {_hr}:
                             set {_wh::%{_eid}%} to true
                         damage loop-entity by {_dh} with fake damage cause entity attack
-                        if {_p} is a player:
-                            tagCombat({_p})
                         if loop-entity is a player:
+                            tagCombat({_p})
                             tagCombat(loop-entity)
         if loop-number < 15:
             wait 1 tick
