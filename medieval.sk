@@ -395,6 +395,19 @@ function ruinGateBuildArenaCenterPlaza(cx: number, cz: number, fy: number):
     wait 1 tick
     ruinGateNetherConsoleFill({_cx} - 1, {_fy} + 1, {_cz} - 1, {_cx}, {_fy} + 1, {_cz}, "minecraft:chiseled_polished_blackstone")
 
+# Рядом с точкой входа (cx+8, cz-6): небольшой обсидиановый обелиск
+function ruinGateBuildSpawnObelisk(cx: number, cz: number, fy: number, w: world):
+    set {_bx} to {_cx} + 11
+    set {_bz} to {_cz} - 5
+    set block at location at {_bx}, {_fy} + 1, {_bz} in {_w} to obsidian
+    set block at location at {_bx} + 1, {_fy} + 1, {_bz} in {_w} to obsidian
+    set block at location at {_bx}, {_fy} + 1, {_bz} + 1 in {_w} to obsidian
+    set block at location at {_bx} + 1, {_fy} + 1, {_bz} + 1 in {_w} to obsidian
+    set {_y} to {_fy} + 2
+    loop 4 times:
+        set block at location at {_bx}, {_y}, {_bz} in {_w} to obsidian
+        add 1 to {_y}
+
 function ruinGateNetherConsoleSetblock(x: number, y: number, z: number, blockSpec: text):
     set {_dk} to ruinGateNetherDimKey()
     execute console command "execute in %{_dk}% run setblock %{_x}% %{_y}% %{_z}% %{_blockSpec}% replace"
@@ -636,6 +649,7 @@ function ruinGateFillNetherArena():
     wait 2 ticks
     ruinGatePlaceArenaLootChests({_fy}, {_cx}, {_cz}, {_w})
     ruinGatePlaceReturnChests({_cx}, {_cz}, {_fy})
+    ruinGateBuildSpawnObelisk({_cx}, {_cz}, {_fy}, {_w})
     ruinGateArenaSiteAdd({_cx}, {_cz})
 
 function ruinGatePlaceReturnChests(cx: number, cz: number, fy: number):
