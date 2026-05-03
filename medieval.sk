@@ -112,11 +112,13 @@ options:
     artifact_ruin_region_chunks: 6
     artifact_ruin_min_spawn_blocks: 400
     artifact_ruin_legendary_chance_percent: 14
-    # Арена в Незере (100×100): бедрок снаружи, внутренние стены — чёрный бетон; свет — блоки света + декор.
+    # Базовая точка сетки: каждый вход — новый случайный центр арены (шаг × шаг чанков).
     ruin_gate_nether_center_x: -500000
     ruin_gate_nether_center_z: -500000
     ruin_gate_nether_floor_y: 200
     ruin_gate_nether_wall_height: 14
+    ruin_gate_spawn_grid_step: 128
+    ruin_gate_spawn_grid_radius_steps: 96
     # Ключ измерения для /execute in … (если не строит — попробуй world_nether как у твоего мира)
     ruin_gate_nether_dimension: minecraft:the_nether
 
@@ -248,18 +250,79 @@ function ruinGateNetherWorld() :: world:
         return {_try}
     return world "world"
 
+function ruinGateArenaBaseCx() :: number:
+    set {_v} to "{@ruin_gate_nether_center_x}" parsed as number
+    if {_v} is not set:
+        return -500000
+    return {_v}
+
+function ruinGateArenaBaseCz() :: number:
+    set {_v} to "{@ruin_gate_nether_center_z}" parsed as number
+    if {_v} is not set:
+        return -500000
+    return {_v}
+
+function ruinGateArenaBaseFloorY() :: number:
+    set {_v} to "{@ruin_gate_nether_floor_y}" parsed as number
+    if {_v} is not set:
+        return 200
+    return {_v}
+
+# Новый случайный центр арены (каждый вход — новое место на сетке)
+function ruinGatePickNewArenaSite():
+    set {_bx} to ruinGateArenaBaseCx()
+    set {_bz} to ruinGateArenaBaseCz()
+    set {_step} to "{@ruin_gate_spawn_grid_step}" parsed as number
+    if {_step} is not set:
+        set {_step} to 128
+    if {_step} < 32:
+        set {_step} to 32
+    set {_rad} to "{@ruin_gate_spawn_grid_radius_steps}" parsed as number
+    if {_rad} is not set:
+        set {_rad} to 96
+    if {_rad} < 1:
+        set {_rad} to 1
+    set {_sx} to random integer between (0 - {_rad}) and {_rad}
+    set {_sz} to random integer between (0 - {_rad}) and {_rad}
+    set {ruin_gate_arena_cx} to {_bx} + {_sx} * {_step}
+    set {ruin_gate_arena_cz} to {_bz} + {_sz} * {_step}
+
 function ruinGateArenaCoords() :: location:
-    set {_cx} to "{@ruin_gate_nether_center_x}" parsed as number
-    set {_cz} to "{@ruin_gate_nether_center_z}" parsed as number
-    set {_fy} to "{@ruin_gate_nether_floor_y}" parsed as number
-    if {_cx} is not set:
-        set {_cx} to -500000
-    if {_cz} is not set:
-        set {_cz} to -500000
-    if {_fy} is not set:
-        set {_fy} to 200
+    set {_fy} to ruinGateArenaBaseFloorY()
     set {_nw} to ruinGateNetherWorld()
+    if {ruin_gate_arena_cx} is set:
+        if {ruin_gate_arena_cz} is set:
+            return location at {ruin_gate_arena_cx}, {_fy}, {ruin_gate_arena_cz} in {_nw}
+    set {_cx} to ruinGateArenaBaseCx()
+    set {_cz} to ruinGateArenaBaseCz()
     return location at {_cx}, {_fy}, {_cz} in {_nw}
+
+function ruinGateArenaSiteAdd(cx: number, cz: number):
+    set {_n} to size of {ruin_gate_arena_sites_x::*} + 1
+    set {ruin_gate_arena_sites_x::%{_n}%} to {_cx}
+    set {ruin_gate_arena_sites_z::%{_n}%} to {_cz}
+
+function ruinGateIsNearAnyArenaSite(loc: location) :: boolean:
+    set {_wx} to floor(x-coordinate of {_loc})
+    set {_wz} to floor(z-coordinate of {_loc})
+    set {_i} to 1
+    set {_ns} to size of {ruin_gate_arena_sites_x::*}
+    while {_i} <= {_ns}:
+        set {_ax} to {ruin_gate_arena_sites_x::%{_i}%} parsed as number
+        set {_az} to {ruin_gate_arena_sites_z::%{_i}%} parsed as number
+        if {_ax} is set:
+            if {_az} is set:
+                set {_dx} to {_wx} - {_ax}
+                if {_dx} < 0:
+                    set {_dx} to 0 - {_dx}
+                set {_dz} to {_wz} - {_az}
+                if {_dz} < 0:
+                    set {_dz} to 0 - {_dz}
+                if {_dx} <= 58:
+                    if {_dz} <= 58:
+                        return true
+        add 1 to {_i}
+    return false
 
 # Чанки должны быть загружены — иначе /fill в далёких координатах не ставит блоки
 function ruinGateNetherDimKey() :: text:
@@ -326,32 +389,11 @@ function ruinGateWallRoomNoCeiling(cx: number, cz: number, fy: number, ox1: numb
         ruinGateNetherConsoleFill({_wx2}, {_yLo}, {_wz1} + 1, {_wx2}, {_yHi}, {_wz2} - 1, {_mat})
         wait 1 tick
 
-# Башня: полые стены без крыши + площадка наверху + сундук; лестница — решётки по углу (не задыхаются мобы)
-function ruinGateBuildArenaTower(cx: number, cz: number, fy: number):
-    set {_wx1} to {_cx} + 22
-    set {_wx2} to {_cx} + 28
-    set {_wz1} to {_cz} - 24
-    set {_wz2} to {_cz} - 18
-    set {_yLo} to {_fy} + 1
-    set {_yHi} to {_fy} + 10
-    ruinGateNetherConsoleFill({_wx1}, {_yLo}, {_wz1}, {_wx2}, {_yHi}, {_wz1}, "minecraft:blackstone")
+# Низкая площадка в центре вместо «пирамиды» / башни — один слой декора на полу
+function ruinGateBuildArenaCenterPlaza(cx: number, cz: number, fy: number):
+    ruinGateNetherConsoleFill({_cx} - 3, {_fy} + 1, {_cz} - 3, {_cx} + 2, {_fy} + 1, {_cz} + 2, "minecraft:gilded_blackstone")
     wait 1 tick
-    ruinGateNetherConsoleFill({_wx1}, {_yLo}, {_wz2}, {_wx2}, {_yHi}, {_wz2}, "minecraft:blackstone")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_wx1}, {_yLo}, {_wz1} + 1, {_wx1}, {_yHi}, {_wz2} - 1, "minecraft:blackstone")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_wx2}, {_yLo}, {_wz1} + 1, {_wx2}, {_yHi}, {_wz2} - 1, "minecraft:blackstone")
-    wait 1 tick
-    set {_lx} to {_wx1} + 1
-    set {_lz} to {_wz1} + 3
-    set {_y} to {_yLo}
-    while {_y} <= {_yHi} - 1:
-        ruinGateNetherConsoleSetblock({_lx}, {_y}, {_lz}, "minecraft:iron_bars")
-        add 1 to {_y}
-    wait 1 tick
-    ruinGateNetherConsoleFill({_wx1} + 1, {_fy} + 11, {_wz1} + 1, {_wx2} - 1, {_fy} + 11, {_wz2} - 1, "minecraft:polished_blackstone_bricks")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_wx1} + 2, {_fy} + 12, {_wz1} + 2, {_wx2} - 2, {_fy} + 12, {_wz2} - 2, "minecraft:sea_lantern")
+    ruinGateNetherConsoleFill({_cx} - 1, {_fy} + 1, {_cz} - 1, {_cx}, {_fy} + 1, {_cz}, "minecraft:chiseled_polished_blackstone")
 
 function ruinGateNetherConsoleSetblock(x: number, y: number, z: number, blockSpec: text):
     set {_dk} to ruinGateNetherDimKey()
@@ -386,15 +428,6 @@ function ruinGateArenaExtrasAndLighting(ix1: number, ix2: number, iz1: number, i
     wait 1 tick
     ruinGateNetherConsoleFill({_ix2} - 1, {_mid}, {_iz1} + 3, {_ix2} - 1, {_mid}, {_iz2} - 3, "minecraft:sea_lantern")
     wait 1 tick
-    # Мелкие вставки на полу (не сплошные полосы — центр остаётся читаемым)
-    ruinGateNetherConsoleFill({_ix1} + 10, {_fy} + 1, {_iz1} + 10, {_ix1} + 11, {_fy} + 1, {_iz1} + 11, "minecraft:gilded_blackstone")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_ix2} - 11, {_fy} + 1, {_iz1} + 10, {_ix2} - 10, {_fy} + 1, {_iz1} + 11, "minecraft:gilded_blackstone")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_ix1} + 10, {_fy} + 1, {_iz2} - 11, {_ix1} + 11, {_fy} + 1, {_iz2} - 10, "minecraft:gilded_blackstone")
-    wait 1 tick
-    ruinGateNetherConsoleFill({_ix2} - 11, {_fy} + 1, {_iz2} - 11, {_ix2} - 10, {_fy} + 1, {_iz2} - 10, "minecraft:gilded_blackstone")
-    wait 1 tick
     # Блоки света: потолок под бедроком и средний ярус
     ruinGateArenaPlaceLightGrid({_ix1} + 2, {_ix2} - 2, {_iz1} + 2, {_iz2} - 2, {_yTop} - 1, 7)
     wait 1 tick
@@ -417,9 +450,9 @@ function ruinGateBuildNetherArenaRuins(cx: number, cz: number, fy: number):
     ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, -8, -22, -2, -16, 4, "minecraft:gilded_blackstone")
     ruinGateWallRoomNoCeiling({_cx}, {_cz}, {_fy}, 4, -18, 10, -12, 4, "minecraft:blackstone")
     wait 2 ticks
-    ruinGateBuildArenaTower({_cx}, {_cz}, {_fy})
-    wait 2 ticks
-    # Тонкие перегородки / столбики вместо больших коробок
+    ruinGateBuildArenaCenterPlaza({_cx}, {_cz}, {_fy})
+    wait 1 tick
+    # Тонкие перегородки / столбики
     set {_b} to {_fy} + 1
     ruinGateNetherConsoleFill({_cx} - 18, {_b}, {_cz} + 8, {_cx} - 18, {_b} + 3, {_cz} + 8, "minecraft:iron_bars")
     ruinGateNetherConsoleFill({_cx} + 14, {_b}, {_cz} - 10, {_cx} + 14, {_b} + 3, {_cz} - 10, "minecraft:iron_bars")
@@ -454,7 +487,7 @@ function ruinGateRoomChestLocation(cx: number, cz: number, fy: number, w: world,
         set {_iz2} to {_iz1}
     set {_mx} to floor(({_ix1} + {_ix2}) / 2)
     set {_mz} to floor(({_iz1} + {_iz2}) / 2)
-    set {_y} to {_fy} + 2
+    set {_y} to {_fy} + 1
     if {_slot} is 1:
         return location at {_ix1}, {_y}, {_iz1} in {_w}
     if {_slot} is 2:
@@ -465,48 +498,61 @@ function ruinGateRoomChestLocation(cx: number, cz: number, fy: number, w: world,
         return location at {_ix2}, {_y}, {_iz1} in {_w}
     return location at {_ix1}, {_y}, {_iz2} in {_w}
 
-# Сундуки внутри комнаты; слоты 1–5 — углы и центр; копит локации для раздачи артефактов
-function ruinGatePlaceChestsInRoom(cx: number, cz: number, fy: number, w: world, ox1: number, oz1: number, ox2: number, oz2: number, n: number):
-    loop 5 times:
-        if loop-number > {_n}:
+function ruinGatePlaceArenaLootChests(fy: number, cx: number, cz: number, w: world):
+    delete {ruin_gate_arena_loot_chests::*}
+    delete {ruin_gate_arena_room_used::*}
+    set {_nChest} to random integer between 3 and 5
+    set {_artTotal} to random integer between 1 and 3
+    loop {_nChest} times:
+        set {_pickedRoom} to false
+        loop 80 times:
+            if {_pickedRoom} is true:
+                stop loop
+            set {_ri} to random integer between 1 and 12
+            if {ruin_gate_arena_room_used::%{_ri}%} is not set:
+                set {_pickedRoom} to true
+                set {ruin_gate_arena_room_used::%{_ri}%} to true
+        if {_pickedRoom} is false:
             stop loop
-        set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, {_ox1}, {_oz1}, {_ox2}, {_oz2}, loop-number)
+        set {_rs} to random integer between 1 and 5
+        if {_ri} is 1:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, -42, -30, -38, -24, {_rs})
+        else if {_ri} is 2:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, -41, 14, -37, 22, {_rs})
+        else if {_ri} is 3:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, 36, -34, 42, -26, {_rs})
+        else if {_ri} is 4:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, 34, 18, 40, 26, {_rs})
+        else if {_ri} is 5:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, -14, 34, -8, 40, {_rs})
+        else if {_ri} is 6:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, 10, 34, 16, 40, {_rs})
+        else if {_ri} is 7:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, -24, -42, -18, -36, {_rs})
+        else if {_ri} is 8:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, 14, -42, 20, -36, {_rs})
+        else if {_ri} is 9:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, -30, -12, -26, -6, {_rs})
+        else if {_ri} is 10:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, 24, 6, 30, 12, {_rs})
+        else if {_ri} is 11:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, -8, -22, -2, -16, {_rs})
+        else:
+            set {_loc} to ruinGateRoomChestLocation({_cx}, {_cz}, {_fy}, {_w}, 4, -18, 10, -12, {_rs})
         set block at {_loc} to chest
         ruinGatePlaceRuinChestMaterials({_loc})
         add {_loc} to {ruin_gate_arena_loot_chests::*}
-
-function ruinGatePlaceArenaLootChests(fy: number, cx: number, cz: number, w: world):
-    delete {ruin_gate_arena_loot_chests::*}
-    set {_nPer} to random integer between 3 and 5
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -42, -30, -38, -24, {_nPer})
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -41, 14, -37, 22, {_nPer})
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 36, -34, 42, -26, {_nPer})
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 34, 18, 40, 26, {_nPer})
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -14, 34, -8, 40, {_nPer})
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 10, 34, 16, 40, {_nPer})
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -24, -42, -18, -36, {_nPer})
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 14, -42, 20, -36, {_nPer})
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -30, -12, -26, -6, {_nPer})
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 24, 6, 30, 12, {_nPer})
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, -8, -22, -2, -16, {_nPer})
-    ruinGatePlaceChestsInRoom({_cx}, {_cz}, {_fy}, {_w}, 4, -18, 10, -12, {_nPer})
-    # Пол башни на fy+11 — сундук на площадке (не в слое морских фонарей fy+12)
-    set {_tw} to {_fy} + 11
-    set {_towerChest} to location at {_cx} + 25, {_tw}, {_cz} - 21 in {_w}
-    set block at {_towerChest} to chest
-    ruinGatePlaceRuinChestMaterials({_towerChest})
-    add {_towerChest} to {ruin_gate_arena_loot_chests::*}
-    set {_artN} to random integer between 1 and 3
-    loop {_artN} times:
+    loop {_artTotal} times:
         set {_ns} to size of {ruin_gate_arena_loot_chests::*}
         if {_ns} < 1:
             stop loop
-        set {_ri} to random integer between 1 and {_ns}
-        set {_pick} to {ruin_gate_arena_loot_chests::%{_ri}%}
-        artifactRuinFillChestBoss({_pick}, artifactRuinRandomKind())
-        set {ruin_gate_arena_loot_chests::%{_ri}%} to {ruin_gate_arena_loot_chests::%{_ns}%}
+        set {_rj} to random integer between 1 and {_ns}
+        set {_bossLoc} to {ruin_gate_arena_loot_chests::%{_rj}%}
+        artifactRuinFillChestBoss({_bossLoc}, artifactRuinRandomKind())
+        set {ruin_gate_arena_loot_chests::%{_rj}%} to {ruin_gate_arena_loot_chests::%{_ns}%}
         delete {ruin_gate_arena_loot_chests::%{_ns}%}
     delete {ruin_gate_arena_loot_chests::*}
+    delete {ruin_gate_arena_room_used::*}
 
 function ruinGateFillNetherArena():
     set {_loc} to ruinGateArenaCoords()
@@ -590,11 +636,11 @@ function ruinGateFillNetherArena():
     wait 2 ticks
     ruinGatePlaceArenaLootChests({_fy}, {_cx}, {_cz}, {_w})
     ruinGatePlaceReturnChests({_cx}, {_cz}, {_fy})
-    set {evo_ruin_nether_arena_built} to true
+    ruinGateArenaSiteAdd({_cx}, {_cz})
 
 function ruinGatePlaceReturnChests(cx: number, cz: number, fy: number):
     set {_w} to ruinGateNetherWorld()
-    set {_y} to {_fy} + 2
+    set {_y} to {_fy} + 1
     set {_l1} to location at {_cx} - 28, {_y}, {_cz} - 28 in {_w}
     set {_l2} to location at {_cx} + 28, {_y}, {_cz} - 28 in {_w}
     set {_l3} to location at {_cx} - 28, {_y}, {_cz} + 28 in {_w}
@@ -609,6 +655,7 @@ function ruinGatePlaceReturnChests(cx: number, cz: number, fy: number):
     set slot 13 of inventory of block at {_l4} to ruinGateReturnKeyItem()
 
 function ruinGateSpawnArenaGuards(cx: number, cz: number, fy: number, w: world):
+    set {ruin_gate_script_spawn} to true
     loop 6 times:
         set {_gx} to {_cx} + random integer between -38 and 38
         set {_gz} to {_cz} + random integer between -38 and 38
@@ -634,6 +681,21 @@ function ruinGateSpawnArenaGuards(cx: number, cz: number, fy: number, w: world):
         set {_gz} to {_cz} + random integer between -28 and 28
         spawn a blaze at location at {_gx}, {_fy} + 4, {_gz} in {_w}
         set name of last spawned entity to "&e&lПламя хранилища"
+    set {ruin_gate_script_spawn} to false
+
+# В зоне любой построенной арены в Незере — только мобы из ruinGateSpawnArenaGuards (флаг на время спавна)
+on spawn:
+    if event-entity is not a living entity:
+        stop
+    if world of event-entity is not nether:
+        stop
+    if event-entity is a player:
+        stop
+    if ruinGateIsNearAnyArenaSite(location of event-entity) is false:
+        stop
+    if {ruin_gate_script_spawn} is true:
+        stop
+    cancel event
 
 function isRuinGateKey(i: item) :: boolean:
     set {_ty} to "%type of {_i}%"
@@ -703,25 +765,22 @@ on right click on obsidian or crying obsidian:
         remove 1 of player's tool from player
     else:
         remove 1 of player's off hand tool from player
-    if {evo_ruin_nether_arena_built} is not true:
-        ruinGateForceloadArenaChunks()
-        wait 120 ticks
-        if {evo_ruin_nether_arena_built} is not true:
-            ruinGateFillNetherArena()
-    set {_cx} to "{@ruin_gate_nether_center_x}" parsed as number
-    set {_cz} to "{@ruin_gate_nether_center_z}" parsed as number
-    set {_fy} to "{@ruin_gate_nether_floor_y}" parsed as number
+    ruinGatePickNewArenaSite()
+    ruinGateForceloadArenaChunks()
+    wait 120 ticks
+    ruinGateFillNetherArena()
+    set {_cx} to {ruin_gate_arena_cx}
+    set {_cz} to {ruin_gate_arena_cz}
+    set {_fy} to ruinGateArenaBaseFloorY()
     if {_cx} is not set:
-        set {_cx} to -500000
+        set {_cx} to ruinGateArenaBaseCx()
     if {_cz} is not set:
-        set {_cz} to -500000
-    if {_fy} is not set:
-        set {_fy} to 200
+        set {_cz} to ruinGateArenaBaseCz()
     set {ruin_gate_return::%player's uuid%} to location of player
     play sound "block.portal.trigger" with volume 1 and pitch 0.85 at player for all players
     play sound "item.book.put" with volume 0.8 and pitch 1.2 at player for player
     # Не в геометрический центр — там только воздух между мелкими руинами по краям
-    teleport player to location at {_cx} + 10, {_fy} + 2, {_cz} - 8 in {_nw}
+    teleport player to location at {_cx} + 8, {_fy} + 2, {_cz} - 6 in {_nw}
     ruinGateSpawnArenaGuards({_cx}, {_cz}, {_fy}, {_nw})
     send title "&5&lРАЗЛОМ" with subtitle "&7Незер — зал руин. &8Стражи!" to player for 2 seconds
     send "{@prefix} &7Выход: найди &bКлюч возврата &7в сундуках по углам арены, ПКМ по обсидиану — &cтратится&7." to player
@@ -6534,8 +6593,11 @@ command /evoruinresetarena:
     permission: evo.admin
     permission message: {@prefix} &cУ вас нет прав!
     trigger:
-        delete {evo_ruin_nether_arena_built}
-        send "{@prefix} &eАрена в Незере будет пересобрана при следующем входе по ключу."
+        delete {ruin_gate_arena_cx}
+        delete {ruin_gate_arena_cz}
+        delete {ruin_gate_arena_sites_x::*}
+        delete {ruin_gate_arena_sites_z::*}
+        send "{@prefix} &eСайты арен сброшены; каждый следующий вход создаёт новую руину в новом месте."
 
 command /evo [<offline player>] [<text>] [<text>]:
     permission: evo.admin
@@ -6555,7 +6617,7 @@ command /evo [<offline player>] [<text>] [<text>]:
             send "&e/evo <player> reset"
             send "&e/evoruinspawn &7— тест: руина (тип как при спавне в мире)"
             send "&e/evoruinlegspawn &7— тест: &6легендарная&7 руина под ногами"
-            send "&e/evoruinresetarena &7— сбросить постройку незер-арены (след. вход по ключу)"
+            send "&e/evoruinresetarena &7— сбросить список сайтов арен (новый вход — новое место)"
             send "&e/evoruinexit &7— &cадмин&7: выход из разлома без ключа возврата"
             send "&8&l----------------------------"
             stop
