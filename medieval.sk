@@ -331,12 +331,14 @@ function ruinGateArenaExtrasAndLighting(ix1: number, ix2: number, iz1: number, i
     wait 1 tick
     ruinGateNetherConsoleFill({_ix2} - 1, {_mid}, {_iz1} + 3, {_ix2} - 1, {_mid}, {_iz2} - 3, "minecraft:sea_lantern")
     wait 1 tick
-    # Центральное кольцо декоративных блоков
-    ruinGateNetherConsoleFill({_ix1} + 25, {_fy} + 1, {_iz1} + 25, {_ix2} - 25, {_fy} + 1, {_iz2} - 25, "minecraft:gilded_blackstone")
+    # Мелкие вставки на полу (не сплошные полосы — центр остаётся читаемым)
+    ruinGateNetherConsoleFill({_ix1} + 10, {_fy} + 1, {_iz1} + 10, {_ix1} + 11, {_fy} + 1, {_iz1} + 11, "minecraft:gilded_blackstone")
     wait 1 tick
-    ruinGateNetherConsoleFill({_ix1} + 35, {_fy} + 1, {_iz1}, {_ix2} - 35, {_fy} + 1, {_iz2}, "minecraft:polished_blackstone")
+    ruinGateNetherConsoleFill({_ix2} - 11, {_fy} + 1, {_iz1} + 10, {_ix2} - 10, {_fy} + 1, {_iz1} + 11, "minecraft:gilded_blackstone")
     wait 1 tick
-    ruinGateNetherConsoleFill({_ix1}, {_fy} + 1, {_iz1} + 35, {_ix2}, {_fy} + 1, {_iz2} - 35, "minecraft:polished_blackstone")
+    ruinGateNetherConsoleFill({_ix1} + 10, {_fy} + 1, {_iz2} - 11, {_ix1} + 11, {_fy} + 1, {_iz2} - 10, "minecraft:gilded_blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_ix2} - 11, {_fy} + 1, {_iz2} - 11, {_ix2} - 10, {_fy} + 1, {_iz2} - 10, "minecraft:gilded_blackstone")
     wait 1 tick
     # Блоки света: потолок под бедроком и средний ярус
     ruinGateArenaPlaceLightGrid({_ix1} + 2, {_ix2} - 2, {_iz1} + 2, {_iz2} - 2, {_yTop} - 1, 7)
@@ -346,28 +348,78 @@ function ruinGateArenaExtrasAndLighting(ix1: number, ix2: number, iz1: number, i
     ruinGateArenaPlaceLightGrid({_ix1} + 4, {_ix2} - 4, {_iz1} + 4, {_iz2} - 4, {_fy} + 3, 11)
 
 function ruinGateBuildNetherArenaRuins(cx: number, cz: number, fy: number):
-    # Крупные «руины» из полноблоков (replace air — не затираем пол и стены)
-    ruinGateNetherConsoleFill({_cx} - 42, {_fy} + 1, {_cz} - 7, {_cx} - 22, {_fy} + 6, {_cz} + 7, "blackstone")
+    # Много мелких кластеров у периметра; центр (~±14 от середины) без массивных блоков — не застревать при входе
+    set {_b} to {_fy} + 1
+    # Западная сторона
+    ruinGateNetherConsoleFill({_cx} - 44, {_b}, {_cz} - 32, {_cx} - 41, {_b} + 2, {_cz} - 30, "minecraft:blackstone")
+    ruinGateNetherConsoleFill({_cx} - 43, {_b} + 3, {_cz} - 31, {_cx} - 42, {_b} + 5, {_cz} - 31, "minecraft:cracked_polished_blackstone_bricks")
     wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 22, {_fy} + 1, {_cz} - 7, {_cx} + 42, {_fy} + 6, {_cz} + 7, "blackstone")
+    ruinGateNetherConsoleFill({_cx} - 45, {_b}, {_cz} + 8, {_cx} - 43, {_b} + 1, {_cz} + 10, "minecraft:polished_blackstone_bricks")
+    ruinGateNetherConsoleFill({_cx} - 44, {_b} + 2, {_cz} + 9, {_cx} - 44, {_b} + 4, {_cz} + 9, "minecraft:chiseled_polished_blackstone")
     wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 8, {_fy} + 1, {_cz} + 20, {_cx} + 8, {_fy} + 5, {_cz} + 40, "deepslate_bricks")
+    ruinGateNetherConsoleFill({_cx} - 40, {_b}, {_cz} - 12, {_cx} - 38, {_b} + 2, {_cz} - 10, "minecraft:deepslate_bricks")
+    ruinGateNetherConsoleFill({_cx} - 39, {_b} + 3, {_cz} - 11, {_cx} - 39, {_b} + 5, {_cz} - 11, "minecraft:polished_basalt")
     wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 8, {_fy} + 1, {_cz} - 40, {_cx} + 8, {_fy} + 5, {_cz} - 20, "deepslate_bricks")
+    # Восток
+    ruinGateNetherConsoleFill({_cx} + 41, {_b}, {_cz} - 36, {_cx} + 44, {_b} + 2, {_cz} - 34, "minecraft:blackstone")
+    ruinGateNetherConsoleFill({_cx} + 42, {_b} + 3, {_cz} - 35, {_cx} + 43, {_b} + 4, {_cz} - 35, "minecraft:blackstone")
     wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 14, {_fy} + 1, {_cz} - 14, {_cx} + 13, {_fy} + 4, {_cz} + 13, "cracked_polished_blackstone_bricks")
+    ruinGateNetherConsoleFill({_cx} + 43, {_b}, {_cz} + 18, {_cx} + 45, {_b} + 2, {_cz} + 20, "minecraft:deepslate_bricks")
+    ruinGateNetherConsoleFill({_cx} + 44, {_b} + 3, {_cz} + 19, {_cx} + 44, {_b} + 5, {_cz} + 19, "minecraft:cracked_deepslate_bricks")
     wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 6, {_fy} + 5, {_cz} - 6, {_cx} + 5, {_fy} + 9, {_cz} + 5, "polished_blackstone_bricks")
+    ruinGateNetherConsoleFill({_cx} + 39, {_b}, {_cz} - 8, {_cx} + 41, {_b} + 1, {_cz} - 6, "minecraft:polished_blackstone_bricks")
+    ruinGateNetherConsoleFill({_cx} + 40, {_b} + 2, {_cz} - 7, {_cx} + 40, {_b} + 3, {_cz} - 7, "minecraft:soul_lantern")
     wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 30, {_fy} + 1, {_cz} - 28, {_cx} - 24, {_fy} + 8, {_cz} - 22, "polished_basalt")
+    # Север / юг
+    ruinGateNetherConsoleFill({_cx} - 18, {_b}, {_cz} + 42, {_cx} - 16, {_b} + 2, {_cz} + 44, "minecraft:blackstone")
+    ruinGateNetherConsoleFill({_cx} - 17, {_b} + 3, {_cz} + 43, {_cx} - 17, {_b} + 5, {_cz} + 43, "minecraft:polished_basalt")
     wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 24, {_fy} + 1, {_cz} + 22, {_cx} + 30, {_fy} + 8, {_cz} + 28, "polished_basalt")
+    ruinGateNetherConsoleFill({_cx} + 12, {_b}, {_cz} + 40, {_cx} + 14, {_b} + 3, {_cz} + 42, "minecraft:cracked_polished_blackstone_bricks")
+    ruinGateNetherConsoleFill({_cx} + 13, {_b} + 4, {_cz} + 41, {_cx} + 13, {_b} + 5, {_cz} + 41, "minecraft:sea_lantern")
     wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 3, {_fy} + 1, {_cz} - 3, {_cx} + 2, {_fy} + 12, {_cz} + 2, "chiseled_polished_blackstone")
+    ruinGateNetherConsoleFill({_cx} - 22, {_b}, {_cz} - 44, {_cx} - 20, {_b} + 2, {_cz} - 42, "minecraft:deepslate_bricks")
+    ruinGateNetherConsoleFill({_cx} - 21, {_b} + 3, {_cz} - 43, {_cx} - 21, {_b} + 4, {_cz} - 43, "minecraft:gilded_blackstone")
     wait 1 tick
-    ruinGateNetherConsoleFill({_cx} - 18, {_fy} + 7, {_cz} + 2, {_cx} - 16, {_fy} + 10, {_cz} + 4, "soul_lantern")
+    ruinGateNetherConsoleFill({_cx} + 20, {_b}, {_cz} - 41, {_cx} + 22, {_b} + 2, {_cz} - 39, "minecraft:blackstone")
+    ruinGateNetherConsoleFill({_cx} + 21, {_b} + 3, {_cz} - 40, {_cx} + 21, {_b} + 5, {_cz} - 40, "minecraft:chiseled_polished_blackstone")
     wait 1 tick
-    ruinGateNetherConsoleFill({_cx} + 16, {_fy} + 7, {_cz} - 4, {_cx} + 18, {_fy} + 10, {_cz} - 2, "soul_lantern")
+    # Углы арены (мелко)
+    ruinGateNetherConsoleFill({_cx} - 46, {_b}, {_cz} - 46, {_cx} - 44, {_b} + 2, {_cz} - 44, "minecraft:polished_blackstone_bricks")
+    ruinGateNetherConsoleFill({_cx} - 45, {_b} + 3, {_cz} - 45, {_cx} - 45, {_b} + 4, {_cz} - 45, "minecraft:soul_lantern")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 44, {_b}, {_cz} - 46, {_cx} + 46, {_b} + 2, {_cz} - 44, "minecraft:blackstone")
+    ruinGateNetherConsoleFill({_cx} + 45, {_b} + 3, {_cz} - 45, {_cx} + 45, {_b} + 4, {_cz} - 45, "minecraft:polished_basalt")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 46, {_b}, {_cz} + 44, {_cx} - 44, {_b} + 2, {_cz} + 46, "minecraft:cracked_polished_blackstone_bricks")
+    ruinGateNetherConsoleFill({_cx} - 45, {_b} + 3, {_cz} + 45, {_cx} - 45, {_b} + 4, {_cz} + 45, "minecraft:sea_lantern")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 44, {_b}, {_cz} + 44, {_cx} + 46, {_b} + 2, {_cz} + 46, "minecraft:deepslate_bricks")
+    ruinGateNetherConsoleFill({_cx} + 45, {_b} + 3, {_cz} + 45, {_cx} + 45, {_b} + 4, {_cz} + 45, "minecraft:gilded_blackstone")
+    wait 1 tick
+    # Среднее кольцо — только обломки 2–4 блока
+    ruinGateNetherConsoleFill({_cx} - 28, {_b}, {_cz} + 24, {_cx} - 26, {_b} + 1, {_cz} + 25, "minecraft:blackstone")
+    ruinGateNetherConsoleFill({_cx} - 27, {_b} + 2, {_cz} + 24, {_cx} - 27, {_b} + 3, {_cz} + 24, "minecraft:iron_bars")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 26, {_b}, {_cz} + 26, {_cx} + 28, {_b} + 2, {_cz} + 27, "minecraft:polished_blackstone_bricks")
+    ruinGateNetherConsoleFill({_cx} + 27, {_b} + 3, {_cz} + 26, {_cx} + 27, {_b} + 4, {_cz} + 26, "minecraft:soul_lantern")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 30, {_b}, {_cz} - 20, {_cx} - 28, {_b} + 1, {_cz} - 18, "minecraft:deepslate_bricks")
+    ruinGateNetherConsoleFill({_cx} - 29, {_b} + 2, {_cz} - 19, {_cx} - 29, {_b} + 3, {_cz} - 19, "minecraft:cracked_polished_blackstone_bricks")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 28, {_b}, {_cz} - 28, {_cx} + 30, {_b} + 2, {_cz} - 26, "minecraft:blackstone")
+    ruinGateNetherConsoleFill({_cx} + 29, {_b} + 3, {_cz} - 27, {_cx} + 29, {_b} + 4, {_cz} - 27, "minecraft:polished_basalt")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 12, {_b}, {_cz} + 32, {_cx} - 10, {_b} + 2, {_cz} + 33, "minecraft:cracked_polished_blackstone_bricks")
+    ruinGateNetherConsoleFill({_cx} - 11, {_b} + 3, {_cz} + 32, {_cx} - 11, {_b} + 4, {_cz} + 32, "minecraft:sea_lantern")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 8, {_b}, {_cz} - 34, {_cx} + 10, {_b} + 1, {_cz} - 32, "minecraft:deepslate_bricks")
+    ruinGateNetherConsoleFill({_cx} + 9, {_b} + 2, {_cz} - 33, {_cx} + 9, {_b} + 3, {_cz} - 33, "minecraft:gilded_blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 34, {_b}, {_cz} + 6, {_cx} - 32, {_b} + 2, {_cz} + 8, "minecraft:blackstone")
+    ruinGateNetherConsoleFill({_cx} - 33, {_b} + 3, {_cz} + 7, {_cx} - 33, {_b} + 4, {_cz} + 7, "minecraft:chiseled_polished_blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 32, {_b}, {_cz} + 10, {_cx} + 34, {_b} + 1, {_cz} + 12, "minecraft:polished_blackstone_bricks")
+    ruinGateNetherConsoleFill({_cx} + 33, {_b} + 2, {_cz} + 11, {_cx} + 33, {_b} + 3, {_cz} + 11, "minecraft:soul_lantern")
 
 function ruinGatePlaceArenaArtifactChests(cx: number, cz: number, fy: number, w: world):
     set {_n} to random integer between 1 and 3
@@ -604,7 +656,8 @@ on right click on obsidian or crying obsidian:
     set {ruin_gate_return::%player's uuid%} to location of player
     play sound "block.portal.trigger" with volume 1 and pitch 0.85 at player for all players
     play sound "item.book.put" with volume 0.8 and pitch 1.2 at player for player
-    teleport player to location at {_cx}, {_fy} + 2, {_cz} in {_nw}
+    # Не в геометрический центр — там только воздух между мелкими руинами по краям
+    teleport player to location at {_cx} + 10, {_fy} + 2, {_cz} - 8 in {_nw}
     ruinGateSpawnArenaGuards({_cx}, {_cz}, {_fy}, {_nw})
     send title "&5&lРАЗЛОМ" with subtitle "&7Незер — зал руин. &8Стражи!" to player for 2 seconds
     send "{@prefix} &7Выход: найди &bКлюч возврата &7в сундуках по углам арены, ПКМ по обсидиану — &cтратится&7." to player
