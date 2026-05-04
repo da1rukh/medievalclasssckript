@@ -142,29 +142,45 @@ function altarStructureCoreOk(base: location) :: boolean:
     set {_x} to floor(x-coordinate of {_base})
     set {_y} to floor(y-coordinate of {_base})
     set {_z} to floor(z-coordinate of {_base})
-    set {_bl} to block at location at {_x} - 1, {_y}, {_z} in {_w}
-    set {_bc} to block at location at {_x}, {_y}, {_z} in {_w}
-    set {_br} to block at location at {_x} + 1, {_y}, {_z} in {_w}
-    if {_bl} is not polished blackstone bricks:
-        return false
-    if {_bc} is not polished blackstone bricks:
-        return false
-    if {_br} is not polished blackstone bricks:
-        return false
-    set {_ul} to block at location at {_x} - 1, {_y} + 1, {_z} in {_w}
-    set {_uc} to block at location at {_x}, {_y} + 1, {_z} in {_w}
-    set {_ur} to block at location at {_x} + 1, {_y} + 1, {_z} in {_w}
-    if {_ul} is not blackstone:
-        return false
-    if {_uc} is not hopper:
-        return false
-    if {_ur} is not blackstone:
-        return false
-    set {_top} to block at location at {_x}, {_y} + 2, {_z} in {_w}
-    if {_top} is not crying obsidian:
-        return false
-    if isAwakeningAltarBlock({_uc}) is false:
-        return false
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            set {_b0} to block at location at {_x} + {_dx}, {_y}, {_z} + {_dz} in {_w}
+            if {_b0} is not polished blackstone bricks:
+                return false
+            add 1 to {_dz}
+        add 1 to {_dx}
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            if {_dx} is 0:
+                if {_dz} is 0:
+                    set {_b1} to block at location at {_x}, {_y} + 1, {_z} in {_w}
+                    if {_b1} is not hopper:
+                        return false
+                    if isAwakeningAltarBlock({_b1}) is false:
+                        return false
+                else:
+                    set {_b1} to block at location at {_x} + {_dx}, {_y} + 1, {_z} + {_dz} in {_w}
+                    if {_b1} is not blackstone:
+                        return false
+            else:
+                set {_b1} to block at location at {_x} + {_dx}, {_y} + 1, {_z} + {_dz} in {_w}
+                if {_b1} is not blackstone:
+                    return false
+            add 1 to {_dz}
+        add 1 to {_dx}
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            set {_b2} to block at location at {_x} + {_dx}, {_y} + 2, {_z} + {_dz} in {_w}
+            if {_b2} is not crying obsidian:
+                return false
+            add 1 to {_dz}
+        add 1 to {_dx}
     return true
 
 function isAltarChestRecipeExact(inv: inventory) :: boolean:
@@ -204,15 +220,35 @@ function buildAwakeningAltarFromChest(ch: block):
     set {_y} to floor(y-coordinate of {_ch})
     set {_z} to floor(z-coordinate of {_ch})
     set block at {_ch} to air
-    set block at location at {_x} - 1, {_y}, {_z} in {_w} to polished blackstone bricks
-    set block at location at {_x}, {_y}, {_z} in {_w} to polished blackstone bricks
-    set block at location at {_x} + 1, {_y}, {_z} in {_w} to polished blackstone bricks
-    set block at location at {_x} - 1, {_y} + 1, {_z} in {_w} to blackstone
-    set block at location at {_x}, {_y} + 1, {_z} in {_w} to hopper
-    set block at location at {_x} + 1, {_y} + 1, {_z} in {_w} to blackstone
-    set block at location at {_x}, {_y} + 2, {_z} in {_w} to crying obsidian
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            set block at location at {_x} + {_dx}, {_y}, {_z} + {_dz} in {_w} to polished blackstone bricks
+            add 1 to {_dz}
+        add 1 to {_dx}
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            if {_dx} is 0:
+                if {_dz} is 0:
+                    set block at location at {_x}, {_y} + 1, {_z} in {_w} to hopper
+                else:
+                    set block at location at {_x} + {_dx}, {_y} + 1, {_z} + {_dz} in {_w} to blackstone
+            else:
+                set block at location at {_x} + {_dx}, {_y} + 1, {_z} + {_dz} in {_w} to blackstone
+            add 1 to {_dz}
+        add 1 to {_dx}
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            set block at location at {_x} + {_dx}, {_y} + 2, {_z} + {_dz} in {_w} to crying obsidian
+            add 1 to {_dz}
+        add 1 to {_dx}
     set {_hb} to block at location at {_x}, {_y} + 1, {_z} in {_w}
-    set name of inventory of {_hb} to "&5&lАлтарь Пробуждения"
+    set name of inventory of {_hb} to "&5&lАлтарь"
     set {_core} to location at {_x}, {_y}, {_z} in {_w}
     add {_core} to {awakening_altar_bases::*}
     add location of {_hb} to {awakening_altars::*}
@@ -245,6 +281,8 @@ function isAwakeningAltarBlock(b: block) :: boolean:
     set {_n} to name of inventory of {_b}
     if {_n} is not set:
         return false
+    if {_n} contains "&5&lАлтарь":
+        return true
     if {_n} contains "Алтарь Пробуждения":
         return true
     return false
@@ -261,21 +299,19 @@ function isAwakeningAltarStructurePart(loc: location) :: boolean:
         set {_bx} to floor(x-coordinate of {_base})
         set {_by} to floor(y-coordinate of {_base})
         set {_bz} to floor(z-coordinate of {_base})
-        if {_lz} is {_bz}:
-            if {_ly} is {_by}:
-                if {_lx} >= {_bx} - 1:
-                    if {_lx} <= {_bx} + 1:
-                        return true
-            else if {_ly} is {_by} + 1:
-                if {_lx} is {_bx} - 1:
-                    return true
-                if {_lx} is {_bx}:
-                    return true
-                if {_lx} is {_bx} + 1:
-                    return true
-            else if {_ly} is {_by} + 2:
-                if {_lx} is {_bx}:
-                    return true
+        if {_ly} < {_by}:
+            continue
+        if {_ly} > {_by} + 2:
+            continue
+        if {_lx} < {_bx} - 1:
+            continue
+        if {_lx} > {_bx} + 1:
+            continue
+        if {_lz} < {_bz} - 1:
+            continue
+        if {_lz} > {_bz} + 1:
+            continue
+        return true
     return false
 
 function isAltarVoidKey(i: item) :: boolean:
@@ -330,13 +366,10 @@ function isEtherValuableOre(b: block) :: boolean:
         return true
     return false
 
-on right click on chest or trapped chest:
-    add location of event-block to {awakening_chests::*}
-
 on break:
     if isAwakeningAltarStructurePart(location of event-block) is true:
         cancel event
-        send "{@prefix} &cАлтарь Пробуждения неразрушим." to player
+        send "{@prefix} &cАлтарь неразрушим." to player
         stop
 
 every 2 seconds:
@@ -431,6 +464,7 @@ function ruinPortalChestNearObsidian(loc: location) :: boolean:
     return false
 
 on right click on chest or trapped chest:
+    add location of event-block to {awakening_chests::*}
     if environment of world of player is not normal:
         stop
     set {_loc} to location of event-block
