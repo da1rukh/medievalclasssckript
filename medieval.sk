@@ -214,6 +214,26 @@ function isAltarChestRecipeExact(inv: inventory) :: boolean:
         return false
     return true
 
+function tryBuildAwakeningAltarAtChestBlock(cb: block):
+    if {_cb} is not chest:
+        if {_cb} is not trapped chest:
+            return
+    set {_cinv} to inventory of {_cb}
+    if isAltarChestRecipeExact({_cinv}) is false:
+        return
+    clear {_cinv}
+    buildAwakeningAltarFromChest({_cb})
+
+function tryBuildAwakeningAltarFromInventoryHolder(h: object):
+    if {_h} is not set:
+        return
+    if {_h} is chest:
+        tryBuildAwakeningAltarAtChestBlock({_h})
+        return
+    if {_h} is trapped chest:
+        tryBuildAwakeningAltarAtChestBlock({_h})
+        return
+
 function buildAwakeningAltarFromChest(ch: block):
     set {_w} to world of {_ch}
     set {_x} to floor(x-coordinate of {_ch})
@@ -372,21 +392,58 @@ on break:
         send "{@prefix} &cАлтарь неразрушим." to player
         stop
 
-every 2 seconds:
-    loop {awakening_chests::*}:
-        set {_cloc} to loop-value
-        set {_cb} to block at {_cloc}
-        if {_cb} is not chest:
-            if {_cb} is not trapped chest:
-                remove loop-value from {awakening_chests::*}
-                continue
-        set {_cinv} to inventory of {_cb}
-        if isAltarChestRecipeExact({_cinv}) is false:
-            continue
-        clear {_cinv}
-        buildAwakeningAltarFromChest({_cb})
-        remove loop-value from {awakening_chests::*}
+# Алтарь из сундука: проверка только при изменении инвентаря (без глобального цикла по сундукам).
+on inventory click:
+    set {_do} to false
+    if event-inventory is set:
+        set {_h1} to holder of event-inventory
+        if {_h1} is chest:
+            set {_do} to true
+        else if {_h1} is trapped chest:
+            set {_do} to true
+    if clicked inventory is set:
+        if clicked inventory is not event-inventory:
+            set {_h2} to holder of clicked inventory
+            if {_h2} is chest:
+                set {_do} to true
+            else if {_h2} is trapped chest:
+                set {_do} to true
+    if {_do} is false:
+        stop
+    wait 1 tick
+    if event-inventory is set:
+        tryBuildAwakeningAltarFromInventoryHolder(holder of event-inventory)
+    if clicked inventory is set:
+        if clicked inventory is not event-inventory:
+            tryBuildAwakeningAltarFromInventoryHolder(holder of clicked inventory)
 
+on inventory drag:
+    if event-inventory is player's inventory:
+        stop
+    set {_hd} to holder of event-inventory
+    if {_hd} is not chest:
+        if {_hd} is not trapped chest:
+            stop
+    wait 1 tick
+    tryBuildAwakeningAltarFromInventoryHolder({_hd})
+
+# Воронки и прочие контейнеры → сундук: только если в сундук едет ингредиент рецепта алтаря.
+on inventory item move:
+    set {_dest} to holder of event-inventory
+    if {_dest} is not set:
+        stop
+    if {_dest} is not chest:
+        if {_dest} is not trapped chest:
+            stop
+    if event-item is not disc fragment 5:
+        if event-item is not crying obsidian:
+            if event-item is not obsidian:
+                if event-item is not amethyst shard:
+                    stop
+    wait 1 tick
+    tryBuildAwakeningAltarAtChestBlock({_dest})
+
+every 2 seconds:
     loop {awakening_altars::*}:
         set {_loc} to loop-value
         set {_b} to block at {_loc}
@@ -437,6 +494,7 @@ command /altar:
         send "{@prefix} &7Алтарь создаётся через сундук с точным рецептом:"
         send "{@prefix} &f5x &dКлюч пустоты&7, &f3x crying obsidian&7, &f3x obsidian&7, &f3x amethyst shard."
         send "{@prefix} &7В сундуке не должно быть ничего лишнего."
+        send "{@prefix} &7Рецепт проверяется при каждом изменении содержимого сундука (без постоянного опроса)."
 
 function isRuinReturnKey(i: item) :: boolean:
     if {_i} is not echo shard:
@@ -464,7 +522,6 @@ function ruinPortalChestNearObsidian(loc: location) :: boolean:
     return false
 
 on right click on chest or trapped chest:
-    add location of event-block to {awakening_chests::*}
     if environment of world of player is not normal:
         stop
     set {_loc} to location of event-block
