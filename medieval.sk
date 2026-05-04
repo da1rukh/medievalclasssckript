@@ -655,6 +655,15 @@ function ruinGateFillNetherArena():
             add 1 to {_z}
         add 1 to {_y}
     wait 1 tick
+    # Внутренний потолок — чёрный бетон (снаружи над ним остаётся бедрок)
+    set {_x} to {_ix1}
+    while {_x} <= {_ix2}:
+        set {_z} to {_iz1}
+        while {_z} <= {_iz2}:
+            set block at location at {_x}, {_yAirHi}, {_z} in {_w} to black concrete
+            add 1 to {_z}
+        add 1 to {_x}
+    wait 1 tick
     # Пол внутри — чёрный камень
     set {_x} to {_ix1}
     while {_x} <= {_ix2}:
