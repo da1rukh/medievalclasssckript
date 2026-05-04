@@ -135,6 +135,155 @@ function ruinGateReturnKeyItem() :: item:
     set lore of {_r} to "&7Только в зале руин (Незер)", "&7ПКМ по обсидиану — &fодноразовый выход", "&7в точку входа в Оверворлд"
     return {_r}
 
+# ----- Алтарный крафт -----
+function awakeningAltarItem() :: item:
+    set {_a} to hopper
+    set name of {_a} to "&5&lАлтарь Пробуждения"
+    set lore of {_a} to "&7Установи на &dПлачущий обсидиан", "&7Слоты 1-4: Ключ Пустоты, Ключ возврата,", "&7алмазная кирка, алмазный блок"
+    return {_a}
+
+function altarEtherPickaxe() :: item:
+    set {_p} to diamond pickaxe
+    set name of {_p} to "&dЭфирная Кирка"
+    set lore of {_p} to "&7Алтарный артефакт", "&8ЭФИР_КИРКА", "&7Камень/грязь/гравий -> в пыль + опыт", "&7Ценные руды -> автосбор в инвентарь", "&8Неразрушимая"
+    enchant {_p} with unbreaking 10
+    return {_p}
+
+function isEtherPickaxe(i: item) :: boolean:
+    if {_i} is not diamond pickaxe:
+        return false
+    set {_n} to name of {_i}
+    if {_n} is not set:
+        return false
+    if {_n} contains "Эфирная Кирка":
+        return true
+    return false
+
+function isAwakeningAltarBlock(b: block) :: boolean:
+    if {_b} is not hopper:
+        return false
+    set {_n} to name of inventory of {_b}
+    if {_n} is not set:
+        return false
+    if {_n} contains "Алтарь Пробуждения":
+        return true
+    return false
+
+function isAltarVoidKey(i: item) :: boolean:
+    if {_i} is not disc fragment 5:
+        return false
+    set {_n} to name of {_i}
+    if {_n} is not set:
+        return false
+    if {_n} contains "Ключ Пустоты":
+        return true
+    if {_n} contains "Ключ пустоты":
+        return true
+    return false
+
+function isAltarReturnKey(i: item) :: boolean:
+    if {_i} is not echo shard:
+        return false
+    set {_n} to name of {_i}
+    if {_n} is not set:
+        return false
+    if {_n} contains "Ключ возврата":
+        return true
+    return false
+
+function isEtherTrashBlock(b: block) :: boolean:
+    if {_b} is stone:
+        return true
+    if {_b} is cobblestone:
+        return true
+    if {_b} is dirt:
+        return true
+    if {_b} is gravel:
+        return true
+    return false
+
+function isEtherValuableOre(b: block) :: boolean:
+    if {_b} is diamond ore:
+        return true
+    if {_b} is deepslate diamond ore:
+        return true
+    if {_b} is gold ore:
+        return true
+    if {_b} is deepslate gold ore:
+        return true
+    if {_b} is nether gold ore:
+        return true
+    if {_b} is iron ore:
+        return true
+    if {_b} is deepslate iron ore:
+        return true
+    if {_b} is ancient debris:
+        return true
+    return false
+
+on place of hopper:
+    if name of player's tool is not set:
+        stop
+    if name of player's tool contains "Алтарь Пробуждения":
+        set name of inventory of event-block to "&5&lАлтарь Пробуждения"
+        add location of event-block to {awakening_altars::*}
+
+on break of hopper:
+    remove location of event-block from {awakening_altars::*}
+
+every 2 seconds:
+    loop {awakening_altars::*}:
+        set {_loc} to loop-value
+        set {_b} to block at {_loc}
+        if {_b} is not hopper:
+            remove loop-value from {awakening_altars::*}
+            stop loop
+        if isAwakeningAltarBlock({_b}) is false:
+            stop loop
+        set {_below} to block below {_b}
+        if {_below} is not crying obsidian:
+            stop loop
+        set {_it1} to slot 0 of inventory of {_b}
+        set {_it2} to slot 1 of inventory of {_b}
+        set {_it3} to slot 2 of inventory of {_b}
+        set {_it4} to slot 3 of inventory of {_b}
+        if isAltarVoidKey({_it1}) is false:
+            stop loop
+        if isAltarReturnKey({_it2}) is false:
+            stop loop
+        if {_it3} is not diamond pickaxe:
+            stop loop
+        if {_it4} is not diamond block:
+            stop loop
+        set {_extra} to false
+        loop 5 times:
+            set {_si} to loop-number + 3
+            if slot {_si} of inventory of {_b} is not air:
+                set {_extra} to true
+        if {_extra} is true:
+            stop loop
+        set slot 0 of inventory of {_b} to air
+        set slot 1 of inventory of {_b} to air
+        set slot 2 of inventory of {_b} to air
+        set slot 3 of inventory of {_b} to air
+        set {_out} to location of {_b}
+        add 1 to y-coordinate of {_out}
+        strike lightning effect at {_out}
+        execute console command "execute positioned %x-coordinate of {_out}% %y-coordinate of {_out}% %z-coordinate of {_out}% run particle minecraft:witch ~ ~ ~ 0.35 0.35 0.35 0.01 30 force"
+        execute console command "execute positioned %x-coordinate of {_out}% %y-coordinate of {_out}% %z-coordinate of {_out}% run particle minecraft:portal ~ ~0.4 ~ 0.45 0.35 0.45 0.01 40 force"
+        drop altarEtherPickaxe() at {_out}
+        play sound "block.enchantment_table.use" with volume 1 and pitch 0.8 at {_out} for all players
+
+command /altar [<text>]:
+    permission: evo.admin
+    permission message: {@prefix} &cУ вас нет прав!
+    trigger:
+        if arg-1 is "give":
+            give awakeningAltarItem() to player
+            send "{@prefix} &aВыдан предмет: &5Алтарь Пробуждения&a."
+            stop
+        send "{@prefix} &7Использование: &e/altar give"
+
 function isRuinReturnKey(i: item) :: boolean:
     if {_i} is not echo shard:
         return false
@@ -228,6 +377,60 @@ every 2 seconds:
     loop all players:
         syncProgress(loop-player)
 
+# Алтарный крафт: проверка активных алтарей раз в 2 секунды
+every 2 seconds:
+    loop {awakening_altars::*}:
+        set {_parts::*} to loop-value split at ":"
+        if size of {_parts::*} < 4:
+            delete {awakening_altars::%loop-index%}
+            continue
+        set {_wName} to {_parts::1}
+        set {_x} to {_parts::2} parsed as number
+        set {_y} to {_parts::3} parsed as number
+        set {_z} to {_parts::4} parsed as number
+        if {_x} is not set:
+            delete {awakening_altars::%loop-index%}
+            continue
+        if {_y} is not set:
+            delete {awakening_altars::%loop-index%}
+            continue
+        if {_z} is not set:
+            delete {awakening_altars::%loop-index%}
+            continue
+        set {_w} to world {_wName}
+        if {_w} is not set:
+            delete {awakening_altars::%loop-index%}
+            continue
+        set {_loc} to location at {_x}, {_y}, {_z} in {_w}
+        set {_b} to block at {_loc}
+        if isAwakeningAltarBlock({_b}) is false:
+            delete {awakening_altars::%loop-index%}
+            continue
+        if block below {_b} is not crying obsidian:
+            continue
+        set {_inv} to inventory of {_b}
+        set {_i1} to slot 0 of {_inv}
+        set {_i2} to slot 1 of {_inv}
+        set {_i3} to slot 2 of {_inv}
+        set {_i4} to slot 3 of {_inv}
+        if isAltarVoidKey({_i1}) is false:
+            continue
+        if isAltarReturnKey({_i2}) is false:
+            continue
+        if {_i3} is not diamond pickaxe:
+            continue
+        if {_i4} is not diamond block:
+            continue
+        delete slot 0 of {_inv}
+        delete slot 1 of {_inv}
+        delete slot 2 of {_inv}
+        delete slot 3 of {_inv}
+        strike lightning effect at location at {_x}, {_y} + 1, {_z} in {_w}
+        execute console command "execute in %name of {_w}% run particle minecraft:witch %({_x} + 0.5)% %({_y} + 1.2)% %({_z} + 0.5)% 0.3 0.5 0.3 0.02 30 force"
+        execute console command "execute in %name of {_w}% run particle minecraft:portal %({_x} + 0.5)% %({_y} + 1.2)% %({_z} + 0.5)% 0.35 0.6 0.35 0.15 45 force"
+        drop altarEtherPickaxe() at location at {_x} + 0.5, {_y} + 1.2, {_z} + 0.5 in {_w}
+        play sound "block.enchantment_table.use" with volume 1 and pitch 0.9 at location at {_x}, {_y}, {_z} in {_w} for all players
+
 # Руины: on chunk load — случайная руина в Оверворлде (шанс 1/denominator).
 on chunk load:
     set {_ch} to event-chunk
@@ -239,6 +442,61 @@ on chunk load:
         set {_wcx} to x coordinate of {_ch}
         set {_wcz} to z coordinate of {_ch}
         artifactRuinTrySpawnChunk({_wcx}, {_wcz}, {_w})
+
+# Алтарный крафт: каждые 2 секунды проверяем только отмеченные воронки
+every 2 seconds:
+    loop {altar_awaken_loc::*}:
+        set {_k} to loop-value
+        set {_parts::*} to {_k} split at ":"
+        if size of {_parts::*} < 4:
+            delete {altar_awaken_loc::%loop-index%}
+            stop loop
+        set {_wName} to {_parts::1}
+        set {_x} to {_parts::2} parsed as number
+        set {_y} to {_parts::3} parsed as number
+        set {_z} to {_parts::4} parsed as number
+        if {_x} is not set:
+            delete {altar_awaken_loc::%loop-index%}
+            stop loop
+        if {_y} is not set:
+            delete {altar_awaken_loc::%loop-index%}
+            stop loop
+        if {_z} is not set:
+            delete {altar_awaken_loc::%loop-index%}
+            stop loop
+        set {_w} to world {_wName}
+        if {_w} is not set:
+            delete {altar_awaken_loc::%loop-index%}
+            stop loop
+        set {_loc} to location at {_x}, {_y}, {_z} in {_w}
+        set {_b} to block at {_loc}
+        if {_b} is not hopper:
+            delete {altar_awaken_loc::%loop-index%}
+            stop loop
+        if isAwakeningAltarBlock({_b}) is false:
+            delete {altar_awaken_loc::%loop-index%}
+            stop loop
+        if block below {_b} is not crying obsidian:
+            # На другом основании это обычная воронка, не крафтим
+            delete {altar_awaken_loc::%loop-index%}
+            stop loop
+        set {_it1} to slot 0 of inventory of {_b}
+        set {_it2} to slot 1 of inventory of {_b}
+        set {_it3} to slot 2 of inventory of {_b}
+        set {_it4} to slot 3 of inventory of {_b}
+        if isAltarVoidKey({_it1}) is true:
+            if isAltarReturnKey({_it2}) is true:
+                if {_it3} is diamond pickaxe:
+                    if {_it4} is diamond block:
+                        clear slot 0 of inventory of {_b}
+                        clear slot 1 of inventory of {_b}
+                        clear slot 2 of inventory of {_b}
+                        clear slot 3 of inventory of {_b}
+                        set {_fx} to location at {_x} + 0.5, {_y} + 1.0, {_z} + 0.5 in {_w}
+                        strike lightning effect at {_fx}
+                        execute console command "execute in %{ruinGateNetherDimKey()}% run particle minecraft:witch %x-coordinate of {_fx}% %y-coordinate of {_fx}% %z-coordinate of {_fx}% 0.35 0.35 0.35 0.04 22 force"
+                        execute console command "execute in %{ruinGateNetherDimKey()}% run particle minecraft:portal %x-coordinate of {_fx}% %y-coordinate of {_fx}% %z-coordinate of {_fx}% 0.45 0.45 0.45 0.08 30 force"
+                        drop altarEtherPickaxe() at {_fx}
 
 # ----- Ключ разлома руин: ПКМ обсидианом портала в Оверворлде → арена в Незере (forceload + set block + малые fill для руин) -----
 function ruinGateNetherWorld() :: world:
@@ -5089,6 +5347,17 @@ on break:
         if isNetherite(player's tool) is true:
             cancel event
             send action bar "&4&l✕ &cВы не умеете копать этим (нужен 20 лвл)!" to player
+    if isEtherPickaxe(player's tool) is true:
+        if event-block is stone or cobblestone or dirt or gravel:
+            cancel event
+            set block at event-block to air
+            execute console command "execute positioned %x-coordinate of location of event-block% %y-coordinate of location of event-block% %z-coordinate of location of event-block% run summon experience_orb ~ ~ ~ {Value:2}"
+            stop
+        if event-block is diamond ore or deepslate diamond ore or iron ore or deepslate iron ore or gold ore or deepslate gold ore or nether gold ore or ancient debris:
+            cancel event
+            give drops of event-block to player
+            set block at event-block to air
+            stop
 
 # 3. Запрет любого взаимодействия (ПКМ/ЛКМ по воздуху, блокам, сундукам и т.д.)
 on right click:
