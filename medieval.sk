@@ -6868,7 +6868,7 @@ on inventory click:
                 set {art_enabled::%{_u}%::%{_k}%} to false
                 send "{@prefix} &cЛегендарный эффект выключен."
             else:
-                if activeLegendaryCount(player) >= 1:
+                if activeLegendaryArtifactsCount(player) >= 1:
                     send "{@prefix} &cМожно носить только 1 легендарный артефакт одновременно."
                     play sound "entity.villager.no" with volume 0.8 and pitch 1 at player for player
                     stop
