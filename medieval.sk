@@ -4245,6 +4245,22 @@ function classLegendaryKey(p: player) :: text:
         return "leg_necro"
     return ""
 
+function activeNormalArtifactsCount(p: player) :: number:
+    set {_u} to uuid of {_p}
+    set {_n} to 0
+    loop "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin" and "cloudjump":
+        if {art_enabled::%{_u}%::%loop-value%} is true:
+            add 1 to {_n}
+    return {_n}
+
+function activeLegendaryArtifactsCount(p: player) :: number:
+    set {_u} to uuid of {_p}
+    set {_n} to 0
+    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage" and "leg_necro":
+        if {art_enabled::%{_u}%::%loop-value%} is true:
+            add 1 to {_n}
+    return {_n}
+
 function hasBalloonArtifact(p: player) :: boolean:
     if hasArtifact({_p}, "cloudjump") is true:
         return true
@@ -6769,6 +6785,11 @@ on inventory click:
                     loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage" and "leg_necro":
                         if loop-value is not {_key}:
                             set {art_enabled::%{_u}%::%loop-value%} to false
+                else:
+                    if activeNormalArtifactsCount(player) >= 5:
+                        send "{@prefix} &cМожно активировать максимум &f5 обычных артефактов&c."
+                        play sound "entity.villager.no" with volume 0.8 and pitch 1 at player for player
+                        stop
                 set {art_enabled::%{_u}%::%{_key}%} to true
             set {_enabled_after} to {art_enabled::%{_u}%::%{_key}%} ? false
             if {_key} is "cloudjump":
@@ -6847,6 +6868,10 @@ on inventory click:
                 set {art_enabled::%{_u}%::%{_k}%} to false
                 send "{@prefix} &cЛегендарный эффект выключен."
             else:
+                if activeLegendaryCount(player) >= 1:
+                    send "{@prefix} &cМожно носить только 1 легендарный артефакт одновременно."
+                    play sound "entity.villager.no" with volume 0.8 and pitch 1 at player for player
+                    stop
                 loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage" and "leg_necro":
                     if loop-value is not {_k}:
                         set {art_enabled::%{_u}%::%loop-value%} to false
