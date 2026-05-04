@@ -215,24 +215,22 @@ function isAltarChestRecipeExact(inv: inventory) :: boolean:
     return true
 
 function tryBuildAwakeningAltarAtChestBlock(cb: block):
-    if {_cb} is not chest:
-        if {_cb} is not trapped chest:
-            return
-    set {_cinv} to inventory of {_cb}
-    if isAltarChestRecipeExact({_cinv}) is false:
-        return
-    clear {_cinv}
-    buildAwakeningAltarFromChest({_cb})
+    set {_chestOk} to false
+    if {_cb} is chest:
+        set {_chestOk} to true
+    else if {_cb} is trapped chest:
+        set {_chestOk} to true
+    if {_chestOk} is true:
+        set {_cinv} to inventory of {_cb}
+        if isAltarChestRecipeExact({_cinv}) is true:
+            clear {_cinv}
+            buildAwakeningAltarFromChest({_cb})
 
 function tryBuildAwakeningAltarFromInventoryHolder(h: object):
-    if {_h} is not set:
-        return
     if {_h} is chest:
         tryBuildAwakeningAltarAtChestBlock({_h})
-        return
-    if {_h} is trapped chest:
+    else if {_h} is trapped chest:
         tryBuildAwakeningAltarAtChestBlock({_h})
-        return
 
 function buildAwakeningAltarFromChest(ch: block):
     set {_w} to world of {_ch}
