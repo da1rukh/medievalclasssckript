@@ -716,18 +716,23 @@ function ruinGateSpawnArenaGuards(cx: number, cz: number, fy: number, w: world):
     loop 3 times:
         set {_gx} to {_cx} + random integer between -38 and 38
         set {_gz} to {_cz} + random integer between -38 and 38
-        spawn a piglin brute at location at {_gx}, {_fy} + 3, {_gz} in {_w}
+        spawn a ravager at location at {_gx}, {_fy} + 3, {_gz} in {_w}
         set name of last spawned entity to "&6&lИзувер руин"
+    loop 2 times:
+        set {_gx} to {_cx} + random integer between -30 and 30
+        set {_gz} to {_cz} + random integer between -30 and 30
+        spawn a witch at location at {_gx}, {_fy} + 3, {_gz} in {_w}
+        set name of last spawned entity to "&d&lВедьма руин"
     chance of 50%:
         set {_gx} to {_cx} + random integer between -22 and 22
         set {_gz} to {_cz} + random integer between -22 and 22
         spawn an evoker at location at {_gx}, {_fy} + 3, {_gz} in {_w}
         set name of last spawned entity to "&5&lАрхивариус руин"
-    loop 2 times:
-        set {_gx} to {_cx} + random integer between -28 and 28
-        set {_gz} to {_cz} + random integer between -28 and 28
-        spawn a blaze at location at {_gx}, {_fy} + 4, {_gz} in {_w}
-        set name of last spawned entity to "&e&lПламя хранилища"
+    chance of 70%:
+        set {_gx} to {_cx} + random integer between -20 and 20
+        set {_gz} to {_cz} + random integer between -20 and 20
+        spawn an evoker at location at {_gx}, {_fy} + 3, {_gz} in {_w}
+        set name of last spawned entity to "&5&lВерховный архивариус"
     set {ruin_gate_script_spawn} to false
 
 # Только живые существа (общий on spawn даёт не-entity и ломает world of event-entity)
