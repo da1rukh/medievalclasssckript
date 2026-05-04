@@ -4258,7 +4258,7 @@ every 2 ticks:
                             else:
                                 set {art_ice_prev::%{_k}%} to "air"
                             set {art_ice_active::%{_k}%} to true
-                            execute console command "execute as %loop-player% at %loop-player% run setblock ~ ~-1 ~ packed_ice replace"
+                            set block at {_loc} to packed ice
                             set {_k2} to {_k}
                             set {_world2} to {_world}
                             set {_x2} to {_x}
@@ -4281,10 +4281,13 @@ every 2 ticks:
                                 if {_occupied} is true:
                                     wait 15 ticks
                                 set {_old} to {art_ice_prev::%{_k2}%}
-                                if {_old} is set:
-                                    execute console command "execute as %{_owner}% at %{_owner}% run setblock %{_x2}% %{_y2}% %{_z2}% %{_old}% replace"
+                                set {_backLoc} to location at {_x2}, {_y2}, {_z2} in world {_world2}
+                                if {_old} is "water":
+                                    set block at {_backLoc} to water
+                                else if {_old} is "lava":
+                                    set block at {_backLoc} to lava
                                 else:
-                                    execute console command "execute as %{_owner}% at %{_owner}% run setblock %{_x2}% %{_y2}% %{_z2}% air replace"
+                                    set block at {_backLoc} to air
                                 delete {art_ice_prev::%{_k2}%}
                                 delete {art_ice_active::%{_k2}%}
 
