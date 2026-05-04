@@ -471,6 +471,30 @@ function ruinGateBuildNetherArenaRuins(cx: number, cz: number, fy: number):
     ruinGateNetherConsoleFill({_cx} + 14, {_b}, {_cz} - 10, {_cx} + 14, {_b} + 3, {_cz} - 10, "minecraft:iron_bars")
     ruinGateNetherConsoleFill({_cx} - 6, {_b}, {_cz} + 18, {_cx} - 6, {_b} + 2, {_cz} + 18, "minecraft:soul_lantern")
     ruinGateNetherConsoleFill({_cx} + 8, {_b}, {_cz} + 22, {_cx} + 8, {_b} + 2, {_cz} + 22, "minecraft:soul_lantern")
+    # Больше «мусора» и обломков в руине
+    ruinGateNetherConsoleFill({_cx} - 34, {_fy} + 1, {_cz} + 2, {_cx} - 30, {_fy} + 1, {_cz} + 4, "minecraft:cracked_polished_blackstone_bricks")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 26, {_fy} + 1, {_cz} - 24, {_cx} + 30, {_fy} + 1, {_cz} - 22, "minecraft:deepslate_tiles")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 12, {_fy} + 1, {_cz} + 26, {_cx} - 8, {_fy} + 2, {_cz} + 27, "minecraft:blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 6, {_fy} + 1, {_cz} + 30, {_cx} + 10, {_fy} + 2, {_cz} + 31, "minecraft:polished_blackstone_bricks")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 22, {_fy} + 1, {_cz} - 30, {_cx} - 19, {_fy} + 3, {_cz} - 29, "minecraft:cracked_deepslate_bricks")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 18, {_fy} + 1, {_cz} + 14, {_cx} + 21, {_fy} + 3, {_cz} + 15, "minecraft:chiseled_polished_blackstone")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 28, {_fy} + 1, {_cz} + 18, {_cx} - 27, {_fy} + 2, {_cz} + 21, "minecraft:bone_block")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 12, {_fy} + 1, {_cz} - 32, {_cx} + 13, {_fy} + 2, {_cz} - 29, "minecraft:bone_block")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 40, {_fy} + 1, {_cz} + 10, {_cx} - 39, {_fy} + 3, {_cz} + 12, "minecraft:iron_bars")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 36, {_fy} + 1, {_cz} - 12, {_cx} + 37, {_fy} + 3, {_cz} - 10, "minecraft:iron_bars")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} - 16, {_fy} + 1, {_cz} + 6, {_cx} - 13, {_fy} + 1, {_cz} + 8, "minecraft:magma_block")
+    wait 1 tick
+    ruinGateNetherConsoleFill({_cx} + 14, {_fy} + 1, {_cz} - 6, {_cx} + 17, {_fy} + 1, {_cz} - 4, "minecraft:magma_block")
 
 function ruinGatePlaceRuinChestMaterials(loc: location):
     artifactRuinFillChest({_loc}, "modest")
@@ -792,7 +816,20 @@ on right click on obsidian or crying obsidian:
     play sound "block.portal.trigger" with volume 1 and pitch 0.85 at player for all players
     play sound "item.book.put" with volume 0.8 and pitch 1.2 at player for player
     # Не в геометрический центр — там только воздух между мелкими руинами по краям
-    teleport player to location at {_cx} + 8, {_fy} + 2, {_cz} - 6 in {_nw}
+    set {_spawnMain} to location at {_cx} + 8, {_fy} + 2, {_cz} - 6 in {_nw}
+    teleport player to {_spawnMain}
+    # Если дуо рядом в Оверворлде — переносим вместе в ту же руину
+    if inDuo(player) is true:
+        set {_duoId} to {duo::%player's uuid%}
+        if {_duoId} is set:
+            set {_duoP} to player from {_duoId}
+            if {_duoP} is online:
+                if world of {_duoP} is world of player:
+                    if distance between {_duoP} and player <= 16:
+                        if {ghost::%uuid of {_duoP}%} is not true:
+                            set {ruin_gate_return::%uuid of {_duoP}%} to location of {_duoP}
+                            teleport {_duoP} to location at {_cx} + 10, {_fy} + 2, {_cz} - 6 in {_nw}
+                            send "{@prefix} &dТы вошёл в разлом вместе с дуо: &f%player%&d." to {_duoP}
     ruinGateSpawnArenaGuards({_cx}, {_cz}, {_fy}, {_nw})
     send title "&5&lРАЗЛОМ" with subtitle "&7Незер — зал руин. &8Стражи!" to player for 2 seconds
     send "{@prefix} &7Выход: найди &bКлюч возврата &7в сундуках по углам арены, ПКМ по обсидиану — &cтратится&7." to player
