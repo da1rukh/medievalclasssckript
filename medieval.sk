@@ -4433,7 +4433,8 @@ function artifactGuiNormalTotalPages() :: number:
     set {_keys::*} to artifactGuiNormalKeysOrdered()
     set {_sz} to size of {_keys::*}
     set {_p} to floor({_sz} / 5)
-    if {_sz} mod 5 > 0:
+    set {_full} to {_p} * 5
+    if {_sz} > {_full}:
         add 1 to {_p}
     if {_p} < 1:
         set {_p} to 1
