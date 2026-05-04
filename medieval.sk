@@ -136,6 +136,30 @@ function ruinGateReturnKeyItem() :: item:
     return {_r}
 
 # ----- Алтарный крафт -----
+# Центр граней куба 3×3×3 — воздух (доступ к воронке с боков); центр (0,1,0) — воронка.
+
+function isAltarCubeFaceHoleRel(dx: number, dy: number, dz: number) :: boolean:
+    if {_dy} is 0:
+        if {_dx} is 0:
+            if {_dz} is 0:
+                return true
+    else if {_dy} is 2:
+        if {_dx} is 0:
+            if {_dz} is 0:
+                return true
+    else if {_dy} is 1:
+        if {_dx} is -1:
+            if {_dz} is 0:
+                return true
+        if {_dx} is 1:
+            if {_dz} is 0:
+                return true
+        if {_dx} is 0:
+            if {_dz} is -1:
+                return true
+            if {_dz} is 1:
+                return true
+    return false
 
 function altarStructureCoreOk(base: location) :: boolean:
     set {_w} to world of {_base}
@@ -147,7 +171,10 @@ function altarStructureCoreOk(base: location) :: boolean:
         set {_dz} to -1
         while {_dz} <= 1:
             set {_b0} to block at location at {_x} + {_dx}, {_y}, {_z} + {_dz} in {_w}
-            if {_b0} is not polished blackstone bricks:
+            if isAltarCubeFaceHoleRel({_dx}, 0, {_dz}) is true:
+                if {_b0} is not air:
+                    return false
+            else if {_b0} is not polished blackstone bricks:
                 return false
             add 1 to {_dz}
         add 1 to {_dx}
@@ -164,11 +191,17 @@ function altarStructureCoreOk(base: location) :: boolean:
                         return false
                 else:
                     set {_b1} to block at location at {_x} + {_dx}, {_y} + 1, {_z} + {_dz} in {_w}
-                    if {_b1} is not blackstone:
+                    if isAltarCubeFaceHoleRel({_dx}, 1, {_dz}) is true:
+                        if {_b1} is not air:
+                            return false
+                    else if {_b1} is not blackstone:
                         return false
             else:
                 set {_b1} to block at location at {_x} + {_dx}, {_y} + 1, {_z} + {_dz} in {_w}
-                if {_b1} is not blackstone:
+                if isAltarCubeFaceHoleRel({_dx}, 1, {_dz}) is true:
+                    if {_b1} is not air:
+                        return false
+                else if {_b1} is not blackstone:
                     return false
             add 1 to {_dz}
         add 1 to {_dx}
@@ -177,7 +210,10 @@ function altarStructureCoreOk(base: location) :: boolean:
         set {_dz} to -1
         while {_dz} <= 1:
             set {_b2} to block at location at {_x} + {_dx}, {_y} + 2, {_z} + {_dz} in {_w}
-            if {_b2} is not crying obsidian:
+            if isAltarCubeFaceHoleRel({_dx}, 2, {_dz}) is true:
+                if {_b2} is not air:
+                    return false
+            else if {_b2} is not crying obsidian:
                 return false
             add 1 to {_dz}
         add 1 to {_dx}
@@ -265,6 +301,12 @@ function buildAwakeningAltarFromChest(ch: block):
             set block at location at {_x} + {_dx}, {_y} + 2, {_z} + {_dz} in {_w} to crying obsidian
             add 1 to {_dz}
         add 1 to {_dx}
+    set block at location at {_x}, {_y}, {_z} in {_w} to air
+    set block at location at {_x}, {_y} + 2, {_z} in {_w} to air
+    set block at location at {_x} - 1, {_y} + 1, {_z} in {_w} to air
+    set block at location at {_x} + 1, {_y} + 1, {_z} in {_w} to air
+    set block at location at {_x}, {_y} + 1, {_z} - 1 in {_w} to air
+    set block at location at {_x}, {_y} + 1, {_z} + 1 in {_w} to air
     set {_hb} to block at location at {_x}, {_y} + 1, {_z} in {_w}
     set name of inventory of {_hb} to "&5&lАлтарь"
     set {_core} to location at {_x}, {_y}, {_z} in {_w}
@@ -328,6 +370,11 @@ function isAwakeningAltarStructurePart(loc: location) :: boolean:
         if {_lz} < {_bz} - 1:
             continue
         if {_lz} > {_bz} + 1:
+            continue
+        set {_rdx} to {_lx} - {_bx}
+        set {_rdy} to {_ly} - {_by}
+        set {_rdz} to {_lz} - {_bz}
+        if isAltarCubeFaceHoleRel({_rdx}, {_rdy}, {_rdz}) is true:
             continue
         return true
     return false
