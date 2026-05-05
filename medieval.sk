@@ -3641,13 +3641,31 @@ function tryBuildAwakeningAltarAtChestBlock(cb: block, opener: player):
             clear {_cinv}
             buildAwakeningAltarFromChest({_cb}, {_opener})
 
+function tryBuildAwakeningAltarAtChestBlock(cb: block):
+    set {_chestOk} to false
+    if {_cb} is chest:
+        set {_chestOk} to true
+    else if {_cb} is trapped chest:
+        set {_chestOk} to true
+    if {_chestOk} is true:
+        set {_cinv} to inventory of {_cb}
+        if isAltarChestRecipeExact({_cinv}) is true:
+            clear {_cinv}
+            buildAwakeningAltarShellFromChest({_cb})
+
 function tryBuildAwakeningAltarFromInventoryHolder(h: object, opener: player):
     if {_h} is chest:
         tryBuildAwakeningAltarAtChestBlock({_h}, {_opener})
     else if {_h} is trapped chest:
         tryBuildAwakeningAltarAtChestBlock({_h}, {_opener})
 
-function buildAwakeningAltarFromChest(ch: block, opener: player):
+function tryBuildAwakeningAltarFromInventoryHolder(h: object):
+    if {_h} is chest:
+        tryBuildAwakeningAltarAtChestBlock({_h})
+    else if {_h} is trapped chest:
+        tryBuildAwakeningAltarAtChestBlock({_h})
+
+function buildAwakeningAltarShellFromChest(ch: block):
     set {_w} to world of {_ch}
     set {_x} to floor(x-coordinate of {_ch})
     set {_y} to floor(y-coordinate of {_ch})
@@ -3699,6 +3717,9 @@ function buildAwakeningAltarFromChest(ch: block, opener: player):
     play sound "block.beacon.activate" with volume 1 and pitch 0.8 at {_fx} for all players
     execute console command "execute positioned %x-coordinate of {_fx}% %y-coordinate of {_fx}% %z-coordinate of {_fx}% run particle minecraft:witch ~ ~ ~ 0.45 0.35 0.45 0.01 45 force"
     execute console command "execute positioned %x-coordinate of {_fx}% %y-coordinate of {_fx}% %z-coordinate of {_fx}% run particle minecraft:portal ~ ~0.4 ~ 0.55 0.35 0.55 0.01 60 force"
+
+function buildAwakeningAltarFromChest(ch: block, opener: player):
+    buildAwakeningAltarShellFromChest({_ch})
     set {_tok} to awakeningHopperTokenItem()
     if {_opener} has space for {_tok}:
         give {_tok} to {_opener}
@@ -3897,7 +3918,7 @@ on inventory item move:
                 if event-item is not amethyst shard:
                     stop
     wait 1 tick
-    tryBuildAwakeningAltarAtChestBlock({_dest}, player)
+    tryBuildAwakeningAltarAtChestBlock({_dest})
 
 every 2 seconds:
     loop {awakening_altars::*}:
