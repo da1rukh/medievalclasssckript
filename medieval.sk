@@ -3475,6 +3475,20 @@ function isAwakeningAltarFaceHoleMiddle(dx: number, dz: number) :: boolean:
             return true
     return false
 
+function isAwakeningAltarTopButtonRel(dx: number, dz: number) :: boolean:
+    if {_dx} is -1:
+        if {_dz} is 0:
+            return true
+    if {_dx} is 1:
+        if {_dz} is 0:
+            return true
+    if {_dx} is 0:
+        if {_dz} is -1:
+            return true
+        if {_dz} is 1:
+            return true
+    return false
+
 function awakeningHopperTokenItem() :: item:
     set {_h} to hopper
     set name of {_h} to "&5&lАлтарь Создания"
@@ -3607,11 +3621,19 @@ function altarStructureShellOk(base: location, middleCenterMustBeHopper: boolean
                     if {_b2} is not crying obsidian:
                         return false
                 else:
+                    if isAwakeningAltarTopButtonRel({_dx}, {_dz}) is true:
+                        if {_b2} is not stone button:
+                            return false
+                    else:
+                        if {_b2} is not air:
+                            return false
+            else:
+                if isAwakeningAltarTopButtonRel({_dx}, {_dz}) is true:
+                    if {_b2} is not stone button:
+                        return false
+                else:
                     if {_b2} is not air:
                         return false
-            else:
-                if {_b2} is not air:
-                    return false
             add 1 to {_dz}
         add 1 to {_dx}
     return true
@@ -3702,6 +3724,10 @@ function buildAwakeningAltarShellFromChest(ch: block):
             add 1 to {_dz}
         add 1 to {_dx}
     set block at location at {_x}, {_y} + 2, {_z} in {_w} to crying obsidian
+    execute console command "execute in %world of {_ch}% run setblock %{_x} + 1% %{_y} + 2% %{_z}% minecraft:stone_button[facing=west,face=wall,powered=false] replace"
+    execute console command "execute in %world of {_ch}% run setblock %{_x} - 1% %{_y} + 2% %{_z}% minecraft:stone_button[facing=east,face=wall,powered=false] replace"
+    execute console command "execute in %world of {_ch}% run setblock %{_x}% %{_y} + 2% %{_z} + 1% minecraft:stone_button[facing=north,face=wall,powered=false] replace"
+    execute console command "execute in %world of {_ch}% run setblock %{_x}% %{_y} + 2% %{_z} - 1% minecraft:stone_button[facing=south,face=wall,powered=false] replace"
     set block at location at {_x} - 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x} + 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x}, {_y} + 1, {_z} - 1 in {_w} to air
@@ -3958,46 +3984,41 @@ every 2 seconds:
         # Автокрафт отключён: подтверждение теперь только кнопкой/ПКМ по алтарю.
         continue
 
-on right click:
+on right click on stone button:
     set {_rb} to event-block
     if {_rb} is not set:
         stop
-    set {_aw} to false
-    if {_rb} is polished blackstone bricks:
-        set {_aw} to true
-    else if {_rb} is blackstone:
-        set {_aw} to true
-    else if {_rb} is crying obsidian:
-        set {_aw} to true
-    else if {_rb} is amethyst block:
-        set {_aw} to true
-    else if {_rb} is hopper:
-        set {_aw} to true
-    if {_aw} is false:
-        stop
-    if isAwakeningAltarStructurePart(location of {_rb}) is false:
-        if {_rb} is hopper:
-            set {_core2} to location of {_rb}
-            remove 1 from y-coordinate of {_core2}
-            if altarStructureCoreOk({_core2}) is false:
-                stop
-        else:
+    set {_bw} to world of {_rb}
+    set {_bx} to floor(x-coordinate of {_rb})
+    set {_by} to floor(y-coordinate of {_rb})
+    set {_bz} to floor(z-coordinate of {_rb})
+    set {_matched} to false
+    loop {awakening_altar_bases::*}:
+        if world of loop-value is not {_bw}:
+            continue
+        set {_ax} to floor(x-coordinate of loop-value)
+        set {_ay} to floor(y-coordinate of loop-value)
+        set {_az} to floor(z-coordinate of loop-value)
+        if {_by} is not {_ay} + 2:
+            continue
+        set {_dx} to {_bx} - {_ax}
+        set {_dz} to {_bz} - {_az}
+        if isAwakeningAltarTopButtonRel({_dx}, {_dz}) is false:
+            continue
+        set {_matched} to true
+        if altarStructureCoreOk(loop-value) is false:
+            send "{@prefix} &cАлтарь не завершён: поставь воронку в центр." to player
             stop
-    set {_hb} to block at location at floor(x-coordinate of location of {_rb}), floor(y-coordinate of location of {_rb}) + 1, floor(z-coordinate of location of {_rb}) in world of {_rb}
-    if {_rb} is hopper:
-        set {_hb} to {_rb}
-    else:
-        if {_hb} is not hopper:
-            # для клика по среднему кольцу (y+1) хоппер в этой же высоте, не выше
-            set {_hb} to block at location at floor(x-coordinate of location of {_rb}), floor(y-coordinate of location of {_rb}), floor(z-coordinate of location of {_rb}) in world of {_rb}
-    if {_hb} is not hopper:
-        send "{@prefix} &cАлтарь не завершён: поставь воронку в центр." to player
+        set {_hb} to block at location at {_ax}, {_ay} + 1, {_az} in {_bw}
+        if tryCraftAwakeningAltarAt({_hb}, player) is false:
+            send "{@prefix} &7Крафт не подтверждён: проверь 5 ингредиентов в слотах 0–4 воронки." to player
+            play sound "block.note_block.bass" with volume 0.8 and pitch 0.7 at player for player
+        else:
+            cancel event
         stop
-    if tryCraftAwakeningAltarAt({_hb}, player) is false:
+    if {_matched} is false:
         send "{@prefix} &7Крафт не подтверждён: проверь 5 ингредиентов в слотах 0–4 воронки." to player
         play sound "block.note_block.bass" with volume 0.8 and pitch 0.7 at player for player
-    else:
-        cancel event
 
 command /altar:
     permission: evo.admin
@@ -4006,7 +4027,7 @@ command /altar:
         send "{@prefix} &7Алтарь: положи в сундук &fровно &7рецепт и больше ничего:"
         send "{@prefix} &f5× ключ пустоты&7, &f3× плачущий обсидиан&7, &f3× обсидиан&7, &f3× аметистовый осколок."
         send "{@prefix} &7Появится куб без воронки; именную воронку получишь в инвентарь — поставь её на центральный аметист."
-        send "{@prefix} &7Крафт подтверждается ПКМ по любому блоку алтаря."
+        send "{@prefix} &7Крафт подтверждается нажатием физических &fкаменных кнопок &7на верхнем слое алтаря."
         send "{@prefix} &7Эфирная кирка: ровно &f5 &7предметов в слотах воронки &f0–4&7: ключ пустоты, ключ возврата, алмазная кирка, алмазный блок, аметистовый осколок."
 
 function pullArtifactFromCore(p: player, key: text) :: boolean:
