@@ -5498,9 +5498,9 @@ on break:
             if {_b} is diamond ore:
                 set {_cnt} to 1
                 if isFortunePickaxe(player's tool) is true:
-                    add 1 to {_cnt}
+                    add 3 to {_cnt}
                 if isOmniPickaxe(player's tool) is true:
-                    add 1 to {_cnt}
+                    add 3 to {_cnt}
                 loop {_cnt} times:
                     set {_it} to diamond
                     giveOrDrop({_it}, player, {_dropLoc})
@@ -5508,9 +5508,9 @@ on break:
             else if {_b} is deepslate diamond ore:
                 set {_cnt} to 1
                 if isFortunePickaxe(player's tool) is true:
-                    add 1 to {_cnt}
+                    add 3 to {_cnt}
                 if isOmniPickaxe(player's tool) is true:
-                    add 1 to {_cnt}
+                    add 3 to {_cnt}
                 loop {_cnt} times:
                     set {_it} to diamond
                     giveOrDrop({_it}, player, {_dropLoc})
@@ -5536,9 +5536,9 @@ on break:
             else if {_b} is nether gold ore:
                 set {_nug} to 2
                 if isFortunePickaxe(player's tool) is true:
-                    add 2 to {_nug}
+                    add 6 to {_nug}
                 if isOmniPickaxe(player's tool) is true:
-                    add 2 to {_nug}
+                    add 6 to {_nug}
                 loop {_nug} times:
                     set {_it} to gold nugget
                     giveOrDrop({_it}, player, {_dropLoc})
@@ -5565,10 +5565,16 @@ on break:
                 set {_it} to ancient debris
                 giveOrDrop({_it}, player, {_dropLoc})
                 give 5 experience to player
-            # Жильная кирка: дополнительно срубает руду в радиусе 1 (того же типа), только если это действительно рудный блок.
+            # Жильная/Омни: дополнительно срубает руду того же типа в радиусе 1.
+            set {_veinMode} to false
             if isVeinPickaxe(player's tool) is true:
+                set {_veinMode} to true
+            else if isOmniPickaxe(player's tool) is true:
+                set {_veinMode} to true
+            if {_veinMode} is true:
+                set {_bt} to "%type of {_b}%"
                 loop blocks in radius 1 around {_dropLoc}:
-                    if loop-block is {_b}:
+                    if "%type of loop-block%" is {_bt}:
                         set {_lb} to location of loop-block
                         set loop-block to air
                         if {_b} is diamond ore:
@@ -5603,6 +5609,7 @@ on break:
                             set {_it} to ancient debris
                             giveOrDrop({_it}, player, {_lb})
                             give 2 experience to player
+            # Доп. бафы Омни.
             # Кирка Пустоты: короткий рывок к дропу после добычи руды.
             if isVoidPickaxe(player's tool) is true:
                 if random integer between 1 and 100 <= 25:
