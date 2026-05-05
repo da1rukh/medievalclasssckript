@@ -3622,12 +3622,9 @@ function altarStructureCoreOk(base: location) :: boolean:
 function isAwakeningAltarHopperComplete(b: block) :: boolean:
     if {_b} is not hopper:
         return false
-    set {_inv} to inventory of {_b}
-    set {_t2} to name of {_inv}
-    if {_t2} is set:
-        if {_t2} contains "Алтарь Создания":
-            return true
-    return false
+    # Не завязываемся на заголовок GUI: на некоторых сборках/клиентах
+    # имя воронки может отображаться как Item Hopper.
+    return true
 
 function tryBuildAwakeningAltarAtChestBlock(cb: block, opener: player):
     set {_chestOk} to false
