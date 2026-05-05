@@ -4332,20 +4332,6 @@ function pullArtifactFromCore(p: player, key: text) :: boolean:
         return false
     set {art_found::%{_u}%::%{_key}%} to false
     set {art_enabled::%{_u}%::%{_key}%} to false
-    set {_Li} to 1
-    while {_Li} <= 3:
-        set {_si} to 1
-        while {_si} <= 5:
-            set {_sit} to {art_loadout_it::%{_u}%::%{_Li}%::%{_si}%}
-            if {_sit} is set:
-                if {_sit} is not air:
-                    set {_sn} to name of {_sit}
-                    if {_sn} is set:
-                        set {_gk2} to artifactKeyFromItemName({_sn})
-                        if {_gk2} is {_key}:
-                            delete {art_loadout_it::%{_u}%::%{_Li}%::%{_si}%}
-            add 1 to {_si}
-        add 1 to {_Li}
     if {_key} is "cloudjump":
         resetBalloonState({_p})
     give {_it} to {_p}
@@ -4355,28 +4341,9 @@ function hasArtifact(p: player, key: text) :: boolean:
     set {_u} to uuid of {_p}
     if {ghost::%{_u}%} is true:
         return false
-    if {art_found::%{_u}%::%{_key}%} is not true:
-        return false
-    if isLegendaryArtifact({_key}) is true:
+    if {art_found::%{_u}%::%{_key}%} is true:
         if {art_enabled::%{_u}%::%{_key}%} is true:
             return true
-        return false
-    set {_L} to {art_loadout::%{_u}%} ? 1
-    if {_L} < 1:
-        set {_L} to 1
-    if {_L} > 3:
-        set {_L} to 3
-    set {_si} to 1
-    while {_si} <= 5:
-        set {_it} to {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
-        if {_it} is set:
-            if {_it} is not air:
-                set {_nm} to name of {_it}
-                if {_nm} is set:
-                    set {_gk} to artifactKeyFromItemName({_nm})
-                    if {_gk} is {_key}:
-                        return true
-        add 1 to {_si}
     return false
 
 function isLegendaryArtifact(k: text) :: boolean:
@@ -4435,6 +4402,15 @@ function activeNormalArtifactsCount(p: player) :: number:
             add 1 to {_n}
     return {_n}
 
+function foundNormalArtifactsCount(p: player) :: number:
+    set {_u} to uuid of {_p}
+    set {_n} to 0
+    set {_keys::*} to artifactGuiNormalKeysOrdered()
+    loop {_keys::*}:
+        if {art_found::%{_u}%::%loop-value%} is true:
+            add 1 to {_n}
+    return {_n}
+
 function activeLegendaryArtifactsCount(p: player) :: number:
     set {_u} to uuid of {_p}
     set {_n} to 0
@@ -4462,132 +4438,29 @@ function artifactGuiNormalKeysOrdered() :: texts:
     add "cloudjump" to {_k::*}
     return {_k::*}
 
-function artifactGuiSaveCurrentLoadout(p: player):
+function artifactGuiPaintCoreSingle(p: player):
     set {_u} to uuid of {_p}
-    set {_L} to {art_loadout::%{_u}%} ? 1
-    if {_L} < 1:
-        set {_L} to 1
-    if {_L} > 3:
-        set {_L} to 3
-    set {art_loadout::%{_u}%} to {_L}
-    set {_si} to 1
-    while {_si} <= 5:
-        set {_slot} to 9 + {_si}
-        set {_it} to slot {_slot} of {_p}'s current inventory
-        if {_it} is set:
-            if {_it} is not air:
-                set {_nm} to name of {_it}
-                if {_nm} is set:
-                    if {_nm} contains "Артефакт:":
-                        set {_gk} to artifactKeyFromItemName({_nm})
-                        if {_gk} is not "":
-                            if isLegendaryArtifact({_gk}) is false:
-                                if {art_found::%{_u}%::%{_gk}%} is not true:
-                                    set slot {_slot} of {_p}'s current inventory to air
-                                    give {_it} to {_p}
-                                    send action bar "&cСначала зачисли артефакт в ядро (ПКМ в мире)." to {_p}
-        set {_it2} to slot {_slot} of {_p}'s current inventory
-        set {art_loadout_it::%{_u}%::%{_L}%::%{_si}%} to {_it2}
-        add 1 to {_si}
-    delete {_dupSeen::*}
-    set {_si} to 1
-    while {_si} <= 5:
-        set {_slotD} to 9 + {_si}
-        set {_itD} to {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
-        if {_itD} is set:
-            if {_itD} is not air:
-                set {_nmD} to name of {_itD}
-                if {_nmD} is set:
-                    if {_nmD} contains "Артефакт:":
-                        set {_gkD} to artifactKeyFromItemName({_nmD})
-                        if {_gkD} is not "":
-                            if isLegendaryArtifact({_gkD}) is false:
-                                if {art_found::%{_u}%::%{_gkD}%} is true:
-                                    if {_dupSeen::%{_gkD}%} is set:
-                                        set slot {_slotD} of {_p}'s current inventory to air
-                                        delete {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
-                                        give {_itD} to {_p}
-                                        send action bar "&cДубликат артефакта в выкладке — лишний возвращён." to {_p}
-                                    else:
-                                        set {_dupSeen::%{_gkD}%} to true
-        add 1 to {_si}
-    delete {_dupSeen::*}
-    set {_keepN} to 0
-    set {_si} to 1
-    while {_si} <= 5:
-        set {_slotK} to 9 + {_si}
-        set {_itK} to {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
-        if {_itK} is set:
-            if {_itK} is not air:
-                set {_nmK} to name of {_itK}
-                if {_nmK} is set:
-                    if {_nmK} contains "Артефакт:":
-                        set {_gkK} to artifactKeyFromItemName({_nmK})
-                        if {_gkK} is not "":
-                            if isLegendaryArtifact({_gkK}) is false:
-                                if {art_found::%{_u}%::%{_gkK}%} is true:
-                                    if {_keepN} < 5:
-                                        add 1 to {_keepN}
-                                    else:
-                                        set slot {_slotK} of {_p}'s current inventory to air
-                                        delete {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
-                                        give {_itK} to {_p}
-                                        send action bar "&cВ выкладке максимум 5 обычных артефактов." to {_p}
-        add 1 to {_si}
-    loop artifactGuiNormalKeysOrdered():
-        set {art_enabled::%{_u}%::%loop-value%} to false
-    set {_si} to 1
-    while {_si} <= 5:
-        set {_it4} to {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
-        if {_it4} is set:
-            if {_it4} is not air:
-                set {_nm4} to name of {_it4}
-                if {_nm4} is set:
-                    set {_gk4} to artifactKeyFromItemName({_nm4})
-                    if {_gk4} is not "":
-                        if isLegendaryArtifact({_gk4}) is false:
-                            if {art_found::%{_u}%::%{_gk4}%} is true:
-                                set {art_enabled::%{_u}%::%{_gk4}%} to true
-        add 1 to {_si}
-
-function artifactGuiApplyLoadout(p: player):
-    set {_u} to uuid of {_p}
-    set {_L} to {art_loadout::%{_u}%} ? 1
-    if {_L} < 1:
-        set {_L} to 1
-    if {_L} > 3:
-        set {_L} to 3
-    set {art_loadout::%{_u}%} to {_L}
-    set {_si} to 1
-    while {_si} <= 5:
-        set {_slot} to 9 + {_si}
-        set {_it} to {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
-        if {_it} is set:
-            if {_it} is not air:
-                set slot {_slot} of {_p}'s current inventory to {_it}
-            else:
-                set slot {_slot} of {_p}'s current inventory to air
-        else:
-            set slot {_slot} of {_p}'s current inventory to air
-        add 1 to {_si}
-
-function artifactGuiPaintFrame(p: player):
-    set {_u} to uuid of {_p}
-    set {_L} to {art_loadout::%{_u}%} ? 1
-    if {_L} < 1:
-        set {_L} to 1
-    if {_L} > 3:
-        set {_L} to 3
-    set {art_loadout::%{_u}%} to {_L}
-    set {_prev} to arrow named "&7◀ Выкладка"
-    set lore of {_prev} to "&7Текущая: &f%{_L}% &7из &f3", "&7Переключить — сохранит слоты"
-    set slot 9 of {_p}'s current inventory to {_prev}
-    set {_next} to arrow named "&7Выкладка ▶"
-    set lore of {_next} to "&7Текущая: &f%{_L}% &7из &f3", "&7Переключить — сохранит слоты"
-    set slot 17 of {_p}'s current inventory to {_next}
-    set {_info} to book named "&7Выкладки артефактов"
-    set lore of {_info} to "&75 слотов (ряд по центру):", "&7положи &fпредмет артефакта&7 — эффект", "&7работает только если он в &aэтой выкладке&7.", "&7Зачисление в ядро: &fПКМ &7в мире.", "&7Легендарка: &e/legendary"
-    set slot 22 of {_p}'s current inventory to {_info}
+    loop 27 times:
+        set slot (loop-number - 1) of {_p}'s current inventory to gray stained glass pane named " "
+    set slot 4 of {_p}'s current inventory to nether star named "&6&lАРТЕФАКТЫ: ЯДРО"
+    set {_nFound} to foundNormalArtifactsCount({_p})
+    set lore of slot 4 of {_p}'s current inventory to "&7Одно ядро без выкладок", "&7Максимум обычных артефактов в ядре: &f5", "&7Сейчас в ядре: &e%{_nFound}%&7/5", "&7ПКМ: включить/выключить", "&7ЛКМ: извлечь в предмет", "&7Легендарка: &e/legendary"
+    delete {art_gui_key::%{_u}%::*}
+    set {_keys::*} to artifactGuiNormalKeysOrdered()
+    set {_slot} to 10
+    loop {_keys::*}:
+        if {art_found::%{_u}%::%loop-value%} is true:
+            if {_slot} <= 14:
+                set {art_gui_key::%{_u}%::%{_slot}%} to loop-value
+                set {_snum} to artifactSlotFromKey(loop-value)
+                if {_snum} >= 0:
+                    set {_art} to artifactMenuItem({_p}, {_snum})
+                    if {_art} is not air:
+                        set slot {_slot} of {_p}'s current inventory to {_art}
+                add 1 to {_slot}
+    while {_slot} <= 14:
+        set slot {_slot} of {_p}'s current inventory to barrier named "&8Пустой слот ядра"
+        add 1 to {_slot}
 
 function hasBalloonArtifact(p: player) :: boolean:
     if hasArtifact({_p}, "cloudjump") is true:
@@ -7040,26 +6913,14 @@ on inventory click:
 # ==========================================
 command /artifacts:
     trigger:
-        set {_u} to uuid of player
-        if {art_loadout::%{_u}%} is not set:
-            set {art_loadout::%{_u}%} to 1
         open chest inventory with 3 rows named "&8Artifacts Core" to player
         dbgEvo(player, "opened /artifacts GUI")
         wait 2 ticks
-        loop 27 times:
-            set slot (loop-number - 1) of player's current inventory to gray stained glass pane named " "
-
-        set slot 4 of player's current inventory to nether star named "&6&lАРТЕФАКТЫ: ЯДРО"
-        set lore of slot 4 of player's current inventory to "&7&a3 выкладки&7 по &f5 слотов&7 — положи предмет артефакта", "&7Эффект только если он в &aтекущей выкладке&7.", "&7◀ ▶ — переключение выкладок (сохраняет слоты).", "&7Новый артефакт в ядро: &fПКМ &7в мире.", "&7Легендарка: &e/legendary"
-        artifactGuiApplyLoadout(player)
-        artifactGuiPaintFrame(player)
-        set {art_core_gui_open::%{_u}%} to true
+        artifactGuiPaintCoreSingle(player)
 
 on inventory click:
     if name of event-inventory contains "Artifacts Core":
-        if clicked inventory is player's inventory:
-            stop
-        set {_u} to uuid of player
+        cancel event
         set {_slot} to index of event-slot
         if {_slot} is not set:
             set {_slot} to clicked slot
@@ -7067,41 +6928,45 @@ on inventory click:
             stop
         if {_slot} is not between 0 and 26:
             stop
-        if {_slot} is between 10 and 14:
-            wait 1 tick
-            artifactGuiSaveCurrentLoadout(player)
-            stop
-        cancel event
         dbgEvo(player, "inv=%name of event-inventory% slot=%clicked slot% click=%click type%")
         set {_u} to uuid of player
-        if {_slot} is 9:
-            artifactGuiSaveCurrentLoadout(player)
-            set {_L} to {art_loadout::%{_u}%} ? 1
-            if {_L} > 1:
-                remove 1 from {art_loadout::%{_u}%}
-            artifactGuiApplyLoadout(player)
-            artifactGuiPaintFrame(player)
-            play sound "ui.button.click" with volume 0.5 and pitch 1 at player for player
+        if {_slot} is not between 10 and 14:
             stop
-        if {_slot} is 17:
-            artifactGuiSaveCurrentLoadout(player)
-            set {_L} to {art_loadout::%{_u}%} ? 1
-            if {_L} < 3:
-                add 1 to {art_loadout::%{_u}%}
-            artifactGuiApplyLoadout(player)
-            artifactGuiPaintFrame(player)
-            play sound "ui.button.click" with volume 0.5 and pitch 1 at player for player
+        set {_key} to {art_gui_key::%{_u}%::%{_slot}%}
+        if {_key} is not set:
+            send action bar "&7Пустой слот ядра." to player
             stop
-        if {_slot} is 22:
+        set {_owned} to {art_found::%{_u}%::%{_key}%} ? false
+        if {_owned} is false:
+            artifactGuiPaintCoreSingle(player)
             stop
-        send action bar "&7Слоты артефактов: &f10–14&7 (5 шт.)." to player
-        stop
-
-on inventory close:
-    set {_uClose} to uuid of player
-    if {art_core_gui_open::%{_uClose}%} is true:
-        delete {art_core_gui_open::%{_uClose}%}
-        artifactGuiSaveCurrentLoadout(player)
+        set {_enabled_now} to {art_enabled::%{_u}%::%{_key}%} ? false
+        set {_click} to "%click type%"
+        set {_isLeft} to false
+        set {_isRight} to false
+        if {_click} contains "left mouse button":
+            set {_isLeft} to true
+        if {_click} contains "right mouse button":
+            set {_isRight} to true
+        if {_isLeft} is true:
+            if pullArtifactFromCore(player, {_key}) is true:
+                send "{@prefix} &eАртефакт извлечён в предмет."
+                play sound "item.bundle.remove_one" with volume 0.9 and pitch 1 at player for player
+        else if {_isRight} is true:
+            if {_enabled_now} is true:
+                set {art_enabled::%{_u}%::%{_key}%} to false
+            else:
+                set {art_enabled::%{_u}%::%{_key}%} to true
+            if {_key} is "cloudjump":
+                if {art_enabled::%{_u}%::%{_key}%} is false:
+                    resetBalloonState(player)
+            if {art_enabled::%{_u}%::%{_key}%} is true:
+                send "{@prefix} &aЭффект артефакта включён."
+                play sound "entity.experience_orb.pickup" with volume 1 and pitch 1.2 at player for player
+            else:
+                send "{@prefix} &cЭффект артефакта выключен."
+                play sound "block.note_block.bass" with volume 1 and pitch 0.8 at player for player
+        artifactGuiPaintCoreSingle(player)
 
 command /legendary:
     trigger:
