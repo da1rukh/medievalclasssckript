@@ -5599,19 +5599,20 @@ on break:
                 if {_flameOn} is true:
                     set {_drop} to smooth stone
                     giveOrDrop({_drop}, player, location of {_b})
-                else:
+                if {_flameOn} is false:
                     set {_dust} to gunpowder
                     giveOrDrop({_dust}, player, location of {_b})
-            else if isVoidPickaxe(player's tool) is true:
-                if {_voidOn} is true:
-                    set {_drop} to obsidian
-                    giveOrDrop({_drop}, player, location of player)
-                else:
+            if isFlamePickaxe(player's tool) is not true:
+                if isVoidPickaxe(player's tool) is true:
+                    if {_voidOn} is true:
+                        set {_drop} to obsidian
+                        giveOrDrop({_drop}, player, location of player)
+                    if {_voidOn} is not true:
+                        set {_dust} to gunpowder
+                        giveOrDrop({_dust}, player, location of {_b})
+                if isVoidPickaxe(player's tool) is not true:
                     set {_dust} to gunpowder
                     giveOrDrop({_dust}, player, location of {_b})
-            else:
-                set {_dust} to gunpowder
-                giveOrDrop({_dust}, player, location of {_b})
             give 1 experience to player
             stop
         if isEtherValuableOre({_b}) is true:
@@ -5639,27 +5640,21 @@ on break:
                     giveOrDrop({_it}, player, {_dropLoc})
                 give 3 experience to player
             else if {_b} is gold ore:
+                set {_it} to raw gold
                 if isFlamePickaxe(player's tool) is true:
                     if {_flameOn} is true:
                         set {_it} to gold ingot
-                    else:
-                        set {_it} to raw gold
-                else if isOmniPickaxe(player's tool) is true:
+                if isOmniPickaxe(player's tool) is true:
                     set {_it} to gold ingot
-                else:
-                    set {_it} to raw gold
                 giveOrDrop({_it}, player, {_dropLoc})
                 give 2 experience to player
             else if {_b} is deepslate gold ore:
+                set {_it} to raw gold
                 if isFlamePickaxe(player's tool) is true:
                     if {_flameOn} is true:
                         set {_it} to gold ingot
-                    else:
-                        set {_it} to raw gold
-                else if isOmniPickaxe(player's tool) is true:
+                if isOmniPickaxe(player's tool) is true:
                     set {_it} to gold ingot
-                else:
-                    set {_it} to raw gold
                 giveOrDrop({_it}, player, {_dropLoc})
                 give 2 experience to player
             else if {_b} is nether gold ore:
@@ -5673,27 +5668,21 @@ on break:
                     giveOrDrop({_it}, player, {_dropLoc})
                 give 2 experience to player
             else if {_b} is iron ore:
+                set {_it} to raw iron
                 if isFlamePickaxe(player's tool) is true:
                     if {_flameOn} is true:
                         set {_it} to iron ingot
-                    else:
-                        set {_it} to raw iron
-                else if isOmniPickaxe(player's tool) is true:
+                if isOmniPickaxe(player's tool) is true:
                     set {_it} to iron ingot
-                else:
-                    set {_it} to raw iron
                 giveOrDrop({_it}, player, {_dropLoc})
                 give 2 experience to player
             else if {_b} is deepslate iron ore:
+                set {_it} to raw iron
                 if isFlamePickaxe(player's tool) is true:
                     if {_flameOn} is true:
                         set {_it} to iron ingot
-                    else:
-                        set {_it} to raw iron
-                else if isOmniPickaxe(player's tool) is true:
+                if isOmniPickaxe(player's tool) is true:
                     set {_it} to iron ingot
-                else:
-                    set {_it} to raw iron
                 giveOrDrop({_it}, player, {_dropLoc})
                 give 2 experience to player
             else if {_b} is coal ore:
@@ -5764,8 +5753,8 @@ on break:
             set {_veinMode} to false
             if isVeinPickaxe(player's tool) is true:
                 if {_veinOn} is true:
-                set {_veinMode} to true
-            else if isOmniPickaxe(player's tool) is true:
+                    set {_veinMode} to true
+            if isOmniPickaxe(player's tool) is true:
                 set {_veinMode} to true
             if {_veinMode} is true:
                 set {_bt} to "%type of {_b}%"
@@ -5833,8 +5822,8 @@ on break:
             # Кирка Пустоты: короткий рывок к дропу после добычи руды.
             if isVoidPickaxe(player's tool) is true:
                 if {_voidOn} is true:
-                if random integer between 1 and 100 <= 25:
-                    apply speed 2 without particles to player for 2 seconds
+                    if random integer between 1 and 100 <= 25:
+                        apply speed 2 without particles to player for 2 seconds
             stop
     set {_u} to player's uuid
     set {_l} to {level::%{_u}%} ? 1
