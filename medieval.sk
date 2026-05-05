@@ -5597,14 +5597,14 @@ on break:
             set event-block to air
             if isFlamePickaxe(player's tool) is true:
                 if {_flameOn} is true:
-                set {_drop} to smooth stone
+                    set {_drop} to smooth stone
                     giveOrDrop({_drop}, player, location of {_b})
                 else:
                     set {_dust} to gunpowder
                     giveOrDrop({_dust}, player, location of {_b})
             else if isVoidPickaxe(player's tool) is true:
                 if {_voidOn} is true:
-                set {_drop} to obsidian
+                    set {_drop} to obsidian
                     giveOrDrop({_drop}, player, location of player)
                 else:
                     set {_dust} to gunpowder
@@ -5641,7 +5641,7 @@ on break:
             else if {_b} is gold ore:
                 if isFlamePickaxe(player's tool) is true:
                     if {_flameOn} is true:
-                    set {_it} to gold ingot
+                        set {_it} to gold ingot
                     else:
                         set {_it} to raw gold
                 else if isOmniPickaxe(player's tool) is true:
@@ -5653,7 +5653,7 @@ on break:
             else if {_b} is deepslate gold ore:
                 if isFlamePickaxe(player's tool) is true:
                     if {_flameOn} is true:
-                    set {_it} to gold ingot
+                        set {_it} to gold ingot
                     else:
                         set {_it} to raw gold
                 else if isOmniPickaxe(player's tool) is true:
@@ -5675,7 +5675,7 @@ on break:
             else if {_b} is iron ore:
                 if isFlamePickaxe(player's tool) is true:
                     if {_flameOn} is true:
-                    set {_it} to iron ingot
+                        set {_it} to iron ingot
                     else:
                         set {_it} to raw iron
                 else if isOmniPickaxe(player's tool) is true:
@@ -5687,7 +5687,7 @@ on break:
             else if {_b} is deepslate iron ore:
                 if isFlamePickaxe(player's tool) is true:
                     if {_flameOn} is true:
-                    set {_it} to iron ingot
+                        set {_it} to iron ingot
                     else:
                         set {_it} to raw iron
                 else if isOmniPickaxe(player's tool) is true:
