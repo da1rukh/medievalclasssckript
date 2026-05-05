@@ -3859,7 +3859,7 @@ function altarPickaxeActive(p: player, key: text) :: boolean:
     return true
 
 function openAltarPickaxeToggleGui(p: player):
-    open chest with 3 rows named "&8Алтарные кирки: эффекты" to {_p}
+    open chest inventory with 3 rows named "&8Алтарные кирки: эффекты" to {_p}
     wait 1 tick
     loop 27 times:
         set slot (loop-number - 1) of {_p}'s current inventory to gray stained glass pane named " "
