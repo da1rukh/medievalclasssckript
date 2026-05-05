@@ -143,10 +143,6 @@ function isAltarCubeFaceHoleRel(dx: number, dy: number, dz: number) :: boolean:
         if {_dx} is 0:
             if {_dz} is 0:
                 return true
-    else if {_dy} is 2:
-        if {_dx} is 0:
-            if {_dz} is 0:
-                return true
     else if {_dy} is 1:
         if {_dx} is -1:
             if {_dz} is 0:
@@ -210,11 +206,16 @@ function altarStructureCoreOk(base: location) :: boolean:
         set {_dz} to -1
         while {_dz} <= 1:
             set {_b2} to block at location at {_x} + {_dx}, {_y} + 2, {_z} + {_dz} in {_w}
-            if isAltarCubeFaceHoleRel({_dx}, 2, {_dz}) is true:
+            if {_dx} is 0:
+                if {_dz} is 0:
+                    if {_b2} is not crying obsidian:
+                        return false
+                else:
+                    if {_b2} is not air:
+                        return false
+            else:
                 if {_b2} is not air:
                     return false
-            else if {_b2} is not crying obsidian:
-                return false
             add 1 to {_dz}
         add 1 to {_dx}
     return true
@@ -298,11 +299,11 @@ function buildAwakeningAltarFromChest(ch: block):
     while {_dx} <= 1:
         set {_dz} to -1
         while {_dz} <= 1:
-            set block at location at {_x} + {_dx}, {_y} + 2, {_z} + {_dz} in {_w} to crying obsidian
+            set block at location at {_x} + {_dx}, {_y} + 2, {_z} + {_dz} in {_w} to air
             add 1 to {_dz}
         add 1 to {_dx}
+    set block at location at {_x}, {_y} + 2, {_z} in {_w} to crying obsidian
     set block at location at {_x}, {_y}, {_z} in {_w} to air
-    set block at location at {_x}, {_y} + 2, {_z} in {_w} to air
     set block at location at {_x} - 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x} + 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x}, {_y} + 1, {_z} - 1 in {_w} to air
