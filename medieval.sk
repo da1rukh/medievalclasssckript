@@ -5614,9 +5614,6 @@ on break:
             if isVoidPickaxe(player's tool) is true:
                 if random integer between 1 and 100 <= 25:
                     apply speed 2 without particles to player for 2 seconds
-            # Омни: маленький баф haste после рудной добычи.
-            if isOmniPickaxe(player's tool) is true:
-                apply haste 1 without particles to player for 3 seconds
             stop
     set {_u} to player's uuid
     set {_l} to {level::%{_u}%} ? 1
