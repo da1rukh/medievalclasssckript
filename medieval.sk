@@ -401,6 +401,49 @@ function isAltarReturnKey(i: item) :: boolean:
         return true
     return false
 
+function isEtherPickaxeAltarRecipeExact(inv: inventory) :: boolean:
+    set {_voidN} to 0
+    set {_retN} to 0
+    set {_pickN} to 0
+    set {_blockN} to 0
+    set {_amN} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_si} to loop-number - 1
+        set {_it} to slot {_si} of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if isAltarVoidKey({_it}) is true:
+                add 1 to {_voidN}
+            else if isAltarReturnKey({_it}) is true:
+                add 1 to {_retN}
+            else if {_it} is diamond pickaxe:
+                add 1 to {_pickN}
+            else if {_it} is diamond block:
+                add 1 to {_blockN}
+            else if {_it} is amethyst shard:
+                add 1 to {_amN}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_voidN} is not 1:
+        return false
+    if {_retN} is not 1:
+        return false
+    if {_pickN} is not 1:
+        return false
+    if {_blockN} is not 1:
+        return false
+    if {_amN} is not 1:
+        return false
+    return true
+
 function isEtherTrashBlock(b: block) :: boolean:
     if {_b} is stone:
         return true
@@ -501,20 +544,7 @@ every 2 seconds:
         remove 1 from y-coordinate of {_core}
         if altarStructureCoreOk({_core}) is false:
             continue
-        set {_it1} to slot 0 of inventory of {_b}
-        set {_it2} to slot 1 of inventory of {_b}
-        set {_it3} to slot 2 of inventory of {_b}
-        set {_it4} to slot 3 of inventory of {_b}
-        set {_it5} to slot 4 of inventory of {_b}
-        if isAltarVoidKey({_it1}) is false:
-            continue
-        if isAltarReturnKey({_it2}) is false:
-            continue
-        if {_it3} is not diamond pickaxe:
-            continue
-        if {_it4} is not diamond block:
-            continue
-        if {_it5} is not amethyst shard:
+        if isEtherPickaxeAltarRecipeExact(inventory of {_b}) is false:
             continue
         set {_extra} to false
         loop 4 times:
