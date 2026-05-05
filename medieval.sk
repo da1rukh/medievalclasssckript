@@ -3476,15 +3476,8 @@ function isAwakeningAltarFaceHoleMiddle(dx: number, dz: number) :: boolean:
     return false
 
 function isAwakeningAltarTopButtonRel(dx: number, dz: number) :: boolean:
-    if {_dx} is -1:
-        if {_dz} is -1:
-            return true
-        if {_dz} is 1:
-            return true
-    if {_dx} is 1:
-        if {_dz} is -1:
-            return true
-        if {_dz} is 1:
+    if {_dx} is 0:
+        if {_dz} is 0:
             return true
     return false
 
@@ -3619,22 +3612,11 @@ function altarStructureShellOk(base: location, middleCenterMustBeHopper: boolean
                 if {_dz} is 0:
                     if {_b2} is not crying obsidian:
                         return false
-                else:
-                    if isAwakeningAltarTopButtonRel({_dx}, {_dz}) is true:
-                        if {_b2} is not stone button:
-                            return false
-                    else:
-                        if {_b2} is not air:
-                            return false
-            else:
-                if isAwakeningAltarTopButtonRel({_dx}, {_dz}) is true:
-                    if {_b2} is not stone button:
-                        return false
-                else:
-                    if {_b2} is not air:
-                        return false
             add 1 to {_dz}
         add 1 to {_dx}
+    set {_b3} to block at location at {_x}, {_y} + 3, {_z} in {_w}
+    if {_b3} is not stone button:
+        return false
     return true
 
 function altarStructureCoreOk(base: location) :: boolean:
@@ -3723,11 +3705,8 @@ function buildAwakeningAltarShellFromChest(ch: block):
             add 1 to {_dz}
         add 1 to {_dx}
     set block at location at {_x}, {_y} + 2, {_z} in {_w} to crying obsidian
-    # Кнопки на верхних углах: стоят на твёрдых блоках и не «висят» в воздухе.
-    set block at location at {_x} + 1, {_y} + 2, {_z} + 1 in {_w} to stone button
-    set block at location at {_x} - 1, {_y} + 2, {_z} + 1 in {_w} to stone button
-    set block at location at {_x} + 1, {_y} + 2, {_z} - 1 in {_w} to stone button
-    set block at location at {_x} - 1, {_y} + 2, {_z} - 1 in {_w} to stone button
+    # Одна физическая кнопка: сверху на центральном плачущем обсидиане.
+    set block at location at {_x}, {_y} + 3, {_z} in {_w} to stone button
     set block at location at {_x} - 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x} + 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x}, {_y} + 1, {_z} - 1 in {_w} to air
@@ -3900,7 +3879,8 @@ function isAwakeningAltarStructurePart(loc: location) :: boolean:
         if {_ly} < {_by}:
             continue
         if {_ly} > {_by} + 2:
-            continue
+            if {_ly} is not {_by} + 3:
+                continue
         if {_lx} < {_bx} - 1:
             continue
         if {_lx} > {_bx} + 1:
@@ -3908,6 +3888,11 @@ function isAwakeningAltarStructurePart(loc: location) :: boolean:
         if {_lz} < {_bz} - 1:
             continue
         if {_lz} > {_bz} + 1:
+            continue
+        if {_ly} is {_by} + 3:
+            if {_lx} is {_bx}:
+                if {_lz} is {_bz}:
+                    return true
             continue
         set {_rdx} to {_lx} - {_bx}
         set {_rdy} to {_ly} - {_by}
@@ -4000,7 +3985,7 @@ on right click on stone button:
         set {_ax} to floor(x-coordinate of {_hl})
         set {_ay} to floor(y-coordinate of {_hl})
         set {_az} to floor(z-coordinate of {_hl})
-        if {_by} is not {_ay} + 1:
+        if {_by} is not {_ay} + 2:
             continue
         set {_dx} to {_bx} - {_ax}
         set {_dz} to {_bz} - {_az}
@@ -4025,7 +4010,7 @@ command /altar:
         send "{@prefix} &7Алтарь: положи в сундук &fровно &7рецепт и больше ничего:"
         send "{@prefix} &f5× ключ пустоты&7, &f3× плачущий обсидиан&7, &f3× обсидиан&7, &f3× аметистовый осколок."
         send "{@prefix} &7Появится куб без воронки; именную воронку получишь в инвентарь — поставь её на центральный аметист."
-        send "{@prefix} &7Крафт подтверждается нажатием физических &fкаменных кнопок &7на верхнем слое алтаря."
+        send "{@prefix} &7Крафт подтверждается нажатием &fодной каменной кнопки &7сверху на плачущем обсидиане."
         send "{@prefix} &7Эфирная кирка: ровно &f5 &7предметов в слотах воронки &f0–4&7: ключ пустоты, ключ возврата, алмазная кирка, алмазный блок, аметистовый осколок."
 
 function pullArtifactFromCore(p: player, key: text) :: boolean:
