@@ -3870,12 +3870,7 @@ function debugEtherPickaxeRecipe(inv: inventory, p: player):
             else:
                 add 1 to {_bad}
                 send "{@prefix} &8[debug] slot %{_si}%: &cчужой предмет &8(%type of {_it}% | %{_nm}%)" to {_p}
-    set {_extra} to 0
-    loop 4 times:
-        set {_si2} to loop-number + 4
-        if slot {_si2} of {_inv} is not air:
-            add 1 to {_extra}
-    send "{@prefix} &8[debug] total=%{_total}% bad=%{_bad}% extra(5-8)=%{_extra}% | void=%{_voidN}% ret=%{_retN}% pick=%{_pickN}% block=%{_blockN}% am=%{_amN}%" to {_p}
+    send "{@prefix} &8[debug] total=%{_total}% bad=%{_bad}% | void=%{_voidN}% ret=%{_retN}% pick=%{_pickN}% block=%{_blockN}% am=%{_amN}%" to {_p}
 
 function isAwakeningCraftHopperReady(hb: block) :: boolean:
     if {_hb} is not hopper:
@@ -3907,15 +3902,6 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         if {_crafter} is set:
             send "{@prefix} &8[debug] recipe-check: FAIL" to {_crafter}
             debugEtherPickaxeRecipe(inventory of {_hb}, {_crafter})
-        return false
-    set {_extra} to false
-    loop 4 times:
-        set {_si} to loop-number + 4
-        if slot {_si} of inventory of {_hb} is not air:
-            set {_extra} to true
-    if {_extra} is true:
-        if {_crafter} is set:
-            send "{@prefix} &8[debug] extra-check: FAIL (слоты 5-8 должны быть пусты)" to {_crafter}
         return false
     set slot 0 of inventory of {_hb} to air
     set slot 1 of inventory of {_hb} to air
