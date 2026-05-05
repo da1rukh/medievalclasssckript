@@ -3832,12 +3832,29 @@ function isEtherPickaxeAltarRecipeExact(inv: inventory) :: boolean:
         return false
     return true
 
+function isAwakeningCraftHopperReady(hb: block) :: boolean:
+    if {_hb} is not hopper:
+        return false
+    set {_w} to world of {_hb}
+    set {_x} to floor(x-coordinate of {_hb})
+    set {_y} to floor(y-coordinate of {_hb})
+    set {_z} to floor(z-coordinate of {_hb})
+    set {_ped} to block at location at {_x}, {_y} - 1, {_z} in {_w}
+    if {_ped} is not amethyst block:
+        return false
+    set {_top} to block at location at {_x}, {_y} + 1, {_z} in {_w}
+    if {_top} is not crying obsidian:
+        return false
+    set {_btn} to block at location at {_x}, {_y} + 1, {_z} - 1 in {_w}
+    if {_btn} is not stone button:
+        return false
+    return true
+
 function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
     if {_hb} is not hopper:
         return false
-    set {_core} to location of {_hb}
-    remove 1 from y-coordinate of {_core}
-    if altarStructureCoreOk({_core}) is false:
+    # Для крафта важна рабочая связка (кнопка/верх/воронка/пьедестал), а не идеальная оболочка.
+    if isAwakeningCraftHopperReady({_hb}) is false:
         return false
     if isEtherPickaxeAltarRecipeExact(inventory of {_hb}) is false:
         return false
