@@ -3781,6 +3781,42 @@ function altarEtherPickaxeItem() :: item:
     enchant {_p} with unbreaking 10
     return {_p}
 
+function altarFlamePickaxeItem() :: item:
+    set {_p} to diamond pickaxe
+    set name of {_p} to "&cПламенная Кирка"
+    set lore of {_p} to "&7Алтарный артефакт", "&8ПЛАМЯ_КИРКА", "&7Руды плавятся сразу в слитки", "&7Камень -> гладкий камень + опыт", "&8Неразрушимая"
+    enchant {_p} with unbreaking 10
+    return {_p}
+
+function altarVeinPickaxeItem() :: item:
+    set {_p} to diamond pickaxe
+    set name of {_p} to "&aЖильная Кирка"
+    set lore of {_p} to "&7Алтарный артефакт", "&8ЖИЛА_КИРКА", "&7Ломает жилу руды (радиус 1)", "&7Дроп сразу в инвентарь", "&8Неразрушимая"
+    enchant {_p} with unbreaking 10
+    return {_p}
+
+function altarFortunePickaxeItem() :: item:
+    set {_p} to diamond pickaxe
+    set name of {_p} to "&eКирка Удачи"
+    set lore of {_p} to "&7Алтарный артефакт", "&8УДАЧА_КИРКА", "&7Больше дропа с руд", "&7Шанс x2 ресурсов", "&8Неразрушимая"
+    enchant {_p} with unbreaking 10
+    return {_p}
+
+function altarVoidPickaxeItem() :: item:
+    set {_p} to diamond pickaxe
+    set name of {_p} to "&5Кирка Пустоты"
+    set lore of {_p} to "&7Алтарный артефакт", "&8ПУСТОТА_КИРКА", "&7Телепорт-добыча: дроп к игроку", "&7Даёт ускорение добычи", "&8Неразрушимая"
+    enchant {_p} with unbreaking 10
+    return {_p}
+
+function altarOmniPickaxeItem() :: item:
+    set {_p} to netherite pickaxe
+    set name of {_p} to "&6&lОмни-Кирка Алтаря"
+    set lore of {_p} to "&7Слияние 5 алтарных кирок", "&8ОМНИ_КИРКА", "&7Сочетает все эффекты", "&7Автосбор + плавка + удача + жила", "&8Неразрушимая"
+    enchant {_p} with unbreaking 10
+    enchant {_p} with efficiency 6
+    return {_p}
+
 function isEtherPickaxe(i: item) :: boolean:
     if {_i} is not diamond pickaxe:
         return false
@@ -3790,6 +3826,31 @@ function isEtherPickaxe(i: item) :: boolean:
     if {_n} contains "Эфирная Кирка":
         return true
     return false
+
+function pickaxeHasTag(i: item, tag: text) :: boolean:
+    if {_i} is not diamond pickaxe:
+        if {_i} is not netherite pickaxe:
+            return false
+    set {_l::*} to lore of {_i}
+    loop {_l::*}:
+        if loop-value contains {_tag}:
+            return true
+    return false
+
+function isFlamePickaxe(i: item) :: boolean:
+    return pickaxeHasTag({_i}, "ПЛАМЯ_КИРКА")
+
+function isVeinPickaxe(i: item) :: boolean:
+    return pickaxeHasTag({_i}, "ЖИЛА_КИРКА")
+
+function isFortunePickaxe(i: item) :: boolean:
+    return pickaxeHasTag({_i}, "УДАЧА_КИРКА")
+
+function isVoidPickaxe(i: item) :: boolean:
+    return pickaxeHasTag({_i}, "ПУСТОТА_КИРКА")
+
+function isOmniPickaxe(i: item) :: boolean:
+    return pickaxeHasTag({_i}, "ОМНИ_КИРКА")
 
 function isEtherTrashBlock(b: block) :: boolean:
     if {_b} is stone:
@@ -3822,6 +3883,103 @@ function isEtherValuableOre(b: block) :: boolean:
     if {_b} is ancient debris:
         return true
     return false
+
+function giveOrDrop(it: item, p: player, loc: location):
+    if {_p} has space for {_it}:
+        give {_it} to {_p}
+    else:
+        drop {_it} at {_loc}
+
+function clearAltarCraftSlots(inv: inventory):
+    set slot 0 of {_inv} to air
+    set slot 1 of {_inv} to air
+    set slot 2 of {_inv} to air
+    set slot 3 of {_inv} to air
+    set slot 4 of {_inv} to air
+
+function isPickaxeRecipeByCore(inv: inventory, core: item, catalyst: item) :: boolean:
+    set {_voidN} to 0
+    set {_retN} to 0
+    set {_pickN} to 0
+    set {_coreN} to 0
+    set {_catN} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_it} to slot (loop-number - 1) of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if altarAwakeningVoidKey({_it}) is true:
+                add 1 to {_voidN}
+            else if altarAwakeningReturnKey({_it}) is true:
+                add 1 to {_retN}
+            else if {_it} is diamond pickaxe:
+                add 1 to {_pickN}
+            else if {_it} is {_core}:
+                add 1 to {_coreN}
+            else if {_it} is {_catalyst}:
+                add 1 to {_catN}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_voidN} is not 1:
+        return false
+    if {_retN} is not 1:
+        return false
+    if {_pickN} is not 1:
+        return false
+    if {_coreN} is not 1:
+        return false
+    if {_catN} is not 1:
+        return false
+    return true
+
+function isOmniPickaxeAltarRecipe(inv: inventory) :: boolean:
+    set {_ether} to 0
+    set {_flame} to 0
+    set {_vein} to 0
+    set {_fortune} to 0
+    set {_voidp} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_it} to slot (loop-number - 1) of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if isEtherPickaxe({_it}) is true:
+                add 1 to {_ether}
+            else if isFlamePickaxe({_it}) is true:
+                add 1 to {_flame}
+            else if isVeinPickaxe({_it}) is true:
+                add 1 to {_vein}
+            else if isFortunePickaxe({_it}) is true:
+                add 1 to {_fortune}
+            else if isVoidPickaxe({_it}) is true:
+                add 1 to {_voidp}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_ether} is not 1:
+        return false
+    if {_flame} is not 1:
+        return false
+    if {_vein} is not 1:
+        return false
+    if {_fortune} is not 1:
+        return false
+    if {_voidp} is not 1:
+        return false
+    return true
 
 function isEtherPickaxeAltarRecipeExact(inv: inventory) :: boolean:
     set {_voidN} to 0
@@ -3930,25 +4088,38 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         if {_crafter} is set:
             send "{@prefix} &8[debug] ready-check: FAIL (воронка/аметист/верх/кнопка)" to {_crafter}
         return false
-    if isEtherPickaxeAltarRecipeExact(inventory of {_hb}) is false:
+    set {_inv} to inventory of {_hb}
+    set {_outItem} to air
+    if isEtherPickaxeAltarRecipeExact({_inv}) is true:
+        set {_outItem} to altarEtherPickaxeItem()
+    else if isPickaxeRecipeByCore({_inv}, diamond block, blaze rod) is true:
+        set {_outItem} to altarFlamePickaxeItem()
+    else if isPickaxeRecipeByCore({_inv}, emerald block, slime ball) is true:
+        set {_outItem} to altarVeinPickaxeItem()
+    else if isPickaxeRecipeByCore({_inv}, gold block, lapis lazuli) is true:
+        set {_outItem} to altarFortunePickaxeItem()
+    else if isPickaxeRecipeByCore({_inv}, obsidian, ender pearl) is true:
+        set {_outItem} to altarVoidPickaxeItem()
+    else if isOmniPickaxeAltarRecipe({_inv}) is true:
+        set {_outItem} to altarOmniPickaxeItem()
+    else:
         if {_crafter} is set:
             send "{@prefix} &8[debug] recipe-check: FAIL" to {_crafter}
-            debugEtherPickaxeRecipe(inventory of {_hb}, {_crafter})
+            debugEtherPickaxeRecipe({_inv}, {_crafter})
         return false
-    set slot 0 of inventory of {_hb} to air
-    set slot 1 of inventory of {_hb} to air
-    set slot 2 of inventory of {_hb} to air
-    set slot 3 of inventory of {_hb} to air
-    set slot 4 of inventory of {_hb} to air
+    clearAltarCraftSlots({_inv})
     set {_out} to location of {_hb}
     add 1 to y-coordinate of {_out}
     strike lightning effect at {_out}
     execute console command "execute positioned %x-coordinate of {_out}% %y-coordinate of {_out}% %z-coordinate of {_out}% run particle minecraft:witch ~ ~ ~ 0.35 0.35 0.35 0.01 30 force"
     execute console command "execute positioned %x-coordinate of {_out}% %y-coordinate of {_out}% %z-coordinate of {_out}% run particle minecraft:portal ~ ~0.4 ~ 0.45 0.35 0.45 0.01 40 force"
-    drop altarEtherPickaxeItem() at {_out}
+    if {_crafter} is set:
+        giveOrDrop({_outItem}, {_crafter}, {_out})
+    else:
+        drop {_outItem} at {_out}
     play sound "block.enchantment_table.use" with volume 1 and pitch 0.8 at {_out} for all players
     if {_crafter} is set:
-        send "{@prefix} &dКрафт подтверждён — эфирная кирка создана." to {_crafter}
+        send "{@prefix} &dКрафт подтверждён." to {_crafter}
     return true
 
 function isAwakeningAltarStructurePart(loc: location) :: boolean:
@@ -5263,44 +5434,103 @@ on break:
         cancel event
         send "{@prefix} &cАлтарь неразрушим." to player
         stop
+    set {_altarPick} to false
     if isEtherPickaxe(player's tool) is true:
+        set {_altarPick} to true
+    else if isFlamePickaxe(player's tool) is true:
+        set {_altarPick} to true
+    else if isVeinPickaxe(player's tool) is true:
+        set {_altarPick} to true
+    else if isFortunePickaxe(player's tool) is true:
+        set {_altarPick} to true
+    else if isVoidPickaxe(player's tool) is true:
+        set {_altarPick} to true
+    else if isOmniPickaxe(player's tool) is true:
+        set {_altarPick} to true
+    if {_altarPick} is true:
         set {_b} to event-block
         # Реальная «неразрушимость» для серверов, где флаг unbreakable не применяется.
         set durability of player's tool to 99999
         if isEtherTrashBlock({_b}) is true:
             cancel event
             set event-block to air
-            drop 1 gunpowder at location of {_b}
+            set {_dust} to gunpowder
+            giveOrDrop({_dust}, player, location of {_b})
             give 1 experience to player
             stop
         if isEtherValuableOre({_b}) is true:
             cancel event
             set {_dropLoc} to location of {_b}
-            set {_w} to world of {_dropLoc}
             set event-block to air
             if {_b} is diamond ore:
-                drop 1 diamond at {_dropLoc}
+                set {_cnt} to 1
+                if isFortunePickaxe(player's tool) is true:
+                    add 1 to {_cnt}
+                if isOmniPickaxe(player's tool) is true:
+                    add 1 to {_cnt}
+                loop {_cnt} times:
+                    set {_it} to diamond
+                    giveOrDrop({_it}, player, {_dropLoc})
                 give 3 experience to player
             else if {_b} is deepslate diamond ore:
-                drop 1 diamond at {_dropLoc}
+                set {_cnt} to 1
+                if isFortunePickaxe(player's tool) is true:
+                    add 1 to {_cnt}
+                if isOmniPickaxe(player's tool) is true:
+                    add 1 to {_cnt}
+                loop {_cnt} times:
+                    set {_it} to diamond
+                    giveOrDrop({_it}, player, {_dropLoc})
                 give 3 experience to player
             else if {_b} is gold ore:
-                drop 1 raw gold at {_dropLoc}
+                if isFlamePickaxe(player's tool) is true:
+                    set {_it} to gold ingot
+                else if isOmniPickaxe(player's tool) is true:
+                    set {_it} to gold ingot
+                else:
+                    set {_it} to raw gold
+                giveOrDrop({_it}, player, {_dropLoc})
                 give 2 experience to player
             else if {_b} is deepslate gold ore:
-                drop 1 raw gold at {_dropLoc}
+                if isFlamePickaxe(player's tool) is true:
+                    set {_it} to gold ingot
+                else if isOmniPickaxe(player's tool) is true:
+                    set {_it} to gold ingot
+                else:
+                    set {_it} to raw gold
+                giveOrDrop({_it}, player, {_dropLoc})
                 give 2 experience to player
             else if {_b} is nether gold ore:
-                drop 2 gold nugget at {_dropLoc}
+                set {_nug} to 2
+                if isFortunePickaxe(player's tool) is true:
+                    add 2 to {_nug}
+                if isOmniPickaxe(player's tool) is true:
+                    add 2 to {_nug}
+                loop {_nug} times:
+                    set {_it} to gold nugget
+                    giveOrDrop({_it}, player, {_dropLoc})
                 give 2 experience to player
             else if {_b} is iron ore:
-                drop 1 raw iron at {_dropLoc}
+                if isFlamePickaxe(player's tool) is true:
+                    set {_it} to iron ingot
+                else if isOmniPickaxe(player's tool) is true:
+                    set {_it} to iron ingot
+                else:
+                    set {_it} to raw iron
+                giveOrDrop({_it}, player, {_dropLoc})
                 give 2 experience to player
             else if {_b} is deepslate iron ore:
-                drop 1 raw iron at {_dropLoc}
+                if isFlamePickaxe(player's tool) is true:
+                    set {_it} to iron ingot
+                else if isOmniPickaxe(player's tool) is true:
+                    set {_it} to iron ingot
+                else:
+                    set {_it} to raw iron
+                giveOrDrop({_it}, player, {_dropLoc})
                 give 2 experience to player
             else if {_b} is ancient debris:
-                drop 1 ancient debris at {_dropLoc}
+                set {_it} to ancient debris
+                giveOrDrop({_it}, player, {_dropLoc})
                 give 5 experience to player
             stop
     set {_u} to player's uuid
