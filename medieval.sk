@@ -308,9 +308,8 @@ function buildAwakeningAltarFromChest(ch: block):
     set block at location at {_x}, {_y} + 1, {_z} - 1 in {_w} to air
     set block at location at {_x}, {_y} + 1, {_z} + 1 in {_w} to air
     set {_hb} to block at location at {_x}, {_y} + 1, {_z} in {_w}
-    # Пытаемся выставить имя GUI воронки; для некоторых сборок дополнительно ставим CustomName через data merge.
+    # Имя воронки через Skript-инвентарь (без data merge, чтобы не ловить parse error на сборках с жёстким парсером).
     set name of inventory of {_hb} to "&5&lАлтарь Создания"
-    execute console command "data merge block %{_x}% %{_y} + 1% %{_z}% {CustomName:'{\"text\":\"Алтарь Создания\"}'}"
     set {_core} to location at {_x}, {_y}, {_z} in {_w}
     add {_core} to {awakening_altar_bases::*}
     add location of {_hb} to {awakening_altars::*}
