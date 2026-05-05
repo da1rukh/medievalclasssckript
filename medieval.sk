@@ -3517,6 +3517,12 @@ function altarAwakeningReturnKey(i: item) :: boolean:
         return false
     if {_n} contains "Ключ возврата":
         return true
+    if {_n} contains "Ключ Возврата":
+        return true
+    if {_n} contains "Возврат":
+        return true
+    if {_n} contains "возврат":
+        return true
     return false
 
 function isAltarChestRecipeExact(inv: inventory) :: boolean:
