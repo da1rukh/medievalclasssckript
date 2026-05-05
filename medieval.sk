@@ -3870,6 +3870,18 @@ function isEtherValuableOre(b: block) :: boolean:
         return true
     if {_b} is deepslate diamond ore:
         return true
+    if {_b} is redstone ore:
+        return true
+    if {_b} is deepslate redstone ore:
+        return true
+    if {_b} is lapis ore:
+        return true
+    if {_b} is deepslate lapis ore:
+        return true
+    if {_b} is coal ore:
+        return true
+    if {_b} is deepslate coal ore:
+        return true
     if {_b} is gold ore:
         return true
     if {_b} is deepslate gold ore:
@@ -3881,6 +3893,14 @@ function isEtherValuableOre(b: block) :: boolean:
     if {_b} is deepslate iron ore:
         return true
     if {_b} is ancient debris:
+        return true
+    if {_b} is redstone ore:
+        return true
+    if {_b} is deepslate redstone ore:
+        return true
+    if {_b} is lapis ore:
+        return true
+    if {_b} is deepslate lapis ore:
         return true
     return false
 
@@ -4092,7 +4112,7 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
     set {_outItem} to air
     if isEtherPickaxeAltarRecipeExact({_inv}) is true:
         set {_outItem} to altarEtherPickaxeItem()
-    else if isPickaxeRecipeByCore({_inv}, diamond block, blaze rod) is true:
+    else if isPickaxeRecipeByCore({_inv}, gold block, blaze rod) is true:
         set {_outItem} to altarFlamePickaxeItem()
     else if isPickaxeRecipeByCore({_inv}, emerald block, slime ball) is true:
         set {_outItem} to altarVeinPickaxeItem()
@@ -4264,7 +4284,7 @@ command /altar:
         send "{@prefix} &7Крафт подтверждается нажатием &fодной каменной кнопки &7на плачущем обсидиане (сбоку)."
         send "{@prefix} &6Рецепты алтарных кирок (слоты 0–4, порядок любой):"
         send "{@prefix} &dЭфирная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &bалмазный блок + &dаметистовый осколок"
-        send "{@prefix} &cПламенная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &6золотой блок + &6blaze rod"
+        send "{@prefix} &cПламенная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &bалмазный блок + &6blaze rod"
         send "{@prefix} &aЖильная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &aизумрудный блок + &aslime ball"
         send "{@prefix} &eУдачи: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &eзолотой блок + &9лазурит"
         send "{@prefix} &5Пустоты: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &8обсидиан + &5эндер-жемчуг"
