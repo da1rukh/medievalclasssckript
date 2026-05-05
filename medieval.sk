@@ -3896,6 +3896,71 @@ function openAltarPickaxeToggleGui(p: player):
     set slot 15 of {_p}'s current inventory to {_i5}
     set slot 22 of {_p}'s current inventory to barrier named "&cЗакрыть"
 
+on inventory click:
+    if name of event-inventory is "&8Алтарные кирки: эффекты":
+        cancel event
+        if clicked inventory is not player's current inventory:
+            stop
+        set {_u} to uuid of player
+        set {_s} to index of event-slot
+        if {_s} is 11:
+            set {_v} to {altar_pick_toggle::%{_u}%::ether} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::ether} to false
+            else:
+                set {altar_pick_toggle::%{_u}%::ether} to true
+            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
+            wait 1 tick
+            openAltarPickaxeToggleGui(player)
+            stop
+        if {_s} is 12:
+            set {_v} to {altar_pick_toggle::%{_u}%::flame} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::flame} to false
+            else:
+                set {altar_pick_toggle::%{_u}%::flame} to true
+            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
+            wait 1 tick
+            openAltarPickaxeToggleGui(player)
+            stop
+        if {_s} is 13:
+            set {_v} to {altar_pick_toggle::%{_u}%::vein} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::vein} to false
+            else:
+                set {altar_pick_toggle::%{_u}%::vein} to true
+            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
+            wait 1 tick
+            openAltarPickaxeToggleGui(player)
+            stop
+        if {_s} is 14:
+            set {_v} to {altar_pick_toggle::%{_u}%::fortune} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::fortune} to false
+            else:
+                set {altar_pick_toggle::%{_u}%::fortune} to true
+            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
+            wait 1 tick
+            openAltarPickaxeToggleGui(player)
+            stop
+        if {_s} is 15:
+            set {_v} to {altar_pick_toggle::%{_u}%::void} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::void} to false
+            else:
+                set {altar_pick_toggle::%{_u}%::void} to true
+            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
+            wait 1 tick
+            openAltarPickaxeToggleGui(player)
+            stop
+        if {_s} is 22:
+            close player's inventory
+            stop
+
+on inventory drag:
+    if name of event-inventory is "&8Алтарные кирки: эффекты":
+        cancel event
+
 function isEtherTrashBlock(b: block) :: boolean:
     if {_b} is stone:
         return true
