@@ -3724,10 +3724,10 @@ function buildAwakeningAltarShellFromChest(ch: block):
             add 1 to {_dz}
         add 1 to {_dx}
     set block at location at {_x}, {_y} + 2, {_z} in {_w} to crying obsidian
-    execute console command "execute in %world of {_ch}% run setblock %{_x} + 1% %{_y} + 2% %{_z}% minecraft:stone_button[facing=west,face=wall,powered=false] replace"
-    execute console command "execute in %world of {_ch}% run setblock %{_x} - 1% %{_y} + 2% %{_z}% minecraft:stone_button[facing=east,face=wall,powered=false] replace"
-    execute console command "execute in %world of {_ch}% run setblock %{_x}% %{_y} + 2% %{_z} + 1% minecraft:stone_button[facing=north,face=wall,powered=false] replace"
-    execute console command "execute in %world of {_ch}% run setblock %{_x}% %{_y} + 2% %{_z} - 1% minecraft:stone_button[facing=south,face=wall,powered=false] replace"
+    set block at location at {_x} + 1, {_y} + 2, {_z} in {_w} to stone button
+    set block at location at {_x} - 1, {_y} + 2, {_z} in {_w} to stone button
+    set block at location at {_x}, {_y} + 2, {_z} + 1 in {_w} to stone button
+    set block at location at {_x}, {_y} + 2, {_z} - 1 in {_w} to stone button
     set block at location at {_x} - 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x} + 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x}, {_y} + 1, {_z} - 1 in {_w} to air
