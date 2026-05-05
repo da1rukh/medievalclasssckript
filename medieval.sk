@@ -505,6 +505,7 @@ every 2 seconds:
         set {_it2} to slot 1 of inventory of {_b}
         set {_it3} to slot 2 of inventory of {_b}
         set {_it4} to slot 3 of inventory of {_b}
+        set {_it5} to slot 4 of inventory of {_b}
         if isAltarVoidKey({_it1}) is false:
             continue
         if isAltarReturnKey({_it2}) is false:
@@ -513,9 +514,11 @@ every 2 seconds:
             continue
         if {_it4} is not diamond block:
             continue
+        if {_it5} is not amethyst shard:
+            continue
         set {_extra} to false
-        loop 5 times:
-            set {_si} to loop-number + 3
+        loop 4 times:
+            set {_si} to loop-number + 4
             if slot {_si} of inventory of {_b} is not air:
                 set {_extra} to true
         if {_extra} is true:
@@ -524,6 +527,7 @@ every 2 seconds:
         set slot 1 of inventory of {_b} to air
         set slot 2 of inventory of {_b} to air
         set slot 3 of inventory of {_b} to air
+        set slot 4 of inventory of {_b} to air
         set {_out} to location of {_b}
         add 1 to y-coordinate of {_out}
         strike lightning effect at {_out}
@@ -540,6 +544,7 @@ command /altar:
         send "{@prefix} &f5x &dКлюч пустоты&7, &f3x crying obsidian&7, &f3x obsidian&7, &f3x amethyst shard."
         send "{@prefix} &7В сундуке не должно быть ничего лишнего."
         send "{@prefix} &7Рецепт проверяется при каждом изменении содержимого сундука (без постоянного опроса)."
+        send "{@prefix} &7Крафт воронки алтаря: &f5 ингредиентов (слоты 1-5): &dКлюч Пустоты&7, &bКлюч возврата&7, &fалмазная кирка&7, &bалмазный блок&7, &dаметистовый осколок&7."
 
 function isRuinReturnKey(i: item) :: boolean:
     if {_i} is not echo shard:
