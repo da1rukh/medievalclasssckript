@@ -3705,7 +3705,6 @@ function buildAwakeningAltarShellFromChest(ch: block):
             add 1 to {_dz}
         add 1 to {_dx}
     set block at location at {_x}, {_y} + 2, {_z} in {_w} to crying obsidian
-    set block at location at {_x}, {_y}, {_z} in {_w} to air
     set block at location at {_x} - 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x} + 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x}, {_y} + 1, {_z} - 1 in {_w} to air
