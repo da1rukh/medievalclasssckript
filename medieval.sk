@@ -3779,7 +3779,6 @@ function altarEtherPickaxeItem() :: item:
     set name of {_p} to "&dЭфирная Кирка"
     set lore of {_p} to "&7Алтарный артефакт", "&8ЭФИР_КИРКА", "&7Камень/грязь/гравий -> в пыль + опыт", "&7Ценные руды -> автосбор в инвентарь", "&8Неразрушимая"
     enchant {_p} with unbreaking 10
-    set unbreakable state of {_p} to true
     return {_p}
 
 function isEtherPickaxe(i: item) :: boolean:
