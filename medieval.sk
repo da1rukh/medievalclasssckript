@@ -3477,12 +3477,11 @@ function isAwakeningAltarFaceHoleMiddle(dx: number, dz: number) :: boolean:
 
 function isAwakeningAltarTopButtonRel(dx: number, dz: number) :: boolean:
     if {_dx} is -1:
-        if {_dz} is 0:
+        if {_dz} is -1:
+            return true
+        if {_dz} is 1:
             return true
     if {_dx} is 1:
-        if {_dz} is 0:
-            return true
-    if {_dx} is 0:
         if {_dz} is -1:
             return true
         if {_dz} is 1:
@@ -3724,10 +3723,11 @@ function buildAwakeningAltarShellFromChest(ch: block):
             add 1 to {_dz}
         add 1 to {_dx}
     set block at location at {_x}, {_y} + 2, {_z} in {_w} to crying obsidian
-    set block at location at {_x} + 1, {_y} + 2, {_z} in {_w} to stone button
-    set block at location at {_x} - 1, {_y} + 2, {_z} in {_w} to stone button
-    set block at location at {_x}, {_y} + 2, {_z} + 1 in {_w} to stone button
-    set block at location at {_x}, {_y} + 2, {_z} - 1 in {_w} to stone button
+    # Кнопки на верхних углах: стоят на твёрдых блоках и не «висят» в воздухе.
+    set block at location at {_x} + 1, {_y} + 2, {_z} + 1 in {_w} to stone button
+    set block at location at {_x} - 1, {_y} + 2, {_z} + 1 in {_w} to stone button
+    set block at location at {_x} + 1, {_y} + 2, {_z} - 1 in {_w} to stone button
+    set block at location at {_x} - 1, {_y} + 2, {_z} - 1 in {_w} to stone button
     set block at location at {_x} - 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x} + 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x}, {_y} + 1, {_z} - 1 in {_w} to air
@@ -3988,28 +3988,26 @@ on right click on stone button:
     set {_rb} to event-block
     if {_rb} is not set:
         stop
+    set {_matched} to false
     set {_bw} to world of {_rb}
     set {_bx} to floor(x-coordinate of {_rb})
     set {_by} to floor(y-coordinate of {_rb})
     set {_bz} to floor(z-coordinate of {_rb})
-    set {_matched} to false
-    loop {awakening_altar_bases::*}:
-        if world of loop-value is not {_bw}:
+    loop {awakening_altars::*}:
+        set {_hl} to loop-value
+        if world of {_hl} is not {_bw}:
             continue
-        set {_ax} to floor(x-coordinate of loop-value)
-        set {_ay} to floor(y-coordinate of loop-value)
-        set {_az} to floor(z-coordinate of loop-value)
-        if {_by} is not {_ay} + 2:
+        set {_ax} to floor(x-coordinate of {_hl})
+        set {_ay} to floor(y-coordinate of {_hl})
+        set {_az} to floor(z-coordinate of {_hl})
+        if {_by} is not {_ay} + 1:
             continue
         set {_dx} to {_bx} - {_ax}
         set {_dz} to {_bz} - {_az}
         if isAwakeningAltarTopButtonRel({_dx}, {_dz}) is false:
             continue
         set {_matched} to true
-        if altarStructureCoreOk(loop-value) is false:
-            send "{@prefix} &cАлтарь не завершён: поставь воронку в центр." to player
-            stop
-        set {_hb} to block at location at {_ax}, {_ay} + 1, {_az} in {_bw}
+        set {_hb} to block at {_hl}
         if tryCraftAwakeningAltarAt({_hb}, player) is false:
             send "{@prefix} &7Крафт не подтверждён: проверь 5 ингредиентов в слотах 0–4 воронки." to player
             play sound "block.note_block.bass" with volume 0.8 and pitch 0.7 at player for player
