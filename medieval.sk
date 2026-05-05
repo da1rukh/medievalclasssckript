@@ -3777,7 +3777,7 @@ function tryCompleteAwakeningAltarHopper(placer: player, hb: block, placed: item
 function altarEtherPickaxeItem() :: item:
     set {_p} to diamond pickaxe
     set name of {_p} to "&dЭфирная Кирка"
-    set lore of {_p} to "&8✦ Алтарная кирка", "&8ЭФИР_КИРКА", "&7Мусорные блоки -> &fэфирная пыль", "&7Руды -> &aмгновенно в инвентарь", "&8∞ Неразрушимая"
+    set lore of {_p} to "&8✦ Алтарная кирка", "&8ЭФИР_КИРКА", "&7Shift+ПКМ: &fэфирный режим &7(пыль с мусора вкл/выкл)", "&7Руды -> &aмгновенно в инвентарь", "&8∞ Неразрушимая"
     enchant {_p} with unbreaking 10
     return {_p}
 
@@ -3812,7 +3812,7 @@ function altarVoidPickaxeItem() :: item:
 function altarOmniPickaxeItem() :: item:
     set {_p} to netherite pickaxe
     set name of {_p} to "&6&lОмни-Кирка Алтаря"
-    set lore of {_p} to "&8✦ Финальное слияние", "&8ОМНИ_КИРКА", "&7Все эффекты алтарных кирок сразу", "&7Автосбор + плавка + жила + удача + пустота", "&8∞ Неразрушимая"
+    set lore of {_p} to "&8✦ Финальное слияние", "&8ОМНИ_КИРКА", "&7Shift+ПКМ: &fэфирный режим &7(пыль с камня/мусора)", "&7Автосбор + плавка + жила + удача + пустота", "&8∞ Неразрушимая"
     enchant {_p} with unbreaking 10
     enchant {_p} with efficiency 6
     return {_p}
@@ -3852,114 +3852,20 @@ function isVoidPickaxe(i: item) :: boolean:
 function isOmniPickaxe(i: item) :: boolean:
     return pickaxeHasTag({_i}, "ОМНИ_КИРКА")
 
-function altarPickaxeActive(p: player, key: text) :: boolean:
-    set {_u} to uuid of {_p}
-    if {altar_pick_toggle::%{_u}%::%{_key}%} is false:
-        return false
-    return true
-
-function openAltarPickaxeToggleGui(p: player):
-    open chest inventory with 3 rows named "&8Алтарные кирки: эффекты" to {_p}
-    wait 1 tick
-    loop 27 times:
-        set slot (loop-number - 1) of {_p}'s current inventory to gray stained glass pane named " "
-    set {_i1} to altarEtherPickaxeItem()
-    set lore of {_i1} to "&7Режим: Эфир", "&7Автосбор руды + пыль", "&8SHIFT+ПКМ: открыть это меню", "&8Статус: %{_st1}%"
-    set {_st1} to "&aВКЛ"
-    if altarPickaxeActive({_p}, "ether") is false:
-        set {_st1} to "&cВЫКЛ"
-    set lore of {_i1} to "&7Режим: Эфир", "&7Автосбор руды + пыль", "&8SHIFT+ПКМ: открыть это меню", "&8Статус: %{_st1}%"
-    set slot 11 of {_p}'s current inventory to {_i1}
-    set {_i2} to altarFlamePickaxeItem()
-    set {_st2} to "&aВКЛ"
-    if altarPickaxeActive({_p}, "flame") is false:
-        set {_st2} to "&cВЫКЛ"
-    set lore of {_i2} to "&7Режим: Пламя", "&7Автоплавка руды", "&8Клик: вкл/выкл", "&8Статус: %{_st2}%"
-    set slot 12 of {_p}'s current inventory to {_i2}
-    set {_i3} to altarVeinPickaxeItem()
-    set {_st3} to "&aВКЛ"
-    if altarPickaxeActive({_p}, "vein") is false:
-        set {_st3} to "&cВЫКЛ"
-    set lore of {_i3} to "&7Режим: Жила", "&7Срубает соседнюю руду", "&8Клик: вкл/выкл", "&8Статус: %{_st3}%"
-    set slot 13 of {_p}'s current inventory to {_i3}
-    set {_i4} to altarFortunePickaxeItem()
-    set {_st4} to "&aВКЛ"
-    if altarPickaxeActive({_p}, "fortune") is false:
-        set {_st4} to "&cВЫКЛ"
-    set lore of {_i4} to "&7Режим: Удача", "&7x4 дроп с руд", "&8Клик: вкл/выкл", "&8Статус: %{_st4}%"
-    set slot 14 of {_p}'s current inventory to {_i4}
-    set {_i5} to altarVoidPickaxeItem()
-    set {_st5} to "&aВКЛ"
-    if altarPickaxeActive({_p}, "void") is false:
-        set {_st5} to "&cВЫКЛ"
-    set lore of {_i5} to "&7Режим: Пустота", "&7Телепорт-сбор к игроку", "&8Клик: вкл/выкл", "&8Статус: %{_st5}%"
-    set slot 15 of {_p}'s current inventory to {_i5}
-    set slot 22 of {_p}'s current inventory to barrier named "&cЗакрыть"
-
-on inventory click:
-    if name of event-inventory is "&8Алтарные кирки: эффекты":
-        cancel event
-        if clicked inventory is not player's current inventory:
-            stop
-        set {_u} to uuid of player
-        set {_s} to index of event-slot
-        if {_s} is 11:
-            set {_v} to {altar_pick_toggle::%{_u}%::ether} ? true
-            if {_v} is true:
-                set {altar_pick_toggle::%{_u}%::ether} to false
-            else:
-                set {altar_pick_toggle::%{_u}%::ether} to true
-            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
-            wait 1 tick
-            openAltarPickaxeToggleGui(player)
-            stop
-        if {_s} is 12:
-            set {_v} to {altar_pick_toggle::%{_u}%::flame} ? true
-            if {_v} is true:
-                set {altar_pick_toggle::%{_u}%::flame} to false
-            else:
-                set {altar_pick_toggle::%{_u}%::flame} to true
-            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
-            wait 1 tick
-            openAltarPickaxeToggleGui(player)
-            stop
-        if {_s} is 13:
-            set {_v} to {altar_pick_toggle::%{_u}%::vein} ? true
-            if {_v} is true:
-                set {altar_pick_toggle::%{_u}%::vein} to false
-            else:
-                set {altar_pick_toggle::%{_u}%::vein} to true
-            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
-            wait 1 tick
-            openAltarPickaxeToggleGui(player)
-            stop
-        if {_s} is 14:
-            set {_v} to {altar_pick_toggle::%{_u}%::fortune} ? true
-            if {_v} is true:
-                set {altar_pick_toggle::%{_u}%::fortune} to false
-            else:
-                set {altar_pick_toggle::%{_u}%::fortune} to true
-            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
-            wait 1 tick
-            openAltarPickaxeToggleGui(player)
-            stop
-        if {_s} is 15:
-            set {_v} to {altar_pick_toggle::%{_u}%::void} ? true
-            if {_v} is true:
-                set {altar_pick_toggle::%{_u}%::void} to false
-            else:
-                set {altar_pick_toggle::%{_u}%::void} to true
-            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
-            wait 1 tick
-            openAltarPickaxeToggleGui(player)
-            stop
-        if {_s} is 22:
-            close player's inventory
-            stop
-
-on inventory drag:
-    if name of event-inventory is "&8Алтарные кирки: эффекты":
-        cancel event
+function isAltarPickaxeTool(i: item) :: boolean:
+    if isEtherPickaxe({_i}) is true:
+        return true
+    if isFlamePickaxe({_i}) is true:
+        return true
+    if isVeinPickaxe({_i}) is true:
+        return true
+    if isFortunePickaxe({_i}) is true:
+        return true
+    if isVoidPickaxe({_i}) is true:
+        return true
+    if isOmniPickaxe({_i}) is true:
+        return true
+    return false
 
 function isEtherTrashBlock(b: block) :: boolean:
     if {_b} is stone:
@@ -4383,6 +4289,7 @@ command /altar:
         send "{@prefix} &f5× ключ пустоты&7, &f3× плачущий обсидиан&7, &f3× обсидиан&7, &f3× аметистовый осколок."
         send "{@prefix} &7Появится куб без воронки; именную воронку получишь в инвентарь — поставь её на центральный аметист."
         send "{@prefix} &7Крафт подтверждается нажатием &fодной каменной кнопки &7на плачущем обсидиане (сбоку)."
+        send "{@prefix} &7Алтарная кирка: &fShift+ПКМ &7— эфирный режим (пыль с мусорных блоков); &cвыкл &7= копать камень как обычно."
         send "{@prefix} &6Рецепты алтарных кирок (слоты 0–4, порядок любой):"
         send "{@prefix} &dЭфирная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &bалмазный блок + &dаметистовый осколок"
         send "{@prefix} &cПламенная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &bалмазный блок + &6blaze rod"
@@ -5578,21 +5485,13 @@ on break:
         set {_b} to event-block
         # Реальная «неразрушимость» для серверов, где флаг unbreakable не применяется.
         set durability of player's tool to 99999
-        set {_fxEnabled} to {altar_fx_enabled::%uuid of player%} ? true
-        if {_fxEnabled} is false:
-            stop
-        set {_etherOn} to altarPickaxeActive(player, "ether")
-        set {_flameOn} to altarPickaxeActive(player, "flame")
-        set {_veinOn} to altarPickaxeActive(player, "vein")
-        set {_fortuneOn} to altarPickaxeActive(player, "fortune")
-        set {_voidOn} to altarPickaxeActive(player, "void")
-        if isOmniPickaxe(player's tool) is true:
-            set {_etherOn} to true
-            set {_flameOn} to true
-            set {_veinOn} to true
-            set {_fortuneOn} to true
-            set {_voidOn} to true
+        set {_flameOn} to true
+        set {_veinOn} to true
+        set {_fortuneOn} to true
+        set {_voidOn} to true
         if isEtherTrashBlock({_b}) is true:
+            if {altar_ether_trash_mode::%uuid of player%} is not true:
+                stop
             cancel event
             set event-block to air
             if isFlamePickaxe(player's tool) is true:
@@ -5834,25 +5733,19 @@ on break:
 
 # 3. Запрет любого взаимодействия (ПКМ/ЛКМ по воздуху, блокам, сундукам и т.д.)
 on right click:
-    # Shift+ПКМ: открывает GUI тумблеров эффектов алтарных кирок.
+    # Shift+ПКМ с алтарной киркой: вкл/выкл эфирный режим (пыль с мусорных блоков; выкл = обычная добыча камня).
     if player is sneaking:
         set {_tk} to player's tool
-        set {_isAltarPick} to false
-        if isEtherPickaxe({_tk}) is true:
-            set {_isAltarPick} to true
-        else if isFlamePickaxe({_tk}) is true:
-            set {_isAltarPick} to true
-        else if isVeinPickaxe({_tk}) is true:
-            set {_isAltarPick} to true
-        else if isFortunePickaxe({_tk}) is true:
-            set {_isAltarPick} to true
-        else if isVoidPickaxe({_tk}) is true:
-            set {_isAltarPick} to true
-        else if isOmniPickaxe({_tk}) is true:
-            set {_isAltarPick} to true
-        if {_isAltarPick} is true:
+        if isAltarPickaxeTool({_tk}) is true:
             cancel event
-            openAltarPickaxeToggleGui(player)
+            set {_u} to uuid of player
+            if {altar_ether_trash_mode::%{_u}%} is true:
+                delete {altar_ether_trash_mode::%{_u}%}
+                send action bar "&7Эфирный режим: &cВЫКЛ &8(камень как обычно)" to player
+            else:
+                set {altar_ether_trash_mode::%{_u}%} to true
+                send action bar "&7Эфирный режим: &aВКЛ &8(мусор -> пыль)" to player
+            play sound "ui.button.click" with volume 0.85 and pitch 1.2 at player for player
             stop
     set {_u} to player's uuid
     set {_l} to {level::%{_u}%} ? 1
@@ -5883,63 +5776,6 @@ on left click:
                         stop
             set {leg_warrior_air_last::%{_u}%} to now
             warriorLegSpatialAirSlash(player)
-
-on inventory click:
-    if name of event-inventory is "&8Алтарные Кирки":
-        cancel event
-        if clicked inventory is not player's current inventory:
-            stop
-        set {_u} to uuid of player
-        if clicked slot is 11:
-            set {_v} to {altar_pick_toggle::%{_u}%::ether} ? true
-            if {_v} is true:
-                set {altar_pick_toggle::%{_u}%::ether} to false
-                send action bar "&dЭфир: &cOFF" to player
-            else:
-                set {altar_pick_toggle::%{_u}%::ether} to true
-                send action bar "&dЭфир: &aON" to player
-            openAltarPickaxeToggleGui(player)
-            stop
-        if clicked slot is 12:
-            set {_v} to {altar_pick_toggle::%{_u}%::flame} ? true
-            if {_v} is true:
-                set {altar_pick_toggle::%{_u}%::flame} to false
-                send action bar "&cПламя: &cOFF" to player
-            else:
-                set {altar_pick_toggle::%{_u}%::flame} to true
-                send action bar "&cПламя: &aON" to player
-            openAltarPickaxeToggleGui(player)
-            stop
-        if clicked slot is 13:
-            set {_v} to {altar_pick_toggle::%{_u}%::vein} ? true
-            if {_v} is true:
-                set {altar_pick_toggle::%{_u}%::vein} to false
-                send action bar "&aЖила: &cOFF" to player
-            else:
-                set {altar_pick_toggle::%{_u}%::vein} to true
-                send action bar "&aЖила: &aON" to player
-            openAltarPickaxeToggleGui(player)
-            stop
-        if clicked slot is 14:
-            set {_v} to {altar_pick_toggle::%{_u}%::fortune} ? true
-            if {_v} is true:
-                set {altar_pick_toggle::%{_u}%::fortune} to false
-                send action bar "&eУдача: &cOFF" to player
-            else:
-                set {altar_pick_toggle::%{_u}%::fortune} to true
-                send action bar "&eУдача: &aON" to player
-            openAltarPickaxeToggleGui(player)
-            stop
-        if clicked slot is 15:
-            set {_v} to {altar_pick_toggle::%{_u}%::void} ? true
-            if {_v} is true:
-                set {altar_pick_toggle::%{_u}%::void} to false
-                send action bar "&5Пустота: &cOFF" to player
-            else:
-                set {altar_pick_toggle::%{_u}%::void} to true
-                send action bar "&5Пустота: &aON" to player
-            openAltarPickaxeToggleGui(player)
-            stop
 
 # --- КУРАЦИЯ КЛАССОВЫХ ПРЕДМЕТОВ ---
 
