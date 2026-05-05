@@ -4335,7 +4335,7 @@ function pullArtifactFromCore(p: player, key: text) :: boolean:
     set {_Li} to 1
     while {_Li} <= 3:
         set {_si} to 1
-        while {_si} <= 6:
+        while {_si} <= 5:
             set {_sit} to {art_loadout_it::%{_u}%::%{_Li}%::%{_si}%}
             if {_sit} is set:
                 if {_sit} is not air:
@@ -4367,7 +4367,7 @@ function hasArtifact(p: player, key: text) :: boolean:
     if {_L} > 3:
         set {_L} to 3
     set {_si} to 1
-    while {_si} <= 6:
+    while {_si} <= 5:
         set {_it} to {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
         if {_it} is set:
             if {_it} is not air:
@@ -4471,7 +4471,7 @@ function artifactGuiSaveCurrentLoadout(p: player):
         set {_L} to 3
     set {art_loadout::%{_u}%} to {_L}
     set {_si} to 1
-    while {_si} <= 6:
+    while {_si} <= 5:
         set {_slot} to 9 + {_si}
         set {_it} to slot {_slot} of {_p}'s current inventory
         if {_it} is set:
@@ -4491,7 +4491,7 @@ function artifactGuiSaveCurrentLoadout(p: player):
         add 1 to {_si}
     delete {_dupSeen::*}
     set {_si} to 1
-    while {_si} <= 6:
+    while {_si} <= 5:
         set {_slotD} to 9 + {_si}
         set {_itD} to {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
         if {_itD} is set:
@@ -4514,7 +4514,7 @@ function artifactGuiSaveCurrentLoadout(p: player):
     delete {_dupSeen::*}
     set {_keepN} to 0
     set {_si} to 1
-    while {_si} <= 6:
+    while {_si} <= 5:
         set {_slotK} to 9 + {_si}
         set {_itK} to {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
         if {_itK} is set:
@@ -4537,7 +4537,7 @@ function artifactGuiSaveCurrentLoadout(p: player):
     loop artifactGuiNormalKeysOrdered():
         set {art_enabled::%{_u}%::%loop-value%} to false
     set {_si} to 1
-    while {_si} <= 6:
+    while {_si} <= 5:
         set {_it4} to {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
         if {_it4} is set:
             if {_it4} is not air:
@@ -4559,7 +4559,7 @@ function artifactGuiApplyLoadout(p: player):
         set {_L} to 3
     set {art_loadout::%{_u}%} to {_L}
     set {_si} to 1
-    while {_si} <= 6:
+    while {_si} <= 5:
         set {_slot} to 9 + {_si}
         set {_it} to {art_loadout_it::%{_u}%::%{_L}%::%{_si}%}
         if {_it} is set:
@@ -4586,7 +4586,7 @@ function artifactGuiPaintFrame(p: player):
     set lore of {_next} to "&7Текущая: &f%{_L}% &7из &f3", "&7Переключить — сохранит слоты"
     set slot 17 of {_p}'s current inventory to {_next}
     set {_info} to book named "&7Выкладки артефактов"
-    set lore of {_info} to "&76 слотов (ряд по центру):", "&7положи &fпредмет артефакта&7 — эффект", "&7работает только если он в &aэтой выкладке&7.", "&7Зачисление в ядро: &fПКМ &7в мире.", "&7Легендарка: &e/legendary"
+    set lore of {_info} to "&75 слотов (ряд по центру):", "&7положи &fпредмет артефакта&7 — эффект", "&7работает только если он в &aэтой выкладке&7.", "&7Зачисление в ядро: &fПКМ &7в мире.", "&7Легендарка: &e/legendary"
     set slot 22 of {_p}'s current inventory to {_info}
 
 function hasBalloonArtifact(p: player) :: boolean:
@@ -7050,7 +7050,7 @@ command /artifacts:
             set slot (loop-number - 1) of player's current inventory to gray stained glass pane named " "
 
         set slot 4 of player's current inventory to nether star named "&6&lАРТЕФАКТЫ: ЯДРО"
-        set lore of slot 4 of player's current inventory to "&7&a3 выкладки&7 по &f6 слотов&7 — положи предмет артефакта", "&7Эффект только если он в &aтекущей выкладке&7.", "&7◀ ▶ — переключение выкладок (сохраняет слоты).", "&7Новый артефакт в ядро: &fПКМ &7в мире.", "&7Легендарка: &e/legendary"
+        set lore of slot 4 of player's current inventory to "&7&a3 выкладки&7 по &f5 слотов&7 — положи предмет артефакта", "&7Эффект только если он в &aтекущей выкладке&7.", "&7◀ ▶ — переключение выкладок (сохраняет слоты).", "&7Новый артефакт в ядро: &fПКМ &7в мире.", "&7Легендарка: &e/legendary"
         artifactGuiApplyLoadout(player)
         artifactGuiPaintFrame(player)
         set {art_core_gui_open::%{_u}%} to true
@@ -7067,7 +7067,7 @@ on inventory click:
             stop
         if {_slot} is not between 0 and 26:
             stop
-        if {_slot} is between 10 and 15:
+        if {_slot} is between 10 and 14:
             wait 1 tick
             artifactGuiSaveCurrentLoadout(player)
             stop
@@ -7094,7 +7094,7 @@ on inventory click:
             stop
         if {_slot} is 22:
             stop
-        send action bar "&7Слоты артефактов: &f10–15&7 (6 шт.)." to player
+        send action bar "&7Слоты артефактов: &f10–14&7 (5 шт.)." to player
         stop
 
 on inventory close:
