@@ -3779,6 +3779,7 @@ function altarEtherPickaxeItem() :: item:
     set name of {_p} to "&dЭфирная Кирка"
     set lore of {_p} to "&7Алтарный артефакт", "&8ЭФИР_КИРКА", "&7Камень/грязь/гравий -> в пыль + опыт", "&7Ценные руды -> автосбор в инвентарь", "&8Неразрушимая"
     enchant {_p} with unbreaking 10
+    set unbreakable state of {_p} to true
     return {_p}
 
 function isEtherPickaxe(i: item) :: boolean:
@@ -3788,6 +3789,38 @@ function isEtherPickaxe(i: item) :: boolean:
     if {_n} is not set:
         return false
     if {_n} contains "Эфирная Кирка":
+        return true
+    return false
+
+function isEtherTrashBlock(b: block) :: boolean:
+    if {_b} is stone:
+        return true
+    if {_b} is cobblestone:
+        return true
+    if {_b} is dirt:
+        return true
+    if {_b} is gravel:
+        return true
+    if {_b} is deepslate:
+        return true
+    return false
+
+function isEtherValuableOre(b: block) :: boolean:
+    if {_b} is diamond ore:
+        return true
+    if {_b} is deepslate diamond ore:
+        return true
+    if {_b} is gold ore:
+        return true
+    if {_b} is deepslate gold ore:
+        return true
+    if {_b} is nether gold ore:
+        return true
+    if {_b} is iron ore:
+        return true
+    if {_b} is deepslate iron ore:
+        return true
+    if {_b} is ancient debris:
         return true
     return false
 
@@ -5231,6 +5264,46 @@ on break:
         cancel event
         send "{@prefix} &cАлтарь неразрушим." to player
         stop
+    if isEtherPickaxe(player's tool) is true:
+        set {_b} to event-block
+        # Реальная «неразрушимость» для серверов, где флаг unbreakable не применяется.
+        set durability of player's tool to 99999
+        if isEtherTrashBlock({_b}) is true:
+            cancel event
+            set event-block to air
+            drop 1 gunpowder at location of {_b}
+            give 1 experience to player
+            stop
+        if isEtherValuableOre({_b}) is true:
+            cancel event
+            set {_dropLoc} to location of {_b}
+            set {_w} to world of {_dropLoc}
+            set event-block to air
+            if {_b} is diamond ore:
+                drop 1 diamond at {_dropLoc}
+                give 3 experience to player
+            else if {_b} is deepslate diamond ore:
+                drop 1 diamond at {_dropLoc}
+                give 3 experience to player
+            else if {_b} is gold ore:
+                drop 1 raw gold at {_dropLoc}
+                give 2 experience to player
+            else if {_b} is deepslate gold ore:
+                drop 1 raw gold at {_dropLoc}
+                give 2 experience to player
+            else if {_b} is nether gold ore:
+                drop 2 gold nugget at {_dropLoc}
+                give 2 experience to player
+            else if {_b} is iron ore:
+                drop 1 raw iron at {_dropLoc}
+                give 2 experience to player
+            else if {_b} is deepslate iron ore:
+                drop 1 raw iron at {_dropLoc}
+                give 2 experience to player
+            else if {_b} is ancient debris:
+                drop 1 ancient debris at {_dropLoc}
+                give 5 experience to player
+            stop
     set {_u} to player's uuid
     set {_l} to {level::%{_u}%} ? 1
     if {_l} < 20:
