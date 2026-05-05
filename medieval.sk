@@ -3458,6 +3458,939 @@ function artifactRuinTrySpawnChunk(wcx: number, wcz: number, w: world):
                     set {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} to true
                     stop
 
+# ----- Алтарь пробуждения (Незер): сундук → оболочка 3×3×3 + именная воронка в инвентарь → установка на центральный аметист -----
+# Дыры по центру боковых граней среднего слоя (доступ); низ и верх центра не «дыры»: аметист и плачущий обсидиан.
+
+function isAwakeningAltarFaceHoleMiddle(dx: number, dz: number) :: boolean:
+    if {_dx} is -1:
+        if {_dz} is 0:
+            return true
+    if {_dx} is 1:
+        if {_dz} is 0:
+            return true
+    if {_dx} is 0:
+        if {_dz} is -1:
+            return true
+        if {_dz} is 1:
+            return true
+    return false
+
+function isAwakeningAltarTopButtonRel(dx: number, dz: number) :: boolean:
+    if {_dx} is 0:
+        if {_dz} is 1:
+            return true
+    return false
+
+function awakeningHopperTokenItem() :: item:
+    set {_h} to hopper
+    set name of {_h} to "&5&lАлтарь Создания"
+    set lore of {_h} to "&7Установи на центральный аметист алтаря", "&7(центр нижнего слоя куба)", "&8После установки откроется крафт воронки"
+    return {_h}
+
+function isAwakeningHopperToken(i: item) :: boolean:
+    if {_i} is not hopper:
+        return false
+    set {_n} to name of {_i}
+    if {_n} is not set:
+        return false
+    if {_n} contains "Алтарь Создания":
+        return true
+    return false
+
+function altarAwakeningVoidKey(i: item) :: boolean:
+    set {_n} to name of {_i}
+    if {_n} is not set:
+        return false
+    if {_n} contains "Ключ Пустоты":
+        return true
+    if {_n} contains "Ключ пустоты":
+        return true
+    return false
+
+function altarAwakeningReturnKey(i: item) :: boolean:
+    set {_n} to name of {_i}
+    if {_n} is not set:
+        return false
+    if {_n} contains "Ключ возврата":
+        return true
+    if {_n} contains "Ключ Возврата":
+        return true
+    if {_n} contains "Возврат":
+        return true
+    if {_n} contains "возврат":
+        return true
+    return false
+
+function isAltarChestRecipeExact(inv: inventory) :: boolean:
+    set {_voidN} to 0
+    set {_cryN} to 0
+    set {_obsN} to 0
+    set {_amtN} to 0
+    set {_bad} to false
+    loop all items in {_inv}:
+        if loop-value is air:
+            stop
+        if altarAwakeningVoidKey(loop-value) is true:
+            add amount of loop-value to {_voidN}
+        else if loop-value is crying obsidian:
+            add amount of loop-value to {_cryN}
+        else if loop-value is obsidian:
+            add amount of loop-value to {_obsN}
+        else if loop-value is amethyst shard:
+            add amount of loop-value to {_amtN}
+        else:
+            set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_voidN} is not 5:
+        return false
+    if {_cryN} is not 3:
+        return false
+    if {_obsN} is not 3:
+        return false
+    if {_amtN} is not 3:
+        return false
+    return true
+
+function altarStructureShellOk(base: location, middleCenterMustBeHopper: boolean) :: boolean:
+    set {_w} to world of {_base}
+    set {_x} to floor(x-coordinate of {_base})
+    set {_y} to floor(y-coordinate of {_base})
+    set {_z} to floor(z-coordinate of {_base})
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            set {_b0} to block at location at {_x} + {_dx}, {_y}, {_z} + {_dz} in {_w}
+            if {_dx} is 0:
+                if {_dz} is 0:
+                    if {_b0} is not amethyst block:
+                        return false
+                else:
+                    if {_b0} is not polished blackstone bricks:
+                        return false
+            else:
+                if {_b0} is not polished blackstone bricks:
+                    return false
+            add 1 to {_dz}
+        add 1 to {_dx}
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            if {_dx} is 0:
+                if {_dz} is 0:
+                    set {_b1} to block at location at {_x}, {_y} + 1, {_z} in {_w}
+                    if {_middleCenterMustBeHopper} is true:
+                        if {_b1} is not hopper:
+                            return false
+                        if isAwakeningAltarHopperComplete({_b1}) is false:
+                            return false
+                    else:
+                        if {_b1} is not air:
+                            return false
+                else:
+                    set {_b1} to block at location at {_x} + {_dx}, {_y} + 1, {_z} + {_dz} in {_w}
+                    if isAwakeningAltarFaceHoleMiddle({_dx}, {_dz}) is true:
+                        if {_b1} is not air:
+                            return false
+                    else if {_b1} is not blackstone:
+                        return false
+            else:
+                set {_b1} to block at location at {_x} + {_dx}, {_y} + 1, {_z} + {_dz} in {_w}
+                if isAwakeningAltarFaceHoleMiddle({_dx}, {_dz}) is true:
+                    if {_b1} is not air:
+                        return false
+                else if {_b1} is not blackstone:
+                    return false
+            add 1 to {_dz}
+        add 1 to {_dx}
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            set {_b2} to block at location at {_x} + {_dx}, {_y} + 2, {_z} + {_dz} in {_w}
+            if {_dx} is 0:
+                if {_dz} is 0:
+                    if {_b2} is not crying obsidian:
+                        return false
+            add 1 to {_dz}
+        add 1 to {_dx}
+    set {_b3} to block at location at {_x}, {_y} + 2, {_z} - 1 in {_w}
+    if {_b3} is not stone button:
+        return false
+    return true
+
+function altarStructureCoreOk(base: location) :: boolean:
+    return altarStructureShellOk({_base}, true)
+
+function isAwakeningAltarHopperComplete(b: block) :: boolean:
+    if {_b} is not hopper:
+        return false
+    # Не завязываемся на заголовок GUI: на некоторых сборках/клиентах
+    # имя воронки может отображаться как Item Hopper.
+    return true
+
+function tryBuildAwakeningAltarAtChestBlock(cb: block, opener: player):
+    set {_chestOk} to false
+    if {_cb} is chest:
+        set {_chestOk} to true
+    else if {_cb} is trapped chest:
+        set {_chestOk} to true
+    if {_chestOk} is true:
+        set {_cinv} to inventory of {_cb}
+        if isAltarChestRecipeExact({_cinv}) is true:
+            clear {_cinv}
+            buildAwakeningAltarFromChest({_cb}, {_opener})
+
+function tryBuildAwakeningAltarAtChestBlock(cb: block):
+    set {_chestOk} to false
+    if {_cb} is chest:
+        set {_chestOk} to true
+    else if {_cb} is trapped chest:
+        set {_chestOk} to true
+    if {_chestOk} is true:
+        set {_cinv} to inventory of {_cb}
+        if isAltarChestRecipeExact({_cinv}) is true:
+            clear {_cinv}
+            buildAwakeningAltarShellFromChest({_cb})
+
+function tryBuildAwakeningAltarFromInventoryHolder(h: object, opener: player):
+    if {_h} is chest:
+        tryBuildAwakeningAltarAtChestBlock({_h}, {_opener})
+    else if {_h} is trapped chest:
+        tryBuildAwakeningAltarAtChestBlock({_h}, {_opener})
+
+function tryBuildAwakeningAltarFromInventoryHolder(h: object):
+    if {_h} is chest:
+        tryBuildAwakeningAltarAtChestBlock({_h})
+    else if {_h} is trapped chest:
+        tryBuildAwakeningAltarAtChestBlock({_h})
+
+function buildAwakeningAltarShellFromChest(ch: block):
+    set {_w} to world of {_ch}
+    set {_x} to floor(x-coordinate of {_ch})
+    set {_y} to floor(y-coordinate of {_ch})
+    set {_z} to floor(z-coordinate of {_ch})
+    set block at {_ch} to air
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            if {_dx} is 0:
+                if {_dz} is 0:
+                    set block at location at {_x}, {_y}, {_z} in {_w} to amethyst block
+                else:
+                    set block at location at {_x} + {_dx}, {_y}, {_z} + {_dz} in {_w} to polished blackstone bricks
+            else:
+                set block at location at {_x} + {_dx}, {_y}, {_z} + {_dz} in {_w} to polished blackstone bricks
+            add 1 to {_dz}
+        add 1 to {_dx}
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            if {_dx} is 0:
+                if {_dz} is 0:
+                    set block at location at {_x}, {_y} + 1, {_z} in {_w} to air
+                else:
+                    set block at location at {_x} + {_dx}, {_y} + 1, {_z} + {_dz} in {_w} to blackstone
+            else:
+                set block at location at {_x} + {_dx}, {_y} + 1, {_z} + {_dz} in {_w} to blackstone
+            add 1 to {_dz}
+        add 1 to {_dx}
+    set {_dx} to -1
+    while {_dx} <= 1:
+        set {_dz} to -1
+        while {_dz} <= 1:
+            set block at location at {_x} + {_dx}, {_y} + 2, {_z} + {_dz} in {_w} to air
+            add 1 to {_dz}
+        add 1 to {_dx}
+    set block at location at {_x}, {_y} + 2, {_z} in {_w} to crying obsidian
+    # Одна физическая кнопка: на центральном плачущем обсидиане (сбоку), с северной стороны (-Z).
+    set block at location at {_x}, {_y} + 2, {_z} - 1 in {_w} to stone button
+    set block at location at {_x} - 1, {_y} + 1, {_z} in {_w} to air
+    set block at location at {_x} + 1, {_y} + 1, {_z} in {_w} to air
+    set block at location at {_x}, {_y} + 1, {_z} - 1 in {_w} to air
+    set block at location at {_x}, {_y} + 1, {_z} + 1 in {_w} to air
+    set {_core} to location at {_x}, {_y}, {_z} in {_w}
+    add {_core} to {awakening_altar_bases::*}
+    set {_fx} to location at {_x}, {_y} + 1, {_z} in {_w}
+    strike lightning effect at {_fx}
+    play sound "block.beacon.activate" with volume 1 and pitch 0.8 at {_fx} for all players
+    execute console command "execute positioned %x-coordinate of {_fx}% %y-coordinate of {_fx}% %z-coordinate of {_fx}% run particle minecraft:witch ~ ~ ~ 0.45 0.35 0.45 0.01 45 force"
+    execute console command "execute positioned %x-coordinate of {_fx}% %y-coordinate of {_fx}% %z-coordinate of {_fx}% run particle minecraft:portal ~ ~0.4 ~ 0.55 0.35 0.55 0.01 60 force"
+
+function buildAwakeningAltarFromChest(ch: block, opener: player):
+    buildAwakeningAltarShellFromChest({_ch})
+    set {_tok} to awakeningHopperTokenItem()
+    if {_opener} has space for {_tok}:
+        give {_tok} to {_opener}
+        send "{@prefix} &dПолучена воронка &5Алтарь Создания&d — поставь её на центральный аметист." to {_opener}
+    else:
+        drop {_tok} at {_opener}
+        send "{@prefix} &eИнвентарь полон: воронка &5Алтарь Создания &eвыпала рядом." to {_opener}
+
+function tryCompleteAwakeningAltarHopper(placer: player, hb: block, placed: item):
+    if {_hb} is not hopper:
+        stop
+    set {_tok} to false
+    if isAwakeningHopperToken({_placed}) is true:
+        set {_tok} to true
+    if {_tok} is false:
+        if isAwakeningHopperToken(tool of {_placer}) is true:
+            set {_tok} to true
+    if {_tok} is false:
+        stop
+    set {_w} to world of {_hb}
+    set {_hx} to floor(x-coordinate of {_hb})
+    set {_hy} to floor(y-coordinate of {_hb})
+    set {_hz} to floor(z-coordinate of {_hb})
+    set {_below} to block at location at {_hx}, {_hy} - 1, {_hz} in {_w}
+    if {_below} is not amethyst block:
+        stop
+    set {_bx} to {_hx}
+    set {_by} to {_hy} - 1
+    set {_bz} to {_hz}
+    set {_baseLoc} to location at {_bx}, {_by}, {_bz} in {_w}
+    set {_listed} to false
+    loop {awakening_altar_bases::*}:
+        if loop-value is {_baseLoc}:
+            set {_listed} to true
+            exit loop
+    if {_listed} is false:
+        stop
+    if altarStructureShellOk({_baseLoc}, false) is false:
+        stop
+    set {_already} to false
+    loop {awakening_altars::*}:
+        if loop-value is location of {_hb}:
+            set {_already} to true
+            exit loop
+    if {_already} is true:
+        stop
+    set name of inventory of {_hb} to "&5&lАлтарь Создания"
+    add location of {_hb} to {awakening_altars::*}
+    play sound "block.beacon.activate" with volume 1 and pitch 1 at {_hb} for all players
+    send "{@prefix} &dАлтарь создания завершён — можно крафтить в воронке." to {_placer}
+
+function altarEtherPickaxeItem() :: item:
+    set {_p} to diamond pickaxe
+    set name of {_p} to "&dЭфирная Кирка"
+    set lore of {_p} to "&8✦ Алтарная кирка", "&8ЭФИР_КИРКА", "&7Мусорные блоки -> &fэфирная пыль", "&7Руды -> &aмгновенно в инвентарь", "&8∞ Неразрушимая"
+    enchant {_p} with unbreaking 10
+    return {_p}
+
+function altarFlamePickaxeItem() :: item:
+    set {_p} to diamond pickaxe
+    set name of {_p} to "&cПламенная Кирка"
+    set lore of {_p} to "&8✦ Алтарная кирка", "&8ПЛАМЯ_КИРКА", "&7Руды сразу плавятся в &6слитки", "&7Пылающая добыча + доп. опыт", "&8∞ Неразрушимая"
+    enchant {_p} with unbreaking 10
+    return {_p}
+
+function altarVeinPickaxeItem() :: item:
+    set {_p} to diamond pickaxe
+    set name of {_p} to "&aЖильная Кирка"
+    set lore of {_p} to "&8✦ Алтарная кирка", "&8ЖИЛА_КИРКА", "&7Ломает соседнюю жилу руды", "&7До &f27 &7блоков за один удар", "&8∞ Неразрушимая"
+    enchant {_p} with unbreaking 10
+    return {_p}
+
+function altarFortunePickaxeItem() :: item:
+    set {_p} to diamond pickaxe
+    set name of {_p} to "&eКирка Удачи"
+    set lore of {_p} to "&8✦ Алтарная кирка", "&8УДАЧА_КИРКА", "&7Усиленная добыча редких ресурсов", "&7Бонусный дроп с руд", "&8∞ Неразрушимая"
+    enchant {_p} with unbreaking 10
+    return {_p}
+
+function altarVoidPickaxeItem() :: item:
+    set {_p} to diamond pickaxe
+    set name of {_p} to "&5Кирка Пустоты"
+    set lore of {_p} to "&8✦ Алтарная кирка", "&8ПУСТОТА_КИРКА", "&7Добыча втягивается сквозь пустоту", "&7Шанс получить &5эндер-жемчуг", "&8∞ Неразрушимая"
+    enchant {_p} with unbreaking 10
+    return {_p}
+
+function altarOmniPickaxeItem() :: item:
+    set {_p} to netherite pickaxe
+    set name of {_p} to "&6&lОмни-Кирка Алтаря"
+    set lore of {_p} to "&8✦ Финальное слияние", "&8ОМНИ_КИРКА", "&7Все эффекты алтарных кирок сразу", "&7Автосбор + плавка + жила + удача + пустота", "&8∞ Неразрушимая"
+    enchant {_p} with unbreaking 10
+    enchant {_p} with efficiency 6
+    return {_p}
+
+function isEtherPickaxe(i: item) :: boolean:
+    if {_i} is not diamond pickaxe:
+        return false
+    set {_n} to name of {_i}
+    if {_n} is not set:
+        return false
+    if {_n} contains "Эфирная Кирка":
+        return true
+    return false
+
+function pickaxeHasTag(i: item, tag: text) :: boolean:
+    if {_i} is not diamond pickaxe:
+        if {_i} is not netherite pickaxe:
+            return false
+    set {_l::*} to lore of {_i}
+    loop {_l::*}:
+        if loop-value contains {_tag}:
+            return true
+    return false
+
+function isFlamePickaxe(i: item) :: boolean:
+    return pickaxeHasTag({_i}, "ПЛАМЯ_КИРКА")
+
+function isVeinPickaxe(i: item) :: boolean:
+    return pickaxeHasTag({_i}, "ЖИЛА_КИРКА")
+
+function isFortunePickaxe(i: item) :: boolean:
+    return pickaxeHasTag({_i}, "УДАЧА_КИРКА")
+
+function isVoidPickaxe(i: item) :: boolean:
+    return pickaxeHasTag({_i}, "ПУСТОТА_КИРКА")
+
+function isOmniPickaxe(i: item) :: boolean:
+    return pickaxeHasTag({_i}, "ОМНИ_КИРКА")
+
+function altarPickaxeActive(p: player, key: text) :: boolean:
+    set {_u} to uuid of {_p}
+    if {altar_pick_toggle::%{_u}%::%{_key}%} is false:
+        return false
+    return true
+
+function openAltarPickaxeToggleGui(p: player):
+    open chest inventory with 3 rows named "&8Алтарные кирки: эффекты" to {_p}
+    wait 1 tick
+    loop 27 times:
+        set slot (loop-number - 1) of {_p}'s current inventory to gray stained glass pane named " "
+    set {_i1} to altarEtherPickaxeItem()
+    set lore of {_i1} to "&7Режим: Эфир", "&7Автосбор руды + пыль", "&8SHIFT+ПКМ: открыть это меню", "&8Статус: %{_st1}%"
+    set {_st1} to "&aВКЛ"
+    if altarPickaxeActive({_p}, "ether") is false:
+        set {_st1} to "&cВЫКЛ"
+    set lore of {_i1} to "&7Режим: Эфир", "&7Автосбор руды + пыль", "&8SHIFT+ПКМ: открыть это меню", "&8Статус: %{_st1}%"
+    set slot 11 of {_p}'s current inventory to {_i1}
+    set {_i2} to altarFlamePickaxeItem()
+    set {_st2} to "&aВКЛ"
+    if altarPickaxeActive({_p}, "flame") is false:
+        set {_st2} to "&cВЫКЛ"
+    set lore of {_i2} to "&7Режим: Пламя", "&7Автоплавка руды", "&8Клик: вкл/выкл", "&8Статус: %{_st2}%"
+    set slot 12 of {_p}'s current inventory to {_i2}
+    set {_i3} to altarVeinPickaxeItem()
+    set {_st3} to "&aВКЛ"
+    if altarPickaxeActive({_p}, "vein") is false:
+        set {_st3} to "&cВЫКЛ"
+    set lore of {_i3} to "&7Режим: Жила", "&7Срубает соседнюю руду", "&8Клик: вкл/выкл", "&8Статус: %{_st3}%"
+    set slot 13 of {_p}'s current inventory to {_i3}
+    set {_i4} to altarFortunePickaxeItem()
+    set {_st4} to "&aВКЛ"
+    if altarPickaxeActive({_p}, "fortune") is false:
+        set {_st4} to "&cВЫКЛ"
+    set lore of {_i4} to "&7Режим: Удача", "&7x4 дроп с руд", "&8Клик: вкл/выкл", "&8Статус: %{_st4}%"
+    set slot 14 of {_p}'s current inventory to {_i4}
+    set {_i5} to altarVoidPickaxeItem()
+    set {_st5} to "&aВКЛ"
+    if altarPickaxeActive({_p}, "void") is false:
+        set {_st5} to "&cВЫКЛ"
+    set lore of {_i5} to "&7Режим: Пустота", "&7Телепорт-сбор к игроку", "&8Клик: вкл/выкл", "&8Статус: %{_st5}%"
+    set slot 15 of {_p}'s current inventory to {_i5}
+    set slot 22 of {_p}'s current inventory to barrier named "&cЗакрыть"
+
+on inventory click:
+    if name of event-inventory is "&8Алтарные кирки: эффекты":
+        cancel event
+        if clicked inventory is not player's current inventory:
+            stop
+        set {_u} to uuid of player
+        set {_s} to index of event-slot
+        if {_s} is 11:
+            set {_v} to {altar_pick_toggle::%{_u}%::ether} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::ether} to false
+            else:
+                set {altar_pick_toggle::%{_u}%::ether} to true
+            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
+            wait 1 tick
+            openAltarPickaxeToggleGui(player)
+            stop
+        if {_s} is 12:
+            set {_v} to {altar_pick_toggle::%{_u}%::flame} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::flame} to false
+            else:
+                set {altar_pick_toggle::%{_u}%::flame} to true
+            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
+            wait 1 tick
+            openAltarPickaxeToggleGui(player)
+            stop
+        if {_s} is 13:
+            set {_v} to {altar_pick_toggle::%{_u}%::vein} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::vein} to false
+            else:
+                set {altar_pick_toggle::%{_u}%::vein} to true
+            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
+            wait 1 tick
+            openAltarPickaxeToggleGui(player)
+            stop
+        if {_s} is 14:
+            set {_v} to {altar_pick_toggle::%{_u}%::fortune} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::fortune} to false
+            else:
+                set {altar_pick_toggle::%{_u}%::fortune} to true
+            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
+            wait 1 tick
+            openAltarPickaxeToggleGui(player)
+            stop
+        if {_s} is 15:
+            set {_v} to {altar_pick_toggle::%{_u}%::void} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::void} to false
+            else:
+                set {altar_pick_toggle::%{_u}%::void} to true
+            play sound "ui.button.click" with volume 0.8 and pitch 1.3 at player for player
+            wait 1 tick
+            openAltarPickaxeToggleGui(player)
+            stop
+        if {_s} is 22:
+            close player's inventory
+            stop
+
+on inventory drag:
+    if name of event-inventory is "&8Алтарные кирки: эффекты":
+        cancel event
+
+function isEtherTrashBlock(b: block) :: boolean:
+    if {_b} is stone:
+        return true
+    if {_b} is cobblestone:
+        return true
+    if {_b} is dirt:
+        return true
+    if {_b} is gravel:
+        return true
+    if {_b} is deepslate:
+        return true
+    return false
+
+function isEtherValuableOre(b: block) :: boolean:
+    if {_b} is diamond ore:
+        return true
+    if {_b} is deepslate diamond ore:
+        return true
+    if {_b} is redstone ore:
+        return true
+    if {_b} is deepslate redstone ore:
+        return true
+    if {_b} is lapis ore:
+        return true
+    if {_b} is deepslate lapis ore:
+        return true
+    if {_b} is coal ore:
+        return true
+    if {_b} is deepslate coal ore:
+        return true
+    if {_b} is gold ore:
+        return true
+    if {_b} is deepslate gold ore:
+        return true
+    if {_b} is nether gold ore:
+        return true
+    if {_b} is iron ore:
+        return true
+    if {_b} is deepslate iron ore:
+        return true
+    if {_b} is ancient debris:
+        return true
+    return false
+
+function giveOrDrop(it: item, p: player, loc: location):
+    if {_p} has space for {_it}:
+        give {_it} to {_p}
+    else:
+        drop {_it} at {_loc}
+
+function clearAltarCraftSlots(inv: inventory):
+    set slot 0 of {_inv} to air
+    set slot 1 of {_inv} to air
+    set slot 2 of {_inv} to air
+    set slot 3 of {_inv} to air
+    set slot 4 of {_inv} to air
+
+function isPickaxeRecipeByCore(inv: inventory, core: item, catalyst: item) :: boolean:
+    set {_voidN} to 0
+    set {_retN} to 0
+    set {_pickN} to 0
+    set {_coreN} to 0
+    set {_catN} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_it} to slot (loop-number - 1) of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if altarAwakeningVoidKey({_it}) is true:
+                add 1 to {_voidN}
+            else if altarAwakeningReturnKey({_it}) is true:
+                add 1 to {_retN}
+            else if {_it} is diamond pickaxe:
+                add 1 to {_pickN}
+            else if {_it} is {_core}:
+                add 1 to {_coreN}
+            else if {_it} is {_catalyst}:
+                add 1 to {_catN}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_voidN} is not 1:
+        return false
+    if {_retN} is not 1:
+        return false
+    if {_pickN} is not 1:
+        return false
+    if {_coreN} is not 1:
+        return false
+    if {_catN} is not 1:
+        return false
+    return true
+
+function isOmniPickaxeAltarRecipe(inv: inventory) :: boolean:
+    set {_ether} to 0
+    set {_flame} to 0
+    set {_vein} to 0
+    set {_fortune} to 0
+    set {_voidp} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_it} to slot (loop-number - 1) of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if isEtherPickaxe({_it}) is true:
+                add 1 to {_ether}
+            else if isFlamePickaxe({_it}) is true:
+                add 1 to {_flame}
+            else if isVeinPickaxe({_it}) is true:
+                add 1 to {_vein}
+            else if isFortunePickaxe({_it}) is true:
+                add 1 to {_fortune}
+            else if isVoidPickaxe({_it}) is true:
+                add 1 to {_voidp}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_ether} is not 1:
+        return false
+    if {_flame} is not 1:
+        return false
+    if {_vein} is not 1:
+        return false
+    if {_fortune} is not 1:
+        return false
+    if {_voidp} is not 1:
+        return false
+    return true
+
+function isEtherPickaxeAltarRecipeExact(inv: inventory) :: boolean:
+    set {_voidN} to 0
+    set {_retN} to 0
+    set {_pickN} to 0
+    set {_blockN} to 0
+    set {_amN} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_si} to loop-number - 1
+        set {_it} to slot {_si} of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if altarAwakeningVoidKey({_it}) is true:
+                add 1 to {_voidN}
+            else if altarAwakeningReturnKey({_it}) is true:
+                add 1 to {_retN}
+            else if {_it} is diamond pickaxe:
+                add 1 to {_pickN}
+            else if {_it} is diamond block:
+                add 1 to {_blockN}
+            else if {_it} is amethyst shard:
+                add 1 to {_amN}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_voidN} is not 1:
+        return false
+    if {_retN} is not 1:
+        return false
+    if {_pickN} is not 1:
+        return false
+    if {_blockN} is not 1:
+        return false
+    if {_amN} is not 1:
+        return false
+    return true
+
+function debugEtherPickaxeRecipe(inv: inventory, p: player):
+    set {_voidN} to 0
+    set {_retN} to 0
+    set {_pickN} to 0
+    set {_blockN} to 0
+    set {_amN} to 0
+    set {_total} to 0
+    set {_bad} to 0
+    loop 5 times:
+        set {_si} to loop-number - 1
+        set {_it} to slot {_si} of {_inv}
+        if {_it} is air:
+            send "{@prefix} &8[debug] slot %{_si}%: &cпусто" to {_p}
+        else:
+            add 1 to {_total}
+            set {_nm} to name of {_it}
+            if {_nm} is not set:
+                set {_nm} to "&7без имени"
+            if altarAwakeningVoidKey({_it}) is true:
+                add 1 to {_voidN}
+                send "{@prefix} &8[debug] slot %{_si}%: &dключ пустоты &8(%{_nm}%)" to {_p}
+            else if altarAwakeningReturnKey({_it}) is true:
+                add 1 to {_retN}
+                send "{@prefix} &8[debug] slot %{_si}%: &bключ возврата &8(%{_nm}%)" to {_p}
+            else if {_it} is diamond pickaxe:
+                add 1 to {_pickN}
+                send "{@prefix} &8[debug] slot %{_si}%: &fалмазная кирка" to {_p}
+            else if {_it} is diamond block:
+                add 1 to {_blockN}
+                send "{@prefix} &8[debug] slot %{_si}%: &bалмазный блок" to {_p}
+            else if {_it} is amethyst shard:
+                add 1 to {_amN}
+                send "{@prefix} &8[debug] slot %{_si}%: &dаметистовый осколок" to {_p}
+            else:
+                add 1 to {_bad}
+                send "{@prefix} &8[debug] slot %{_si}%: &cчужой предмет &8(%type of {_it}% | %{_nm}%)" to {_p}
+    send "{@prefix} &8[debug] total=%{_total}% bad=%{_bad}% | void=%{_voidN}% ret=%{_retN}% pick=%{_pickN}% block=%{_blockN}% am=%{_amN}%" to {_p}
+
+function isAwakeningCraftHopperReady(hb: block) :: boolean:
+    if {_hb} is not hopper:
+        return false
+    set {_w} to world of {_hb}
+    set {_x} to floor(x-coordinate of {_hb})
+    set {_y} to floor(y-coordinate of {_hb})
+    set {_z} to floor(z-coordinate of {_hb})
+    set {_ped} to block at location at {_x}, {_y} - 1, {_z} in {_w}
+    if {_ped} is not amethyst block:
+        return false
+    set {_top} to block at location at {_x}, {_y} + 1, {_z} in {_w}
+    if {_top} is not crying obsidian:
+        return false
+    set {_btn} to block at location at {_x}, {_y} + 1, {_z} - 1 in {_w}
+    if {_btn} is not stone button:
+        return false
+    return true
+
+function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
+    if {_hb} is not hopper:
+        return false
+    # Для крафта важна рабочая связка (кнопка/верх/воронка/пьедестал), а не идеальная оболочка.
+    if isAwakeningCraftHopperReady({_hb}) is false:
+        if {_crafter} is set:
+            send "{@prefix} &8[debug] ready-check: FAIL (воронка/аметист/верх/кнопка)" to {_crafter}
+        return false
+    set {_inv} to inventory of {_hb}
+    set {_outItem} to air
+    if isEtherPickaxeAltarRecipeExact({_inv}) is true:
+        set {_outItem} to altarEtherPickaxeItem()
+    else if isPickaxeRecipeByCore({_inv}, gold block, blaze rod) is true:
+        set {_outItem} to altarFlamePickaxeItem()
+    else if isPickaxeRecipeByCore({_inv}, emerald block, slime ball) is true:
+        set {_outItem} to altarVeinPickaxeItem()
+    else if isPickaxeRecipeByCore({_inv}, gold block, lapis lazuli) is true:
+        set {_outItem} to altarFortunePickaxeItem()
+    else if isPickaxeRecipeByCore({_inv}, obsidian, ender pearl) is true:
+        set {_outItem} to altarVoidPickaxeItem()
+    else if isOmniPickaxeAltarRecipe({_inv}) is true:
+        set {_outItem} to altarOmniPickaxeItem()
+    else:
+        if {_crafter} is set:
+            send "{@prefix} &8[debug] recipe-check: FAIL" to {_crafter}
+            debugEtherPickaxeRecipe({_inv}, {_crafter})
+        return false
+    clearAltarCraftSlots({_inv})
+    set {_out} to location of {_hb}
+    add 1 to y-coordinate of {_out}
+    strike lightning effect at {_out}
+    execute console command "execute positioned %x-coordinate of {_out}% %y-coordinate of {_out}% %z-coordinate of {_out}% run particle minecraft:witch ~ ~ ~ 0.35 0.35 0.35 0.01 30 force"
+    execute console command "execute positioned %x-coordinate of {_out}% %y-coordinate of {_out}% %z-coordinate of {_out}% run particle minecraft:portal ~ ~0.4 ~ 0.45 0.35 0.45 0.01 40 force"
+    if {_crafter} is set:
+        giveOrDrop({_outItem}, {_crafter}, {_out})
+    else:
+        drop {_outItem} at {_out}
+    play sound "block.enchantment_table.use" with volume 1 and pitch 0.8 at {_out} for all players
+    if {_crafter} is set:
+        send "{@prefix} &dКрафт подтверждён." to {_crafter}
+    return true
+
+function isAwakeningAltarStructurePart(loc: location) :: boolean:
+    set {_lw} to world of {_loc}
+    set {_lx} to floor(x-coordinate of {_loc})
+    set {_ly} to floor(y-coordinate of {_loc})
+    set {_lz} to floor(z-coordinate of {_loc})
+    loop {awakening_altar_bases::*}:
+        set {_base} to loop-value
+        if world of {_base} is not {_lw}:
+            continue
+        set {_bx} to floor(x-coordinate of {_base})
+        set {_by} to floor(y-coordinate of {_base})
+        set {_bz} to floor(z-coordinate of {_base})
+        if {_ly} < {_by}:
+            continue
+        if {_ly} > {_by} + 2:
+            if {_ly} is not {_by} + 3:
+                continue
+        if {_lx} < {_bx} - 1:
+            continue
+        if {_lx} > {_bx} + 1:
+            continue
+        if {_lz} < {_bz} - 1:
+            continue
+        if {_lz} > {_bz} + 1:
+            continue
+        if {_ly} is {_by} + 3:
+            if {_lx} is {_bx}:
+                if {_lz} is {_bz}:
+                    return true
+            continue
+        set {_rdx} to {_lx} - {_bx}
+        set {_rdy} to {_ly} - {_by}
+        set {_rdz} to {_lz} - {_bz}
+        if {_rdy} is 1:
+            if isAwakeningAltarFaceHoleMiddle({_rdx}, {_rdz}) is true:
+                continue
+        return true
+    return false
+
+on place of hopper:
+    wait 1 tick
+    set {_pit} to event-item
+    tryCompleteAwakeningAltarHopper(player, event-block, {_pit})
+
+# Алтарь из сундука: проверка при изменении инвентаря сундука.
+on inventory click:
+    set {_do} to false
+    if event-inventory is set:
+        set {_h1} to holder of event-inventory
+        if {_h1} is chest:
+            set {_do} to true
+        else if {_h1} is trapped chest:
+            set {_do} to true
+    if clicked inventory is set:
+        if clicked inventory is not event-inventory:
+            set {_h2} to holder of clicked inventory
+            if {_h2} is chest:
+                set {_do} to true
+            else if {_h2} is trapped chest:
+                set {_do} to true
+    if {_do} is false:
+        stop
+    wait 1 tick
+    set {_pl} to player
+    if event-inventory is set:
+        tryBuildAwakeningAltarFromInventoryHolder(holder of event-inventory, {_pl})
+    if clicked inventory is set:
+        if clicked inventory is not event-inventory:
+            tryBuildAwakeningAltarFromInventoryHolder(holder of clicked inventory, {_pl})
+
+on inventory drag:
+    if event-inventory is player's inventory:
+        stop
+    set {_hd} to holder of event-inventory
+    if {_hd} is not chest:
+        if {_hd} is not trapped chest:
+            stop
+    wait 1 tick
+    tryBuildAwakeningAltarFromInventoryHolder({_hd}, player)
+
+on inventory item move:
+    set {_dest} to holder of event-inventory
+    if {_dest} is not set:
+        stop
+    if {_dest} is not chest:
+        if {_dest} is not trapped chest:
+            stop
+    if event-item is not disc fragment 5:
+        if event-item is not crying obsidian:
+            if event-item is not obsidian:
+                if event-item is not amethyst shard:
+                    stop
+    wait 1 tick
+    tryBuildAwakeningAltarAtChestBlock({_dest})
+
+every 2 seconds:
+    loop {awakening_altars::*}:
+        set {_loc} to loop-value
+        set {_b} to block at {_loc}
+        if {_b} is not hopper:
+            remove loop-value from {awakening_altars::*}
+            continue
+        # Автокрафт отключён: подтверждение теперь только кнопкой/ПКМ по алтарю.
+        continue
+
+on right click on stone button:
+    set {_rb} to event-block
+    if {_rb} is not set:
+        stop
+    set {_bw} to world of {_rb}
+    set {_bx} to floor(x-coordinate of {_rb})
+    set {_by} to floor(y-coordinate of {_rb})
+    set {_bz} to floor(z-coordinate of {_rb})
+    set {_top} to block at location at {_bx}, {_by}, {_bz} + 1 in {_bw}
+    if {_top} is not crying obsidian:
+        send "{@prefix} &7Крафт не подтверждён: это не кнопка алтаря." to player
+        play sound "block.note_block.bass" with volume 0.8 and pitch 0.7 at player for player
+        stop
+    set {_hb} to block at location at {_bx}, {_by} - 1, {_bz} + 1 in {_bw}
+    if {_hb} is not hopper:
+        send "{@prefix} &cАлтарь не завершён: поставь воронку в центр." to player
+        play sound "block.note_block.bass" with volume 0.8 and pitch 0.7 at player for player
+        stop
+    if tryCraftAwakeningAltarAt({_hb}, player) is false:
+        send "{@prefix} &7Крафт не подтверждён: проверь 5 ингредиентов в слотах 0–4 воронки." to player
+        if isAwakeningCraftHopperReady({_hb}) is false:
+            send "{@prefix} &8[debug] не готово ядро: нужен аметист под воронкой, плачущий обсидиан сверху и кнопка на северной стороне." to player
+        debugEtherPickaxeRecipe(inventory of {_hb}, player)
+        play sound "block.note_block.bass" with volume 0.8 and pitch 0.7 at player for player
+    else:
+        cancel event
+
+command /altar:
+    permission: evo.admin
+    permission message: {@prefix} &cУ вас нет прав!
+    trigger:
+        send "{@prefix} &7Алтарь: положи в сундук &fровно &7рецепт и больше ничего:"
+        send "{@prefix} &f5× ключ пустоты&7, &f3× плачущий обсидиан&7, &f3× обсидиан&7, &f3× аметистовый осколок."
+        send "{@prefix} &7Появится куб без воронки; именную воронку получишь в инвентарь — поставь её на центральный аметист."
+        send "{@prefix} &7Крафт подтверждается нажатием &fодной каменной кнопки &7на плачущем обсидиане (сбоку)."
+        send "{@prefix} &6Рецепты алтарных кирок (слоты 0–4, порядок любой):"
+        send "{@prefix} &dЭфирная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &bалмазный блок + &dаметистовый осколок"
+        send "{@prefix} &cПламенная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &bалмазный блок + &6blaze rod"
+        send "{@prefix} &aЖильная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &aизумрудный блок + &aslime ball"
+        send "{@prefix} &eУдачи: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &eзолотой блок + &9лазурит"
+        send "{@prefix} &5Пустоты: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &8обсидиан + &5эндер-жемчуг"
+        send "{@prefix} &6Омни-слияние: &7положи в 0–4 все 5 алтарных кирок (Эфирная, Пламенная, Жильная, Удачи, Пустоты)."
+
 function pullArtifactFromCore(p: player, key: text) :: boolean:
     set {_u} to uuid of {_p}
     if {art_found::%{_u}%::%{_key}%} is not true:
@@ -4624,6 +5557,285 @@ on damage:
 
 # 2. Запрет ломать любые блоки
 on break:
+    if isAwakeningAltarStructurePart(location of event-block) is true:
+        cancel event
+        send "{@prefix} &cАлтарь неразрушим." to player
+        stop
+    set {_altarPick} to false
+    if isEtherPickaxe(player's tool) is true:
+        set {_altarPick} to true
+    else if isFlamePickaxe(player's tool) is true:
+        set {_altarPick} to true
+    else if isVeinPickaxe(player's tool) is true:
+        set {_altarPick} to true
+    else if isFortunePickaxe(player's tool) is true:
+        set {_altarPick} to true
+    else if isVoidPickaxe(player's tool) is true:
+        set {_altarPick} to true
+    else if isOmniPickaxe(player's tool) is true:
+        set {_altarPick} to true
+    if {_altarPick} is true:
+        set {_b} to event-block
+        # Реальная «неразрушимость» для серверов, где флаг unbreakable не применяется.
+        set durability of player's tool to 99999
+        set {_fxEnabled} to {altar_fx_enabled::%uuid of player%} ? true
+        if {_fxEnabled} is false:
+            stop
+        set {_etherOn} to altarPickaxeActive(player, "ether")
+        set {_flameOn} to altarPickaxeActive(player, "flame")
+        set {_veinOn} to altarPickaxeActive(player, "vein")
+        set {_fortuneOn} to altarPickaxeActive(player, "fortune")
+        set {_voidOn} to altarPickaxeActive(player, "void")
+        if isOmniPickaxe(player's tool) is true:
+            set {_etherOn} to true
+            set {_flameOn} to true
+            set {_veinOn} to true
+            set {_fortuneOn} to true
+            set {_voidOn} to true
+        if isEtherTrashBlock({_b}) is true:
+            cancel event
+            set event-block to air
+            if isFlamePickaxe(player's tool) is true:
+                if {_flameOn} is true:
+                    set {_drop} to smooth stone
+                    giveOrDrop({_drop}, player, location of {_b})
+                else:
+                    set {_dust} to gunpowder
+                    giveOrDrop({_dust}, player, location of {_b})
+            else if isVoidPickaxe(player's tool) is true:
+                if {_voidOn} is true:
+                    set {_drop} to obsidian
+                    giveOrDrop({_drop}, player, location of player)
+                else:
+                    set {_dust} to gunpowder
+                    giveOrDrop({_dust}, player, location of {_b})
+            else:
+                set {_dust} to gunpowder
+                giveOrDrop({_dust}, player, location of {_b})
+            give 1 experience to player
+            stop
+        if isEtherValuableOre({_b}) is true:
+            cancel event
+            set {_dropLoc} to location of {_b}
+            set event-block to air
+            if {_b} is diamond ore:
+                set {_cnt} to 1
+                if {_fortuneOn} is true:
+                    add 3 to {_cnt}
+                if isOmniPickaxe(player's tool) is true:
+                    add 3 to {_cnt}
+                loop {_cnt} times:
+                    set {_it} to diamond
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 3 experience to player
+            else if {_b} is deepslate diamond ore:
+                set {_cnt} to 1
+                if {_fortuneOn} is true:
+                    add 3 to {_cnt}
+                if isOmniPickaxe(player's tool) is true:
+                    add 3 to {_cnt}
+                loop {_cnt} times:
+                    set {_it} to diamond
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 3 experience to player
+            else if {_b} is gold ore:
+                if isFlamePickaxe(player's tool) is true:
+                    if {_flameOn} is true:
+                        set {_it} to gold ingot
+                    else:
+                        set {_it} to raw gold
+                else if isOmniPickaxe(player's tool) is true:
+                    set {_it} to gold ingot
+                else:
+                    set {_it} to raw gold
+                giveOrDrop({_it}, player, {_dropLoc})
+                give 2 experience to player
+            else if {_b} is deepslate gold ore:
+                if isFlamePickaxe(player's tool) is true:
+                    if {_flameOn} is true:
+                        set {_it} to gold ingot
+                    else:
+                        set {_it} to raw gold
+                else if isOmniPickaxe(player's tool) is true:
+                    set {_it} to gold ingot
+                else:
+                    set {_it} to raw gold
+                giveOrDrop({_it}, player, {_dropLoc})
+                give 2 experience to player
+            else if {_b} is nether gold ore:
+                set {_nug} to 2
+                if {_fortuneOn} is true:
+                    add 6 to {_nug}
+                if isOmniPickaxe(player's tool) is true:
+                    add 6 to {_nug}
+                loop {_nug} times:
+                    set {_it} to gold nugget
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 2 experience to player
+            else if {_b} is iron ore:
+                if isFlamePickaxe(player's tool) is true:
+                    if {_flameOn} is true:
+                        set {_it} to iron ingot
+                    else:
+                        set {_it} to raw iron
+                else if isOmniPickaxe(player's tool) is true:
+                    set {_it} to iron ingot
+                else:
+                    set {_it} to raw iron
+                giveOrDrop({_it}, player, {_dropLoc})
+                give 2 experience to player
+            else if {_b} is deepslate iron ore:
+                if isFlamePickaxe(player's tool) is true:
+                    if {_flameOn} is true:
+                        set {_it} to iron ingot
+                    else:
+                        set {_it} to raw iron
+                else if isOmniPickaxe(player's tool) is true:
+                    set {_it} to iron ingot
+                else:
+                    set {_it} to raw iron
+                giveOrDrop({_it}, player, {_dropLoc})
+                give 2 experience to player
+            else if {_b} is coal ore:
+                set {_cnt} to 1
+                if {_fortuneOn} is true:
+                    add 3 to {_cnt}
+                if isOmniPickaxe(player's tool) is true:
+                    add 3 to {_cnt}
+                loop {_cnt} times:
+                    set {_it} to coal
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 2 experience to player
+            else if {_b} is deepslate coal ore:
+                set {_cnt} to 1
+                if {_fortuneOn} is true:
+                    add 3 to {_cnt}
+                if isOmniPickaxe(player's tool) is true:
+                    add 3 to {_cnt}
+                loop {_cnt} times:
+                    set {_it} to coal
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 2 experience to player
+            else if {_b} is lapis ore:
+                set {_cnt} to 4
+                if {_fortuneOn} is true:
+                    set {_cnt} to 16
+                if isOmniPickaxe(player's tool) is true:
+                    set {_cnt} to 16
+                loop {_cnt} times:
+                    set {_it} to lapis lazuli
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 3 experience to player
+            else if {_b} is deepslate lapis ore:
+                set {_cnt} to 4
+                if {_fortuneOn} is true:
+                    set {_cnt} to 16
+                if isOmniPickaxe(player's tool) is true:
+                    set {_cnt} to 16
+                loop {_cnt} times:
+                    set {_it} to lapis lazuli
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 3 experience to player
+            else if {_b} is redstone ore:
+                set {_cnt} to 3
+                if {_fortuneOn} is true:
+                    set {_cnt} to 12
+                if isOmniPickaxe(player's tool) is true:
+                    set {_cnt} to 12
+                loop {_cnt} times:
+                    set {_it} to redstone
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 3 experience to player
+            else if {_b} is deepslate redstone ore:
+                set {_cnt} to 3
+                if {_fortuneOn} is true:
+                    set {_cnt} to 12
+                if isOmniPickaxe(player's tool) is true:
+                    set {_cnt} to 12
+                loop {_cnt} times:
+                    set {_it} to redstone
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 3 experience to player
+            else if {_b} is ancient debris:
+                set {_it} to ancient debris
+                giveOrDrop({_it}, player, {_dropLoc})
+                give 5 experience to player
+            # Жильная/Омни: дополнительно срубает руду того же типа в радиусе 1.
+            set {_veinMode} to false
+            if isVeinPickaxe(player's tool) is true:
+                if {_veinOn} is true:
+                set {_veinMode} to true
+            else if isOmniPickaxe(player's tool) is true:
+                set {_veinMode} to true
+            if {_veinMode} is true:
+                set {_bt} to "%type of {_b}%"
+                loop blocks in radius 1 around {_dropLoc}:
+                    if "%type of loop-block%" is {_bt}:
+                        set {_lb} to location of loop-block
+                        set loop-block to air
+                        if {_b} is diamond ore:
+                            set {_it} to diamond
+                            giveOrDrop({_it}, player, {_lb})
+                            give 2 experience to player
+                        else if {_b} is deepslate diamond ore:
+                            set {_it} to diamond
+                            giveOrDrop({_it}, player, {_lb})
+                            give 2 experience to player
+                        else if {_b} is gold ore:
+                            set {_it} to raw gold
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is deepslate gold ore:
+                            set {_it} to raw gold
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is nether gold ore:
+                            set {_it} to gold nugget
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is iron ore:
+                            set {_it} to raw iron
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is deepslate iron ore:
+                            set {_it} to raw iron
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is coal ore:
+                            set {_it} to coal
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is deepslate coal ore:
+                            set {_it} to coal
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is lapis ore:
+                            set {_it} to lapis lazuli
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is deepslate lapis ore:
+                            set {_it} to lapis lazuli
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is redstone ore:
+                            set {_it} to redstone
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is deepslate redstone ore:
+                            set {_it} to redstone
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is ancient debris:
+                            set {_it} to ancient debris
+                            giveOrDrop({_it}, player, {_lb})
+                            give 2 experience to player
+            # Доп. бафы Омни.
+            # Кирка Пустоты: короткий рывок к дропу после добычи руды.
+            if isVoidPickaxe(player's tool) is true:
+                if {_voidOn} is true:
+                if random integer between 1 and 100 <= 25:
+                    apply speed 2 without particles to player for 2 seconds
+            stop
     set {_u} to player's uuid
     set {_l} to {level::%{_u}%} ? 1
     if {_l} < 20:
@@ -4633,6 +5845,26 @@ on break:
 
 # 3. Запрет любого взаимодействия (ПКМ/ЛКМ по воздуху, блокам, сундукам и т.д.)
 on right click:
+    # Shift+ПКМ: открывает GUI тумблеров эффектов алтарных кирок.
+    if player is sneaking:
+        set {_tk} to player's tool
+        set {_isAltarPick} to false
+        if isEtherPickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        else if isFlamePickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        else if isVeinPickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        else if isFortunePickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        else if isVoidPickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        else if isOmniPickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        if {_isAltarPick} is true:
+            cancel event
+            openAltarPickaxeToggleGui(player)
+            stop
     set {_u} to player's uuid
     set {_l} to {level::%{_u}%} ? 1
     if {_l} < 20:
@@ -4662,6 +5894,63 @@ on left click:
                         stop
             set {leg_warrior_air_last::%{_u}%} to now
             warriorLegSpatialAirSlash(player)
+
+on inventory click:
+    if name of event-inventory is "&8Алтарные Кирки":
+        cancel event
+        if clicked inventory is not player's current inventory:
+            stop
+        set {_u} to uuid of player
+        if clicked slot is 11:
+            set {_v} to {altar_pick_toggle::%{_u}%::ether} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::ether} to false
+                send action bar "&dЭфир: &cOFF" to player
+            else:
+                set {altar_pick_toggle::%{_u}%::ether} to true
+                send action bar "&dЭфир: &aON" to player
+            openAltarPickaxeToggleGui(player)
+            stop
+        if clicked slot is 12:
+            set {_v} to {altar_pick_toggle::%{_u}%::flame} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::flame} to false
+                send action bar "&cПламя: &cOFF" to player
+            else:
+                set {altar_pick_toggle::%{_u}%::flame} to true
+                send action bar "&cПламя: &aON" to player
+            openAltarPickaxeToggleGui(player)
+            stop
+        if clicked slot is 13:
+            set {_v} to {altar_pick_toggle::%{_u}%::vein} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::vein} to false
+                send action bar "&aЖила: &cOFF" to player
+            else:
+                set {altar_pick_toggle::%{_u}%::vein} to true
+                send action bar "&aЖила: &aON" to player
+            openAltarPickaxeToggleGui(player)
+            stop
+        if clicked slot is 14:
+            set {_v} to {altar_pick_toggle::%{_u}%::fortune} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::fortune} to false
+                send action bar "&eУдача: &cOFF" to player
+            else:
+                set {altar_pick_toggle::%{_u}%::fortune} to true
+                send action bar "&eУдача: &aON" to player
+            openAltarPickaxeToggleGui(player)
+            stop
+        if clicked slot is 15:
+            set {_v} to {altar_pick_toggle::%{_u}%::void} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::void} to false
+                send action bar "&5Пустота: &cOFF" to player
+            else:
+                set {altar_pick_toggle::%{_u}%::void} to true
+                send action bar "&5Пустота: &aON" to player
+            openAltarPickaxeToggleGui(player)
+            stop
 
 # --- КУРАЦИЯ КЛАССОВЫХ ПРЕДМЕТОВ ---
 
