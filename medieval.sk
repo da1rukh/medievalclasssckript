@@ -3834,6 +3834,49 @@ function isEtherPickaxeAltarRecipeExact(inv: inventory) :: boolean:
         return false
     return true
 
+function debugEtherPickaxeRecipe(inv: inventory, p: player):
+    set {_voidN} to 0
+    set {_retN} to 0
+    set {_pickN} to 0
+    set {_blockN} to 0
+    set {_amN} to 0
+    set {_total} to 0
+    set {_bad} to 0
+    loop 5 times:
+        set {_si} to loop-number - 1
+        set {_it} to slot {_si} of {_inv}
+        if {_it} is air:
+            send "{@prefix} &8[debug] slot %{_si}%: &cпусто" to {_p}
+        else:
+            add 1 to {_total}
+            set {_nm} to name of {_it}
+            if {_nm} is not set:
+                set {_nm} to "&7без имени"
+            if altarAwakeningVoidKey({_it}) is true:
+                add 1 to {_voidN}
+                send "{@prefix} &8[debug] slot %{_si}%: &dключ пустоты &8(%{_nm}%)" to {_p}
+            else if altarAwakeningReturnKey({_it}) is true:
+                add 1 to {_retN}
+                send "{@prefix} &8[debug] slot %{_si}%: &bключ возврата &8(%{_nm}%)" to {_p}
+            else if {_it} is diamond pickaxe:
+                add 1 to {_pickN}
+                send "{@prefix} &8[debug] slot %{_si}%: &fалмазная кирка" to {_p}
+            else if {_it} is diamond block:
+                add 1 to {_blockN}
+                send "{@prefix} &8[debug] slot %{_si}%: &bалмазный блок" to {_p}
+            else if {_it} is amethyst shard:
+                add 1 to {_amN}
+                send "{@prefix} &8[debug] slot %{_si}%: &dаметистовый осколок" to {_p}
+            else:
+                add 1 to {_bad}
+                send "{@prefix} &8[debug] slot %{_si}%: &cчужой предмет &8(%type of {_it}% | %{_nm}%)" to {_p}
+    set {_extra} to 0
+    loop 4 times:
+        set {_si2} to loop-number + 4
+        if slot {_si2} of {_inv} is not air:
+            add 1 to {_extra}
+    send "{@prefix} &8[debug] total=%{_total}% bad=%{_bad}% extra(5-8)=%{_extra}% | void=%{_voidN}% ret=%{_retN}% pick=%{_pickN}% block=%{_blockN}% am=%{_amN}%" to {_p}
+
 function isAwakeningCraftHopperReady(hb: block) :: boolean:
     if {_hb} is not hopper:
         return false
@@ -3857,8 +3900,13 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         return false
     # Для крафта важна рабочая связка (кнопка/верх/воронка/пьедестал), а не идеальная оболочка.
     if isAwakeningCraftHopperReady({_hb}) is false:
+        if {_crafter} is set:
+            send "{@prefix} &8[debug] ready-check: FAIL (воронка/аметист/верх/кнопка)" to {_crafter}
         return false
     if isEtherPickaxeAltarRecipeExact(inventory of {_hb}) is false:
+        if {_crafter} is set:
+            send "{@prefix} &8[debug] recipe-check: FAIL" to {_crafter}
+            debugAwakeningRecipe(inventory of {_hb}, {_crafter})
         return false
     set {_extra} to false
     loop 4 times:
@@ -3866,6 +3914,8 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         if slot {_si} of inventory of {_hb} is not air:
             set {_extra} to true
     if {_extra} is true:
+        if {_crafter} is set:
+            send "{@prefix} &8[debug] extra-check: FAIL (слоты 5-8 должны быть пусты)" to {_crafter}
         return false
     set slot 0 of inventory of {_hb} to air
     set slot 1 of inventory of {_hb} to air
@@ -4008,6 +4058,9 @@ on right click on stone button:
         stop
     if tryCraftAwakeningAltarAt({_hb}, player) is false:
         send "{@prefix} &7Крафт не подтверждён: проверь 5 ингредиентов в слотах 0–4 воронки." to player
+        if isAwakeningCraftHopperReady({_hb}) is false:
+            send "{@prefix} &8[debug] не готово ядро: нужен аметист под воронкой, плачущий обсидиан сверху и кнопка на северной стороне." to player
+        debugEtherPickaxeRecipe(inventory of {_hb}, player)
         play sound "block.note_block.bass" with volume 0.8 and pitch 0.7 at player for player
     else:
         cancel event
