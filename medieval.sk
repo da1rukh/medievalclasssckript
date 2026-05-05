@@ -3777,7 +3777,7 @@ function tryCompleteAwakeningAltarHopper(placer: player, hb: block, placed: item
 function altarEtherPickaxeItem() :: item:
     set {_p} to diamond pickaxe
     set name of {_p} to "&dЭфирная Кирка"
-    set lore of {_p} to "&8✦ Алтарная кирка", "&8ЭФИР_КИРКА", "&7Shift+ПКМ: &fэфирный режим &7(пыль с мусора вкл/выкл)", "&7Руды -> &aмгновенно в инвентарь", "&8∞ Неразрушимая"
+    set lore of {_p} to "&8✦ Алтарная кирка", "&8ЭФИР_КИРКА", "&7ПКМ: &fшёлковое касание &7(целые блоки вкл/выкл)", "&7Shift+ПКМ: &fэфирный режим &7(пыль с мусора)", "&7Руды -> &aмгновенно в инвентарь", "&8∞ Неразрушимая"
     enchant {_p} with unbreaking 10
     return {_p}
 
@@ -3812,7 +3812,7 @@ function altarVoidPickaxeItem() :: item:
 function altarOmniPickaxeItem() :: item:
     set {_p} to netherite pickaxe
     set name of {_p} to "&6&lОмни-Кирка Алтаря"
-    set lore of {_p} to "&8✦ Финальное слияние", "&8ОМНИ_КИРКА", "&7Shift+ПКМ: &fэфирный режим &7(пыль с камня/мусора)", "&7Автосбор + плавка + жила + удача + пустота", "&8∞ Неразрушимая"
+    set lore of {_p} to "&8✦ Финальное слияние", "&8ОМНИ_КИРКА", "&7ПКМ: &fшёлковое касание &7(целые блоки)", "&7Shift+ПКМ: &fэфирный режим &7(пыль с мусора)", "&7Автосбор + плавка + жила + удача + пустота", "&8∞ Неразрушимая"
     enchant {_p} with unbreaking 10
     enchant {_p} with efficiency 6
     return {_p}
@@ -3910,6 +3910,46 @@ function isEtherValuableOre(b: block) :: boolean:
     if {_b} is ancient debris:
         return true
     return false
+
+# Целый блок как при шёлковом касании (через give — работает для любого minecraft:id).
+function giveAltarSilkBlockItemById(p: player, id: text):
+    if {_id} does not contain ":":
+        set {_id} to "minecraft:%{_id}%"
+    execute console command "give %{_p}% %{_id}% 1"
+
+function giveAltarSilkBlockItem(p: player, b: block, loc: location):
+    giveAltarSilkBlockItemById({_p}, "%type of {_b}%")
+
+# Опыт как у обычной добычи руды (под шёлк).
+function giveAltarSilkOreXp(p: player, b: block):
+    if {_b} is diamond ore:
+        give 3 experience to {_p}
+    else if {_b} is deepslate diamond ore:
+        give 3 experience to {_p}
+    else if {_b} is gold ore:
+        give 2 experience to {_p}
+    else if {_b} is deepslate gold ore:
+        give 2 experience to {_p}
+    else if {_b} is nether gold ore:
+        give 2 experience to {_p}
+    else if {_b} is iron ore:
+        give 2 experience to {_p}
+    else if {_b} is deepslate iron ore:
+        give 2 experience to {_p}
+    else if {_b} is coal ore:
+        give 2 experience to {_p}
+    else if {_b} is deepslate coal ore:
+        give 2 experience to {_p}
+    else if {_b} is lapis ore:
+        give 3 experience to {_p}
+    else if {_b} is deepslate lapis ore:
+        give 3 experience to {_p}
+    else if {_b} is redstone ore:
+        give 3 experience to {_p}
+    else if {_b} is deepslate redstone ore:
+        give 3 experience to {_p}
+    else if {_b} is ancient debris:
+        give 5 experience to {_p}
 
 function giveOrDrop(it: item, p: player, loc: location):
     if {_p} has space for {_it}:
@@ -4289,7 +4329,7 @@ command /altar:
         send "{@prefix} &f5× ключ пустоты&7, &f3× плачущий обсидиан&7, &f3× обсидиан&7, &f3× аметистовый осколок."
         send "{@prefix} &7Появится куб без воронки; именную воронку получишь в инвентарь — поставь её на центральный аметист."
         send "{@prefix} &7Крафт подтверждается нажатием &fодной каменной кнопки &7на плачущем обсидиане (сбоку)."
-        send "{@prefix} &7Алтарная кирка: &fShift+ПКМ &7— эфирный режим (пыль с мусорных блоков); &cвыкл &7= копать камень как обычно."
+        send "{@prefix} &7Алтарная кирка: &fПКМ по воздуху &7— шёлковое касание (целые блоки руды/мусора); &fShift+ПКМ &7— эфирный режим (пыль с мусора)."
         send "{@prefix} &6Рецепты алтарных кирок (слоты 0–4, порядок любой):"
         send "{@prefix} &dЭфирная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &bалмазный блок + &dаметистовый осколок"
         send "{@prefix} &cПламенная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &bалмазный блок + &6blaze rod"
@@ -5490,6 +5530,12 @@ on break:
         set {_fortuneOn} to true
         set {_voidOn} to true
         if isEtherTrashBlock({_b}) is true:
+            if {altar_pick_silk_mode::%uuid of player%} is true:
+                cancel event
+                set event-block to air
+                giveAltarSilkBlockItem(player, {_b}, location of {_b})
+                give 1 experience to player
+                stop
             if {altar_ether_trash_mode::%uuid of player%} is not true:
                 stop
             cancel event
@@ -5518,6 +5564,10 @@ on break:
             cancel event
             set {_dropLoc} to location of {_b}
             set event-block to air
+            if {altar_pick_silk_mode::%uuid of player%} is true:
+                giveAltarSilkBlockItem(player, {_b}, {_dropLoc})
+                giveAltarSilkOreXp(player, {_b})
+                stop
             if {_b} is diamond ore:
                 set {_cnt} to 1
                 if {_fortuneOn} is true:
@@ -5659,9 +5709,13 @@ on break:
                 set {_bt} to "%type of {_b}%"
                 loop blocks in radius 1 around {_dropLoc}:
                     if "%type of loop-block%" is {_bt}:
+                        set {_sid} to "%type of loop-block%"
                         set {_lb} to location of loop-block
                         set loop-block to air
-                        if {_b} is diamond ore:
+                        if {altar_pick_silk_mode::%uuid of player%} is true:
+                            giveAltarSilkBlockItemById(player, {_sid})
+                            giveAltarSilkOreXp(player, {_b})
+                        else if {_b} is diamond ore:
                             set {_it} to diamond
                             giveOrDrop({_it}, player, {_lb})
                             give 2 experience to player
@@ -5747,6 +5801,21 @@ on right click:
                 send action bar "&7Эфирный режим: &aВКЛ &8(мусор -> пыль)" to player
             play sound "ui.button.click" with volume 0.85 and pitch 1.2 at player for player
             stop
+    # ПКМ без Shift, алтарная кирка, клик по воздуху: шёлковое касание (целые блоки).
+    if player is not sneaking:
+        set {_tk} to player's tool
+        if isAltarPickaxeTool({_tk}) is true:
+            if targeted block is not set:
+                cancel event
+                set {_u} to uuid of player
+                if {altar_pick_silk_mode::%{_u}%} is true:
+                    delete {altar_pick_silk_mode::%{_u}%}
+                    send action bar "&7Шёлковое касание: &cВЫКЛ" to player
+                else:
+                    set {altar_pick_silk_mode::%{_u}%} to true
+                    send action bar "&7Шёлковое касание: &aВКЛ &8(целые блоки)" to player
+                play sound "ui.button.click" with volume 0.85 and pitch 1.15 at player for player
+                stop
     set {_u} to player's uuid
     set {_l} to {level::%{_u}%} ? 1
     if {_l} < 20:
