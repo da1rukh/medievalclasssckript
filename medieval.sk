@@ -3498,8 +3498,6 @@ function isAwakeningHopperToken(i: item) :: boolean:
     return false
 
 function altarAwakeningVoidKey(i: item) :: boolean:
-    if {_i} is not disc fragment 5:
-        return false
     set {_n} to name of {_i}
     if {_n} is not set:
         return false
@@ -3510,8 +3508,6 @@ function altarAwakeningVoidKey(i: item) :: boolean:
     return false
 
 function altarAwakeningReturnKey(i: item) :: boolean:
-    if {_i} is not echo shard:
-        return false
     set {_n} to name of {_i}
     if {_n} is not set:
         return false
