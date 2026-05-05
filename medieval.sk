@@ -3906,7 +3906,7 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
     if isEtherPickaxeAltarRecipeExact(inventory of {_hb}) is false:
         if {_crafter} is set:
             send "{@prefix} &8[debug] recipe-check: FAIL" to {_crafter}
-            debugAwakeningRecipe(inventory of {_hb}, {_crafter})
+            debugEtherPickaxeRecipe(inventory of {_hb}, {_crafter})
         return false
     set {_extra} to false
     loop 4 times:
