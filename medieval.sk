@@ -4560,6 +4560,7 @@ every 10 ticks:
         if {class::%{_u}%} is "Tank":
             if hasArtifact(loop-player, "leg_tank") is true:
                 # Пассивный урон отключён; эффект "не пройти сквозь танка" ниже в every 2 ticks
+                set {_tankLegendaryPassiveDisabled} to true
 
         # Легендарка Necromancer: Амулет Гнилого Родства
         if {class::%{_u}%} is "Necromancer":
