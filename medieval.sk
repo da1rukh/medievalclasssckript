@@ -4441,16 +4441,28 @@ function artifactGuiNormalKeysOrdered() :: texts:
 function artifactGuiPaintCoreSingle(p: player):
     set {_u} to uuid of {_p}
     loop 27 times:
+        set slot (loop-number - 1) of {_p}'s current inventory to black stained glass pane named " "
+    loop 9 times:
         set slot (loop-number - 1) of {_p}'s current inventory to gray stained glass pane named " "
+        set slot (loop-number + 17) of {_p}'s current inventory to gray stained glass pane named " "
     set slot 4 of {_p}'s current inventory to nether star named "&6&lАРТЕФАКТЫ: ЯДРО"
     set {_nFound} to foundNormalArtifactsCount({_p})
     set lore of slot 4 of {_p}'s current inventory to "&7Одно ядро без выкладок", "&7Максимум обычных артефактов в ядре: &f5", "&7Сейчас в ядре: &e%{_nFound}%&7/5", "&7ПКМ: включить/выключить", "&7ЛКМ: извлечь в предмет", "&7Легендарка: &e/legendary"
+    set slot 9 of {_p}'s current inventory to gray stained glass pane named " "
+    set slot 10 of {_p}'s current inventory to gray stained glass pane named " "
+    set slot 16 of {_p}'s current inventory to gray stained glass pane named " "
+    set slot 17 of {_p}'s current inventory to gray stained glass pane named " "
+    set slot 18 of {_p}'s current inventory to gray stained glass pane named " "
+    set {_info} to book named "&7Подсказка ядра"
+    set lore of {_info} to "&7Слоты артефактов по центру: &f11-15", "&7ПКМ по артефакту: &aвкл/выкл", "&7ЛКМ: &eизвлечь в предмет", "&7Легендарка: &e/legendary"
+    set slot 22 of {_p}'s current inventory to {_info}
+    set slot 26 of {_p}'s current inventory to barrier named "&c&lЗакрыть"
     delete {art_gui_key::%{_u}%::*}
     set {_keys::*} to artifactGuiNormalKeysOrdered()
-    set {_slot} to 10
+    set {_slot} to 11
     loop {_keys::*}:
         if {art_found::%{_u}%::%loop-value%} is true:
-            if {_slot} <= 14:
+            if {_slot} <= 15:
                 set {art_gui_key::%{_u}%::%{_slot}%} to loop-value
                 set {_snum} to artifactSlotFromKey(loop-value)
                 if {_snum} >= 0:
@@ -4458,7 +4470,7 @@ function artifactGuiPaintCoreSingle(p: player):
                     if {_art} is not air:
                         set slot {_slot} of {_p}'s current inventory to {_art}
                 add 1 to {_slot}
-    while {_slot} <= 14:
+    while {_slot} <= 15:
         set slot {_slot} of {_p}'s current inventory to barrier named "&8Пустой слот ядра"
         add 1 to {_slot}
 
@@ -6930,7 +6942,12 @@ on inventory click:
             stop
         dbgEvo(player, "inv=%name of event-inventory% slot=%clicked slot% click=%click type%")
         set {_u} to uuid of player
-        if {_slot} is not between 10 and 14:
+        if {_slot} is 26:
+            close player's inventory
+            stop
+        if {_slot} is 22:
+            stop
+        if {_slot} is not between 11 and 15:
             stop
         set {_key} to {art_gui_key::%{_u}%::%{_slot}%}
         if {_key} is not set:
