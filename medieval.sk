@@ -3476,8 +3476,8 @@ function isAwakeningAltarFaceHoleMiddle(dx: number, dz: number) :: boolean:
     return false
 
 function isAwakeningAltarTopButtonRel(dx: number, dz: number) :: boolean:
-    if {_dx} is 1:
-        if {_dz} is 0:
+    if {_dx} is 0:
+        if {_dz} is 1:
             return true
     return false
 
@@ -3705,8 +3705,8 @@ function buildAwakeningAltarShellFromChest(ch: block):
             add 1 to {_dz}
         add 1 to {_dx}
     set block at location at {_x}, {_y} + 2, {_z} in {_w} to crying obsidian
-    # Одна физическая кнопка: на центральном плачущем обсидиане (сбоку).
-    set block at location at {_x} + 1, {_y} + 2, {_z} in {_w} to stone button
+    # Одна физическая кнопка: на центральном плачущем обсидиане (сбоку), смотрит в -Z (north).
+    set block at location at {_x}, {_y} + 2, {_z} + 1 in {_w} to stone button
     set block at location at {_x} - 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x} + 1, {_y} + 1, {_z} in {_w} to air
     set block at location at {_x}, {_y} + 1, {_z} - 1 in {_w} to air
@@ -3977,12 +3977,12 @@ on right click on stone button:
     set {_bx} to floor(x-coordinate of {_rb})
     set {_by} to floor(y-coordinate of {_rb})
     set {_bz} to floor(z-coordinate of {_rb})
-    set {_top} to block at location at {_bx} - 1, {_by}, {_bz} in {_bw}
+    set {_top} to block at location at {_bx}, {_by}, {_bz} - 1 in {_bw}
     if {_top} is not crying obsidian:
         send "{@prefix} &7Крафт не подтверждён: это не кнопка алтаря." to player
         play sound "block.note_block.bass" with volume 0.8 and pitch 0.7 at player for player
         stop
-    set {_hb} to block at location at {_bx} - 1, {_by} - 1, {_bz} in {_bw}
+    set {_hb} to block at location at {_bx}, {_by} - 1, {_bz} - 1 in {_bw}
     if {_hb} is not hopper:
         send "{@prefix} &cАлтарь не завершён: поставь воронку в центр." to player
         play sound "block.note_block.bass" with volume 0.8 and pitch 0.7 at player for player
