@@ -3852,6 +3852,50 @@ function isVoidPickaxe(i: item) :: boolean:
 function isOmniPickaxe(i: item) :: boolean:
     return pickaxeHasTag({_i}, "ОМНИ_КИРКА")
 
+function altarPickaxeActive(p: player, key: text) :: boolean:
+    set {_u} to uuid of {_p}
+    if {altar_pick_toggle::%{_u}%::%{_key}%} is false:
+        return false
+    return true
+
+function openAltarPickaxeToggleGui(p: player):
+    open chest with 3 rows named "&8Алтарные кирки: эффекты" to {_p}
+    wait 1 tick
+    loop 27 times:
+        set slot (loop-number - 1) of {_p}'s current inventory to gray stained glass pane named " "
+    set {_i1} to altarEtherPickaxeItem()
+    set lore of {_i1} to "&7Режим: Эфир", "&7Автосбор руды + пыль", "&8SHIFT+ПКМ: открыть это меню", "&8Статус: %{_st1}%"
+    set {_st1} to "&aВКЛ"
+    if altarPickaxeActive({_p}, "ether") is false:
+        set {_st1} to "&cВЫКЛ"
+    set lore of {_i1} to "&7Режим: Эфир", "&7Автосбор руды + пыль", "&8SHIFT+ПКМ: открыть это меню", "&8Статус: %{_st1}%"
+    set slot 11 of {_p}'s current inventory to {_i1}
+    set {_i2} to altarFlamePickaxeItem()
+    set {_st2} to "&aВКЛ"
+    if altarPickaxeActive({_p}, "flame") is false:
+        set {_st2} to "&cВЫКЛ"
+    set lore of {_i2} to "&7Режим: Пламя", "&7Автоплавка руды", "&8Клик: вкл/выкл", "&8Статус: %{_st2}%"
+    set slot 12 of {_p}'s current inventory to {_i2}
+    set {_i3} to altarVeinPickaxeItem()
+    set {_st3} to "&aВКЛ"
+    if altarPickaxeActive({_p}, "vein") is false:
+        set {_st3} to "&cВЫКЛ"
+    set lore of {_i3} to "&7Режим: Жила", "&7Срубает соседнюю руду", "&8Клик: вкл/выкл", "&8Статус: %{_st3}%"
+    set slot 13 of {_p}'s current inventory to {_i3}
+    set {_i4} to altarFortunePickaxeItem()
+    set {_st4} to "&aВКЛ"
+    if altarPickaxeActive({_p}, "fortune") is false:
+        set {_st4} to "&cВЫКЛ"
+    set lore of {_i4} to "&7Режим: Удача", "&7x4 дроп с руд", "&8Клик: вкл/выкл", "&8Статус: %{_st4}%"
+    set slot 14 of {_p}'s current inventory to {_i4}
+    set {_i5} to altarVoidPickaxeItem()
+    set {_st5} to "&aВКЛ"
+    if altarPickaxeActive({_p}, "void") is false:
+        set {_st5} to "&cВЫКЛ"
+    set lore of {_i5} to "&7Режим: Пустота", "&7Телепорт-сбор к игроку", "&8Клик: вкл/выкл", "&8Статус: %{_st5}%"
+    set slot 15 of {_p}'s current inventory to {_i5}
+    set slot 22 of {_p}'s current inventory to barrier named "&cЗакрыть"
+
 function isEtherTrashBlock(b: block) :: boolean:
     if {_b} is stone:
         return true
@@ -3893,14 +3937,6 @@ function isEtherValuableOre(b: block) :: boolean:
     if {_b} is deepslate iron ore:
         return true
     if {_b} is ancient debris:
-        return true
-    if {_b} is redstone ore:
-        return true
-    if {_b} is deepslate redstone ore:
-        return true
-    if {_b} is lapis ore:
-        return true
-    if {_b} is deepslate lapis ore:
         return true
     return false
 
@@ -5477,6 +5513,9 @@ on break:
         set {_b} to event-block
         # Реальная «неразрушимость» для серверов, где флаг unbreakable не применяется.
         set durability of player's tool to 99999
+        set {_fxEnabled} to {altar_fx_enabled::%uuid of player%} ? true
+        if {_fxEnabled} is false:
+            stop
         if isEtherTrashBlock({_b}) is true:
             cancel event
             set event-block to air
@@ -5561,6 +5600,66 @@ on break:
                     set {_it} to raw iron
                 giveOrDrop({_it}, player, {_dropLoc})
                 give 2 experience to player
+            else if {_b} is coal ore:
+                set {_cnt} to 1
+                if isFortunePickaxe(player's tool) is true:
+                    add 3 to {_cnt}
+                if isOmniPickaxe(player's tool) is true:
+                    add 3 to {_cnt}
+                loop {_cnt} times:
+                    set {_it} to coal
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 2 experience to player
+            else if {_b} is deepslate coal ore:
+                set {_cnt} to 1
+                if isFortunePickaxe(player's tool) is true:
+                    add 3 to {_cnt}
+                if isOmniPickaxe(player's tool) is true:
+                    add 3 to {_cnt}
+                loop {_cnt} times:
+                    set {_it} to coal
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 2 experience to player
+            else if {_b} is lapis ore:
+                set {_cnt} to 4
+                if isFortunePickaxe(player's tool) is true:
+                    set {_cnt} to 16
+                if isOmniPickaxe(player's tool) is true:
+                    set {_cnt} to 16
+                loop {_cnt} times:
+                    set {_it} to lapis lazuli
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 3 experience to player
+            else if {_b} is deepslate lapis ore:
+                set {_cnt} to 4
+                if isFortunePickaxe(player's tool) is true:
+                    set {_cnt} to 16
+                if isOmniPickaxe(player's tool) is true:
+                    set {_cnt} to 16
+                loop {_cnt} times:
+                    set {_it} to lapis lazuli
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 3 experience to player
+            else if {_b} is redstone ore:
+                set {_cnt} to 3
+                if isFortunePickaxe(player's tool) is true:
+                    set {_cnt} to 12
+                if isOmniPickaxe(player's tool) is true:
+                    set {_cnt} to 12
+                loop {_cnt} times:
+                    set {_it} to redstone
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 3 experience to player
+            else if {_b} is deepslate redstone ore:
+                set {_cnt} to 3
+                if isFortunePickaxe(player's tool) is true:
+                    set {_cnt} to 12
+                if isOmniPickaxe(player's tool) is true:
+                    set {_cnt} to 12
+                loop {_cnt} times:
+                    set {_it} to redstone
+                    giveOrDrop({_it}, player, {_dropLoc})
+                give 3 experience to player
             else if {_b} is ancient debris:
                 set {_it} to ancient debris
                 giveOrDrop({_it}, player, {_dropLoc})
@@ -5605,6 +5704,30 @@ on break:
                             set {_it} to raw iron
                             giveOrDrop({_it}, player, {_lb})
                             give 1 experience to player
+                        else if {_b} is coal ore:
+                            set {_it} to coal
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is deepslate coal ore:
+                            set {_it} to coal
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is lapis ore:
+                            set {_it} to lapis lazuli
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is deepslate lapis ore:
+                            set {_it} to lapis lazuli
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is redstone ore:
+                            set {_it} to redstone
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
+                        else if {_b} is deepslate redstone ore:
+                            set {_it} to redstone
+                            giveOrDrop({_it}, player, {_lb})
+                            give 1 experience to player
                         else if {_b} is ancient debris:
                             set {_it} to ancient debris
                             giveOrDrop({_it}, player, {_lb})
@@ -5624,6 +5747,26 @@ on break:
 
 # 3. Запрет любого взаимодействия (ПКМ/ЛКМ по воздуху, блокам, сундукам и т.д.)
 on right click:
+    # Shift+ПКМ: открывает GUI тумблеров эффектов алтарных кирок.
+    if player is sneaking:
+        set {_tk} to player's tool
+        set {_isAltarPick} to false
+        if isEtherPickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        else if isFlamePickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        else if isVeinPickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        else if isFortunePickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        else if isVoidPickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        else if isOmniPickaxe({_tk}) is true:
+            set {_isAltarPick} to true
+        if {_isAltarPick} is true:
+            cancel event
+            openAltarPickaxeToggleGui(player)
+            stop
     set {_u} to player's uuid
     set {_l} to {level::%{_u}%} ? 1
     if {_l} < 20:
@@ -5653,6 +5796,63 @@ on left click:
                         stop
             set {leg_warrior_air_last::%{_u}%} to now
             warriorLegSpatialAirSlash(player)
+
+on inventory click:
+    if name of event-inventory is "&8Алтарные Кирки":
+        cancel event
+        if clicked inventory is not player's current inventory:
+            stop
+        set {_u} to uuid of player
+        if clicked slot is 11:
+            set {_v} to {altar_pick_toggle::%{_u}%::ether} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::ether} to false
+                send action bar "&dЭфир: &cOFF" to player
+            else:
+                set {altar_pick_toggle::%{_u}%::ether} to true
+                send action bar "&dЭфир: &aON" to player
+            openAltarPickaxeToggleGui(player)
+            stop
+        if clicked slot is 12:
+            set {_v} to {altar_pick_toggle::%{_u}%::flame} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::flame} to false
+                send action bar "&cПламя: &cOFF" to player
+            else:
+                set {altar_pick_toggle::%{_u}%::flame} to true
+                send action bar "&cПламя: &aON" to player
+            openAltarPickaxeToggleGui(player)
+            stop
+        if clicked slot is 13:
+            set {_v} to {altar_pick_toggle::%{_u}%::vein} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::vein} to false
+                send action bar "&aЖила: &cOFF" to player
+            else:
+                set {altar_pick_toggle::%{_u}%::vein} to true
+                send action bar "&aЖила: &aON" to player
+            openAltarPickaxeToggleGui(player)
+            stop
+        if clicked slot is 14:
+            set {_v} to {altar_pick_toggle::%{_u}%::fortune} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::fortune} to false
+                send action bar "&eУдача: &cOFF" to player
+            else:
+                set {altar_pick_toggle::%{_u}%::fortune} to true
+                send action bar "&eУдача: &aON" to player
+            openAltarPickaxeToggleGui(player)
+            stop
+        if clicked slot is 15:
+            set {_v} to {altar_pick_toggle::%{_u}%::void} ? true
+            if {_v} is true:
+                set {altar_pick_toggle::%{_u}%::void} to false
+                send action bar "&5Пустота: &cOFF" to player
+            else:
+                set {altar_pick_toggle::%{_u}%::void} to true
+                send action bar "&5Пустота: &aON" to player
+            openAltarPickaxeToggleGui(player)
+            stop
 
 # --- КУРАЦИЯ КЛАССОВЫХ ПРЕДМЕТОВ ---
 
