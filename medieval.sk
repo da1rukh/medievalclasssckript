@@ -3827,6 +3827,38 @@ function isEtherPickaxeAltarRecipeExact(inv: inventory) :: boolean:
         return false
     return true
 
+function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
+    if {_hb} is not hopper:
+        return false
+    set {_core} to location of {_hb}
+    remove 1 from y-coordinate of {_core}
+    if altarStructureCoreOk({_core}) is false:
+        return false
+    if isEtherPickaxeAltarRecipeExact(inventory of {_hb}) is false:
+        return false
+    set {_extra} to false
+    loop 4 times:
+        set {_si} to loop-number + 4
+        if slot {_si} of inventory of {_hb} is not air:
+            set {_extra} to true
+    if {_extra} is true:
+        return false
+    set slot 0 of inventory of {_hb} to air
+    set slot 1 of inventory of {_hb} to air
+    set slot 2 of inventory of {_hb} to air
+    set slot 3 of inventory of {_hb} to air
+    set slot 4 of inventory of {_hb} to air
+    set {_out} to location of {_hb}
+    add 1 to y-coordinate of {_out}
+    strike lightning effect at {_out}
+    execute console command "execute positioned %x-coordinate of {_out}% %y-coordinate of {_out}% %z-coordinate of {_out}% run particle minecraft:witch ~ ~ ~ 0.35 0.35 0.35 0.01 30 force"
+    execute console command "execute positioned %x-coordinate of {_out}% %y-coordinate of {_out}% %z-coordinate of {_out}% run particle minecraft:portal ~ ~0.4 ~ 0.45 0.35 0.45 0.01 40 force"
+    drop altarEtherPickaxeItem() at {_out}
+    play sound "block.enchantment_table.use" with volume 1 and pitch 0.8 at {_out} for all players
+    if {_crafter} is set:
+        send "{@prefix} &dКрафт подтверждён — эфирная кирка создана." to {_crafter}
+    return true
+
 function isAwakeningAltarStructurePart(loc: location) :: boolean:
     set {_lw} to world of {_loc}
     set {_lx} to floor(x-coordinate of {_loc})
@@ -3923,31 +3955,49 @@ every 2 seconds:
         if {_b} is not hopper:
             remove loop-value from {awakening_altars::*}
             continue
-        set {_core} to location of {_b}
-        remove 1 from y-coordinate of {_core}
-        if altarStructureCoreOk({_core}) is false:
-            continue
-        if isEtherPickaxeAltarRecipeExact(inventory of {_b}) is false:
-            continue
-        set {_extra} to false
-        loop 4 times:
-            set {_si} to loop-number + 4
-            if slot {_si} of inventory of {_b} is not air:
-                set {_extra} to true
-        if {_extra} is true:
-            continue
-        set slot 0 of inventory of {_b} to air
-        set slot 1 of inventory of {_b} to air
-        set slot 2 of inventory of {_b} to air
-        set slot 3 of inventory of {_b} to air
-        set slot 4 of inventory of {_b} to air
-        set {_out} to location of {_b}
-        add 1 to y-coordinate of {_out}
-        strike lightning effect at {_out}
-        execute console command "execute positioned %x-coordinate of {_out}% %y-coordinate of {_out}% %z-coordinate of {_out}% run particle minecraft:witch ~ ~ ~ 0.35 0.35 0.35 0.01 30 force"
-        execute console command "execute positioned %x-coordinate of {_out}% %y-coordinate of {_out}% %z-coordinate of {_out}% run particle minecraft:portal ~ ~0.4 ~ 0.45 0.35 0.45 0.01 40 force"
-        drop altarEtherPickaxeItem() at {_out}
-        play sound "block.enchantment_table.use" with volume 1 and pitch 0.8 at {_out} for all players
+        # Автокрафт отключён: подтверждение теперь только кнопкой/ПКМ по алтарю.
+        continue
+
+on right click:
+    set {_rb} to event-block
+    if {_rb} is not set:
+        stop
+    set {_aw} to false
+    if {_rb} is polished blackstone bricks:
+        set {_aw} to true
+    else if {_rb} is blackstone:
+        set {_aw} to true
+    else if {_rb} is crying obsidian:
+        set {_aw} to true
+    else if {_rb} is amethyst block:
+        set {_aw} to true
+    else if {_rb} is hopper:
+        set {_aw} to true
+    if {_aw} is false:
+        stop
+    if isAwakeningAltarStructurePart(location of {_rb}) is false:
+        if {_rb} is hopper:
+            set {_core2} to location of {_rb}
+            remove 1 from y-coordinate of {_core2}
+            if altarStructureCoreOk({_core2}) is false:
+                stop
+        else:
+            stop
+    set {_hb} to block at location at floor(x-coordinate of location of {_rb}), floor(y-coordinate of location of {_rb}) + 1, floor(z-coordinate of location of {_rb}) in world of {_rb}
+    if {_rb} is hopper:
+        set {_hb} to {_rb}
+    else:
+        if {_hb} is not hopper:
+            # для клика по среднему кольцу (y+1) хоппер в этой же высоте, не выше
+            set {_hb} to block at location at floor(x-coordinate of location of {_rb}), floor(y-coordinate of location of {_rb}), floor(z-coordinate of location of {_rb}) in world of {_rb}
+    if {_hb} is not hopper:
+        send "{@prefix} &cАлтарь не завершён: поставь воронку в центр." to player
+        stop
+    if tryCraftAwakeningAltarAt({_hb}, player) is false:
+        send "{@prefix} &7Крафт не подтверждён: проверь 5 ингредиентов в слотах 0–4 воронки." to player
+        play sound "block.note_block.bass" with volume 0.8 and pitch 0.7 at player for player
+    else:
+        cancel event
 
 command /altar:
     permission: evo.admin
@@ -3956,7 +4006,8 @@ command /altar:
         send "{@prefix} &7Алтарь: положи в сундук &fровно &7рецепт и больше ничего:"
         send "{@prefix} &f5× ключ пустоты&7, &f3× плачущий обсидиан&7, &f3× обсидиан&7, &f3× аметистовый осколок."
         send "{@prefix} &7Появится куб без воронки; именную воронку получишь в инвентарь — поставь её на центральный аметист."
-        send "{@prefix} &7Крафт эфирной кирки (ровно &f5 &7предметов в слотах воронки &f0–4&7): ключ пустоты, ключ возврата, алмазная кирка, алмазный блок, аметистовый осколок."
+        send "{@prefix} &7Крафт подтверждается ПКМ по любому блоку алтаря."
+        send "{@prefix} &7Эфирная кирка: ровно &f5 &7предметов в слотах воронки &f0–4&7: ключ пустоты, ключ возврата, алмазная кирка, алмазный блок, аметистовый осколок."
 
 function pullArtifactFromCore(p: player, key: text) :: boolean:
     set {_u} to uuid of {_p}
