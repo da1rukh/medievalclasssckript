@@ -4729,19 +4729,19 @@ function diaryRecipeTextByItem(it: item) :: text:
         set {_nm} to "%type of {_it}%"
     set {_nmLow} to lowercase "%{_nm}%"
     if {_nmLow} contains "эфирная кирка":
-        return "Эфирная кирка: Ключ Пустоты + Ключ Возврата + Алмазная кирка + Алмазный блок + Аметистовый осколок"
+        return "recipe_local::ether_pick"
     if {_nmLow} contains "пламенная кирка":
-        return "Пламенная кирка: Эфирная кирка + Золотой блок + Огненный стержень + Ключ Пустоты + Ключ Возврата"
+        return "recipe_local::flame_pick"
     if {_nmLow} contains "жильная кирка":
-        return "Жильная кирка: Эфирная кирка + Изумрудный блок + Слизь + Ключ Пустоты + Ключ Возврата"
+        return "recipe_local::vein_pick"
     if {_nmLow} contains "кирка шахтёра":
-        return "Кирка Шахтёра: Эфирная кирка + Алмазный блок + Лазуритовый блок + Ключ Пустоты + Ключ Возврата"
+        return "recipe_local::fortune_pick"
     if {_nmLow} contains "кирка бездны":
-        return "Кирка Бездны: Эфирная кирка + Обсидиан + Звезда Нижнего мира + Ключ Пустоты + Ключ Возврата"
+        return "recipe_local::void_pick"
     if {_nmLow} contains "омни-кирка":
-        return "Омни-кирка: Пламенная + Жильная + Кирка Шахтёра + Кирка Бездны + Эфирная кирка"
+        return "recipe_local::omni_pick"
     if {_nmLow} contains "голова игрока":
-        return "Голова игрока: Дёрн + Золотое яблоко + Алмаз + Нерак + Камень Энда"
+        return "recipe_local::player_head"
     return "%{_nm}%: рецепт изучен на Алтаре Создания"
 
 function addDiaryPage(p: player, txt: text):
@@ -4753,6 +4753,24 @@ function addDiaryPage(p: player, txt: text):
         if "%loop-value%" is {_t}:
             stop
     add {_t} to {adv_diary::%{_u}%::*}
+
+function addDiaryRecipePage(p: player, rid: text):
+    set {_r} to "%{_rid}%"
+    if {_r} is "":
+        stop
+    set {_tag} to "recipe::%{_r}%"
+    addDiaryPage({_p}, {_tag})
+
+function diaryRecipeEntryFromItem(it: item) :: text:
+    set {_nm} to name of {_it}
+    if {_nm} is not set:
+        return ""
+    loop {ancient_scroll_recipes::*::name}:
+        set {_k} to loop-index
+        replace all "::name" in {_k} with ""
+        if {_nm} contains loop-value:
+            return {_k}
+    return ""
 
 function openAdventurerJournalPage(p: player, page: number):
     delete {_entries::*}
@@ -4780,7 +4798,39 @@ function openAdventurerJournalPage(p: player, page: number):
         set {_idx} to {_start} + loop-number - 1
         if {_idx} <= {_total}:
             set {_txt} to {_entries::%{_idx}%}
-            set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&7%{_txt}%"
+            if {_txt} starts with "recipe::":
+                set {_rid} to {_txt}
+                replace all "recipe::" in {_rid} with ""
+                set {_rn} to {ancient_scroll_recipes::%{_rid}%::name}
+                if {_rn} is not set:
+                    set {_rn} to {_rid}
+                set {_i1} to {ancient_scroll_recipes::%{_rid}%::ing::1}
+                set {_i2} to {ancient_scroll_recipes::%{_rid}%::ing::2}
+                set {_i3} to {ancient_scroll_recipes::%{_rid}%::ing::3}
+                set {_i4} to {ancient_scroll_recipes::%{_rid}%::ing::4}
+                set {_i5} to {ancient_scroll_recipes::%{_rid}%::ing::5}
+                set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &f%{_rn}%" and "&8 • &f%{_i1}%" and "&8 • &f%{_i2}%" and "&8 • &f%{_i3}%" and "&8 • &f%{_i4}%" and "&8 • &f%{_i5}%"
+            else if {_txt} starts with "recipe_local::":
+                set {_rid} to {_txt}
+                replace all "recipe_local::" in {_rid} with ""
+                if {_rid} is "ether_pick":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fЭфирная кирка" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазная кирка" and "&8 • &fАлмазный блок" and "&8 • &fАметистовый осколок"
+                else if {_rid} is "flame_pick":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fПламенная кирка" and "&8 • &fЭфирная кирка" and "&8 • &fЗолотой блок" and "&8 • &fОгненный стержень" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата"
+                else if {_rid} is "vein_pick":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fЖильная кирка" and "&8 • &fЭфирная кирка" and "&8 • &fИзумрудный блок" and "&8 • &fСлизь" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата"
+                else if {_rid} is "fortune_pick":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fКирка Шахтёра" and "&8 • &fЭфирная кирка" and "&8 • &fЗолотой блок" and "&8 • &fЛазурит" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата"
+                else if {_rid} is "void_pick":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fКирка Бездны" and "&8 • &fЭфирная кирка" and "&8 • &fОбсидиан" and "&8 • &fЭндер-жемчуг" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата"
+                else if {_rid} is "omni_pick":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fОмни-кирка" and "&8 • &fПламенная кирка" and "&8 • &fЖильная кирка" and "&8 • &fКирка Шахтёра" and "&8 • &fКирка Бездны" and "&8 • &fЭфирная кирка"
+                else if {_rid} is "player_head":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fГолова игрока" and "&8 • &fДёрн" and "&8 • &fЗолотое яблоко" and "&8 • &fАлмаз" and "&8 • &fНезерак" and "&8 • &fКамень Энда"
+                else:
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&7%{_txt}%"
+            else:
+                set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&7%{_txt}%"
         add 1 to {_slot}
     set slot 4 of current inventory of {_p} to written book named "&6Дневник приключенца" with lore "&7Страница %{_pg}% из %{_maxPage}%" and "&8Нажмите стрелки для листания"
     if {_pg} > 1:
@@ -4987,10 +5037,15 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         drop {_outItem} at {_out}
     play sound "block.enchantment_table.use" with volume 1 and pitch 0.8 at {_out} for all players
     if {_crafter} is set:
-        set {_j} to diaryRecipeTextByItem({_outItem})
-        if {_j} is not "":
-            addDiaryPage({_crafter}, {_j})
-            send action bar "&6+Запись в Дневник приключенца" to {_crafter}
+        set {_rid} to diaryRecipeEntryFromItem({_outItem})
+        if {_rid} is not "":
+            addDiaryRecipePage({_crafter}, {_rid})
+            send action bar "&6+Рецепт добавлен в Дневник" to {_crafter}
+        else:
+            set {_j} to diaryRecipeTextByItem({_outItem})
+            if {_j} is not "":
+                addDiaryPage({_crafter}, {_j})
+                send action bar "&6+Запись в Дневник приключенца" to {_crafter}
         send "{@prefix} &dКрафт подтверждён." to {_crafter}
     return true
 
@@ -12758,9 +12813,7 @@ on right click:
         if {_sid} is not "":
             cancel event
             set {_name} to {ancient_scroll_recipes::%{_sid}%::name}
-            set {_entry} to ancientScrollDiaryEntry({_sid})
-            if {_entry} is not "":
-                addDiaryPage(player, {_entry})
+            addDiaryRecipePage(player, {_sid})
             send title "&6Древний Свиток" with subtitle "&f%{_name}%" to player for 2 seconds
             send "{@prefix} &aРецепт добавлен в Дневник приключенца: &f%{_name}%" to player
             execute console command "particle minecraft:spell %x-coordinate of player% %y-coordinate of player% %z-coordinate of player% 0.4 0.6 0.4 0.03 25 force"
