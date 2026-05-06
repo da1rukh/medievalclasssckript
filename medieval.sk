@@ -12646,9 +12646,7 @@ every 2 ticks:
         if hasArtifactCoreOrInventory(loop-player, "desertheart", "Сердце Пустыни") is true:
             loop blocks in radius 5 around loop-player:
                 if loop-block is water:
-                    set {_ploc} to location of loop-block
                     set loop-block to air
-                    execute console command "particle minecraft:cloud %x-coordinate of {_ploc}% %y-coordinate of {_ploc}% %z-coordinate of {_ploc}% 0.2 0.2 0.2 0.01 8 force"
             loop all living entities in radius 3 around loop-player:
                 set {_target} to loop-entity-1
                 if {_target} is a player:
