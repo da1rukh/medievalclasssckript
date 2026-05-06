@@ -4961,15 +4961,15 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to altarOmniPickaxeItem()
     else if isArtifactRecipeByFive({_inv}, netherite sword, blaze rod, redstone block, ender pearl, diamond block) is true:
         set {_outItem} to artifactFromSlot(0)
-    else if isArtifactRecipeByFive({_inv}, feather, phantom membrane, echo shard, sugar, ender pearl) is true:
+    else if isArtifactRecipeByFive({_inv}, netherite boots, phantom membrane, echo shard, nether star, ender pearl) is true:
         set {_outItem} to artifactFromSlot(1)
     else if isArtifactRecipeByFive({_inv}, netherite chestplate, obsidian, shield, iron block, golden apple) is true:
         set {_outItem} to artifactFromSlot(2)
     else if isArtifactRecipeByFive({_inv}, spectral arrow, bow, string, ender eye, emerald block) is true:
         set {_outItem} to artifactFromSlot(6)
-    else if isArtifactRecipeByFive({_inv}, amethyst shard, blaze rod, book, ender eye, ghast tear) is true:
+    else if isArtifactRecipeByFive({_inv}, nether star, amethyst block, enchanted book, end crystal, ghast tear) is true:
         set {_outItem} to artifactFromSlot(7)
-    else if isArtifactRecipeByFive({_inv}, wither skeleton skull, bone, soul sand, rotten flesh, nether wart) is true:
+    else if isArtifactRecipeByFive({_inv}, netherite chestplate, wither skeleton skull, soul sand, nether star, totem of undying) is true:
         set {_outItem} to artifactFromSlot(8)
     else if isArtifactRecipeByFive({_inv}, leather boots, rabbit foot, sugar, feather, gold ingot) is true:
         set {_outItem} to artifactFromSlot(10)
@@ -12678,7 +12678,7 @@ function initAncientScrollRecipes():
     set {ancient_scroll_recipes::leg_warrior::ing::*} to "Незеритовый меч", "Огненный стержень", "Редстоун блок", "Эндер-жемчуг", "Алмазный блок"
     set {ancient_scroll_recipes::leg_scout::name} to "Тень Фантома"
     set {ancient_scroll_recipes::leg_scout::tier} to "absolute"
-    set {ancient_scroll_recipes::leg_scout::ing::*} to "Перо", "Мембрана фантома", "Эхо-осколок", "Сахар", "Эндер-жемчуг"
+    set {ancient_scroll_recipes::leg_scout::ing::*} to "Незеритовые ботинки", "Мембрана фантома", "Эхо-осколок", "Звезда Незера", "Эндер-жемчуг"
     set {ancient_scroll_recipes::leg_tank::name} to "Якорь Мироздания"
     set {ancient_scroll_recipes::leg_tank::tier} to "absolute"
     set {ancient_scroll_recipes::leg_tank::ing::*} to "Незеритовый нагрудник", "Обсидиан", "Щит", "Железный блок", "Золотое яблоко"
@@ -12687,10 +12687,10 @@ function initAncientScrollRecipes():
     set {ancient_scroll_recipes::leg_archer::ing::*} to "Спектральная стрела", "Лук", "Нить", "Око Эндера", "Изумрудный блок"
     set {ancient_scroll_recipes::leg_mage::name} to "Эфирный Разум"
     set {ancient_scroll_recipes::leg_mage::tier} to "absolute"
-    set {ancient_scroll_recipes::leg_mage::ing::*} to "Аметистовый осколок", "Огненный стержень", "Книга", "Око Эндера", "Слеза гаста"
+    set {ancient_scroll_recipes::leg_mage::ing::*} to "Звезда Незера", "Аметистовый блок", "Книга чар", "Кристалл Энда", "Слеза гаста"
     set {ancient_scroll_recipes::leg_necro::name} to "Амулет Гнилого Родства"
     set {ancient_scroll_recipes::leg_necro::tier} to "absolute"
-    set {ancient_scroll_recipes::leg_necro::ing::*} to "Череп визер-скелета", "Кость", "Песок душ", "Гнилая плоть", "Адский нарост"
+    set {ancient_scroll_recipes::leg_necro::ing::*} to "Незеритовый нагрудник", "Череп визер-скелета", "Песок душ", "Звезда Незера", "Тотем бессмертия"
 
     # Обычные артефакты
     set {ancient_scroll_recipes::hermes::name} to "Сапоги Гермеса"
