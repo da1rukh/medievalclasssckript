@@ -4745,9 +4745,9 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to artifactFromSlot(1)
     else if isArtifactRecipeByFive({_inv}, netherite chestplate, obsidian, shield, iron block, golden apple) is true:
         set {_outItem} to artifactFromSlot(2)
-    else if isArtifactRecipeByFive({_inv}, spectral arrow, bow, string, eye of ender, emerald block) is true:
+    else if isArtifactRecipeByFive({_inv}, spectral arrow, bow, string, ender eye, emerald block) is true:
         set {_outItem} to artifactFromSlot(6)
-    else if isArtifactRecipeByFive({_inv}, amethyst shard, blaze rod, book, eye of ender, ghast tear) is true:
+    else if isArtifactRecipeByFive({_inv}, amethyst shard, blaze rod, book, ender eye, ghast tear) is true:
         set {_outItem} to artifactFromSlot(7)
     else if isArtifactRecipeByFive({_inv}, wither skeleton skull, bone, soul sand, rotten flesh, nether wart) is true:
         set {_outItem} to artifactFromSlot(8)
