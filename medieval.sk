@@ -7968,7 +7968,13 @@ on enchant prepare:
 # Корона Высшего Разума: стол зачарований даёт +1 уровень каждому полученному зачару.
 on enchant:
     if hasArtifact(player, "crownmind") is true:
+        wait 1 tick
         set {_it} to event-item
+        if player's current inventory is set:
+            if type of player's current inventory is enchanting table inventory:
+                set {_slot0} to slot 0 of player's current inventory
+                if {_slot0} is not air:
+                    set {_it} to {_slot0}
         if {_it} is not set:
             stop
         if {_it} is enchanted with protection:
@@ -10759,6 +10765,10 @@ on enchant:
             else if {_lv} is 20:
 
                 enchant {_it} with quick charge 21
+
+        if player's current inventory is set:
+            if type of player's current inventory is enchanting table inventory:
+                set slot 0 of player's current inventory to {_it}
 
 # Наковальня: классовые предметы (PrepareAnvil в Skript нельзя cancel — блокируем клики по слотам 1 и 2)
 on inventory click:
