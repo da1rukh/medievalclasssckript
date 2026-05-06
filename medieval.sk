@@ -4739,6 +4739,46 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to altarVoidPickaxeItem()
     else if isOmniPickaxeAltarRecipe({_inv}) is true:
         set {_outItem} to altarOmniPickaxeItem()
+    else if isArtifactRecipeByFive({_inv}, netherite sword, blaze rod, redstone block, ender pearl, diamond block) is true:
+        set {_outItem} to artifactFromSlot(0)
+    else if isArtifactRecipeByFive({_inv}, feather, phantom membrane, echo shard, sugar, ender pearl) is true:
+        set {_outItem} to artifactFromSlot(1)
+    else if isArtifactRecipeByFive({_inv}, netherite chestplate, obsidian, shield, iron block, golden apple) is true:
+        set {_outItem} to artifactFromSlot(2)
+    else if isArtifactRecipeByFive({_inv}, spectral arrow, bow, string, eye of ender, emerald block) is true:
+        set {_outItem} to artifactFromSlot(6)
+    else if isArtifactRecipeByFive({_inv}, amethyst shard, blaze rod, book, eye of ender, ghast tear) is true:
+        set {_outItem} to artifactFromSlot(7)
+    else if isArtifactRecipeByFive({_inv}, wither skeleton skull, bone, soul sand, rotten flesh, nether wart) is true:
+        set {_outItem} to artifactFromSlot(8)
+    else if isArtifactRecipeByFive({_inv}, leather boots, rabbit foot, sugar, feather, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(10)
+    else if isArtifactRecipeByFive({_inv}, gold nugget, sugar, emerald, feather, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(11)
+    else if isArtifactRecipeByFive({_inv}, ghast tear, spider eye, fermented spider eye, redstone, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(12)
+    else if isArtifactRecipeByFive({_inv}, ender pearl, chorus fruit, amethyst shard, phantom membrane, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(13)
+    else if isArtifactRecipeByFive({_inv}, iron sword, blaze powder, nether wart, magma cream, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(14)
+    else if isArtifactRecipeByFive({_inv}, diamond sword, nether star, glowstone dust, fire charge, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(15)
+    else if isArtifactRecipeByFive({_inv}, packed ice, blue ice, snow block, prismarine crystals, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(16)
+    else if isArtifactRecipeByFive({_inv}, heart of the sea, ice, snowball, prismarine shard, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(19)
+    else if isArtifactRecipeByFive({_inv}, shield, golden apple, iron ingot, totem of undying, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(20)
+    else if isArtifactRecipeByFive({_inv}, nether star, amethyst shard, experience bottle, lapis lazuli, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(21)
+    else if isArtifactRecipeByFive({_inv}, poisonous potato, rotten flesh, spider eye, bone meal, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(22)
+    else if isArtifactRecipeByFive({_inv}, compass, obsidian, ender pearl, amethyst shard, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(23)
+    else if isArtifactRecipeByFive({_inv}, gold ingot, emerald, rabbit foot, wheat seeds, lapis lazuli) is true:
+        set {_outItem} to artifactFromSlot(24)
+    else if isArtifactRecipeByFive({_inv}, glass bottle, feather, phantom membrane, slime ball, gold ingot) is true:
+        set {_outItem} to artifactFromSlot(25)
     else if isCrownHigherMindAltarRecipe({_inv}) is true:
         set {_outItem} to crownHigherMindArtifactItem()
     else if isArtifactRecipeByFive({_inv}, furnace, blaze powder, copper block, coal, iron ingot) is true:
@@ -9594,6 +9634,74 @@ every 2 seconds:
 # ---- Древние свитки ----
 function initAncientScrollRecipes():
     delete {ancient_scroll_recipes::*}
+    # Легендарные
+    set {ancient_scroll_recipes::leg_warrior::name} to "Печать Пространственного Разреза"
+    set {ancient_scroll_recipes::leg_warrior::tier} to "absolute"
+    set {ancient_scroll_recipes::leg_warrior::ing::*} to "Незеритовый меч", "Огненный стержень", "Редстоун блок", "Эндер-жемчуг", "Алмазный блок"
+    set {ancient_scroll_recipes::leg_scout::name} to "Тень Фантома"
+    set {ancient_scroll_recipes::leg_scout::tier} to "absolute"
+    set {ancient_scroll_recipes::leg_scout::ing::*} to "Перо", "Мембрана фантома", "Эхо-осколок", "Сахар", "Эндер-жемчуг"
+    set {ancient_scroll_recipes::leg_tank::name} to "Якорь Мироздания"
+    set {ancient_scroll_recipes::leg_tank::tier} to "absolute"
+    set {ancient_scroll_recipes::leg_tank::ing::*} to "Незеритовый нагрудник", "Обсидиан", "Щит", "Железный блок", "Золотое яблоко"
+    set {ancient_scroll_recipes::leg_archer::name} to "Око Хищника"
+    set {ancient_scroll_recipes::leg_archer::tier} to "absolute"
+    set {ancient_scroll_recipes::leg_archer::ing::*} to "Спектральная стрела", "Лук", "Нить", "Око Эндера", "Изумрудный блок"
+    set {ancient_scroll_recipes::leg_mage::name} to "Эфирный Разум"
+    set {ancient_scroll_recipes::leg_mage::tier} to "absolute"
+    set {ancient_scroll_recipes::leg_mage::ing::*} to "Аметистовый осколок", "Огненный стержень", "Книга", "Око Эндера", "Слеза гаста"
+    set {ancient_scroll_recipes::leg_necro::name} to "Амулет Гнилого Родства"
+    set {ancient_scroll_recipes::leg_necro::tier} to "absolute"
+    set {ancient_scroll_recipes::leg_necro::ing::*} to "Череп визер-скелета", "Кость", "Песок душ", "Гнилая плоть", "Адский нарост"
+
+    # Обычные артефакты
+    set {ancient_scroll_recipes::hermes::name} to "Сапоги Гермеса"
+    set {ancient_scroll_recipes::hermes::tier} to "medium"
+    set {ancient_scroll_recipes::hermes::ing::*} to "Кожаные ботинки", "Кроличья лапка", "Сахар", "Перо", "Золотой слиток"
+    set {ancient_scroll_recipes::windring::name} to "Кольцо Ветра"
+    set {ancient_scroll_recipes::windring::tier} to "medium"
+    set {ancient_scroll_recipes::windring::ing::*} to "Золотой самородок", "Сахар", "Изумруд", "Перо", "Золотой слиток"
+    set {ancient_scroll_recipes::vampcharm::name} to "Амулет вампира"
+    set {ancient_scroll_recipes::vampcharm::tier} to "medium"
+    set {ancient_scroll_recipes::vampcharm::ing::*} to "Слеза гаста", "Паучий глаз", "Маринованный паучий глаз", "Редстоун", "Золотой слиток"
+    set {ancient_scroll_recipes::etherdash::name} to "Эфирный рывок"
+    set {ancient_scroll_recipes::etherdash::tier} to "medium"
+    set {ancient_scroll_recipes::etherdash::ing::*} to "Эндер-жемчуг", "Хорус-фрукт", "Аметистовый осколок", "Мембрана фантома", "Золотой слиток"
+    set {ancient_scroll_recipes::mehrunes::name} to "Бритва Мерунеса"
+    set {ancient_scroll_recipes::mehrunes::tier} to "medium"
+    set {ancient_scroll_recipes::mehrunes::ing::*} to "Железный меч", "Огненный порошок", "Адский нарост", "Лавовый крем", "Золотой слиток"
+    set {ancient_scroll_recipes::starfury::name} to "Звёздная ярость"
+    set {ancient_scroll_recipes::starfury::tier} to "medium"
+    set {ancient_scroll_recipes::starfury::ing::*} to "Алмазный меч", "Звезда Незера", "Светокаменная пыль", "Огненный заряд", "Золотой слиток"
+    set {ancient_scroll_recipes::icewalker::name} to "Ледяной след"
+    set {ancient_scroll_recipes::icewalker::tier} to "medium"
+    set {ancient_scroll_recipes::icewalker::ing::*} to "Плотный лёд", "Синий лёд", "Блок снега", "Кристалл призмарина", "Золотой слиток"
+    set {ancient_scroll_recipes::frostheart::name} to "Сердце ледяного великана"
+    set {ancient_scroll_recipes::frostheart::tier} to "medium"
+    set {ancient_scroll_recipes::frostheart::ing::*} to "Сердце моря", "Лёд", "Снежок", "Осколок призмарина", "Золотой слиток"
+    set {ancient_scroll_recipes::ankhshield::name} to "Щит Анх"
+    set {ancient_scroll_recipes::ankhshield::tier} to "medium"
+    set {ancient_scroll_recipes::ankhshield::ing::*} to "Щит", "Золотое яблоко", "Железный слиток", "Тотем бессмертия", "Золотой слиток"
+    set {ancient_scroll_recipes::azura::name} to "Звезда Азуры"
+    set {ancient_scroll_recipes::azura::tier} to "medium"
+    set {ancient_scroll_recipes::azura::ing::*} to "Звезда Незера", "Аметистовый осколок", "Пузырёк опыта", "Лазурит", "Золотой слиток"
+    set {ancient_scroll_recipes::rottenapple::name} to "Гнилое яблоко"
+    set {ancient_scroll_recipes::rottenapple::tier} to "medium"
+    set {ancient_scroll_recipes::rottenapple::ing::*} to "Ядовитый картофель", "Гнилая плоть", "Паучий глаз", "Костная мука", "Золотой слиток"
+    set {ancient_scroll_recipes::voidcompass::name} to "Компас Пустоты"
+    set {ancient_scroll_recipes::voidcompass::tier} to "medium"
+    set {ancient_scroll_recipes::voidcompass::ing::*} to "Компас", "Обсидиан", "Эндер-жемчуг", "Аметистовый осколок", "Золотой слиток"
+    set {ancient_scroll_recipes::luckcoin::name} to "Монета удачи"
+    set {ancient_scroll_recipes::luckcoin::tier} to "medium"
+    set {ancient_scroll_recipes::luckcoin::ing::*} to "Золотой слиток", "Изумруд", "Кроличья лапка", "Семена пшеницы", "Лазурит"
+    set {ancient_scroll_recipes::cloudjump::name} to "Воздушный шарик"
+    set {ancient_scroll_recipes::cloudjump::tier} to "medium"
+    set {ancient_scroll_recipes::cloudjump::ing::*} to "Стеклянная колба", "Перо", "Мембрана фантома", "Слизь", "Золотой слиток"
+    set {ancient_scroll_recipes::crownmind::name} to "Корона Высшего Разума"
+    set {ancient_scroll_recipes::crownmind::tier} to "absolute"
+    set {ancient_scroll_recipes::crownmind::ing::*} to "Эфирный Разум", "Звезда Азуры", "Золотой шлем", "Книга чар", "Пузырёк опыта"
+
+    # Utility
     set {ancient_scroll_recipes::heater::name} to "Портативный Нагреватель"
     set {ancient_scroll_recipes::heater::tier} to "medium"
     set {ancient_scroll_recipes::heater::ing::*} to "Печка", "Огненный порошок", "Медный блок", "Уголь", "Слиток железа"
@@ -9609,6 +9717,12 @@ function initAncientScrollRecipes():
     set {ancient_scroll_recipes::facelessmask::name} to "Маска Безликого"
     set {ancient_scroll_recipes::facelessmask::tier} to "medium"
     set {ancient_scroll_recipes::facelessmask::ing::*} to "Кожа", "Белая шерсть", "Зелье невидимости", "Чернильный мешок", "Золотой слиток"
+    set {ancient_scroll_recipes::lootmagnet::name} to "Магнит Добытчика"
+    set {ancient_scroll_recipes::lootmagnet::tier} to "medium"
+    set {ancient_scroll_recipes::lootmagnet::ing::*} to "Воронка", "Редстоун", "Железный слиток", "Эндер-жемчуг", "Золотой самородок"
+    set {ancient_scroll_recipes::nightlens::name} to "Ночная Линза"
+    set {ancient_scroll_recipes::nightlens::tier} to "medium"
+    set {ancient_scroll_recipes::nightlens::ing::*} to "Стекло", "Светокаменная пыль", "Аметистовый осколок", "Мембрана фантома", "Паучий глаз"
     set {ancient_scroll_recipes::cursedgift::name} to "Дар Проклятого Короля"
     set {ancient_scroll_recipes::cursedgift::tier} to "absolute"
     set {ancient_scroll_recipes::cursedgift::ing::*} to "Посох Некро-Тирана", "Корона Высшего Разума", "Зачарованное золотое яблоко", "Голова игрока", "Слиток незерита"
@@ -9626,7 +9740,7 @@ function ancientScrollIdFromItem(i: item) :: text:
     set {_nm} to name of {_i}
     if {_nm} is not set:
         return ""
-    loop "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask" and "cursedgift":
+    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens" and "cursedgift":
         set {_n} to {ancient_scroll_recipes::%loop-value%::name}
         if {_n} is set:
             if {_nm} contains {_n}:
@@ -9663,12 +9777,14 @@ on death:
     if victim is not a player:
         if isRuinDimension(world of victim) is true:
             chance of 0.5%:
-                set {_as} to ancientScrollItem("cursedgift")
+                set {_abs::*} to "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "crownmind" and "cursedgift"
+                set {_aid} to random element out of {_abs::*}
+                set {_as} to ancientScrollItem({_aid})
                 if {_as} is not air:
                     drop {_as} at location of victim
             else:
                 chance of 2%:
-                    set {_mid::*} to "heater", "dreamcatcher", "desertheart", "quantdup" and "facelessmask"
+                    set {_mid::*} to "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet" and "nightlens"
                     set {_pick} to random element out of {_mid::*}
                     set {_ms} to ancientScrollItem({_pick})
                     if {_ms} is not air:
