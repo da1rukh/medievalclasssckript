@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины (Оверворлд): выкинуть рядом чернокамень, обсидиан, аметист, железо, уголь → «Зов Руин»; Shift+ПКМ — постройка; /evoruinspawn
+  #   - Руины (Оверворлд): сундук слоты 0–4 — чернокамень, обсидиан, аметист, железо, уголь → «Зов Руин»; Shift+ПКМ — постройка; /evoruinspawn
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -1481,14 +1481,6 @@ on drop:
     if isClassItem(event-item) is true:
         cancel event
         send action bar "&cНельзя выкинуть классовый предмет!" to player
-        stop
-    set {_pDrop} to player
-    set {_dropEnt} to event-dropped item
-    wait 2 ticks
-    if {_dropEnt} is not set:
-        stop
-    set {_mLoc} to location of {_dropEnt}
-    tryRuinSummonGroundMerge({_mLoc}, {_pDrop})
 
 # Запрет класть классовые предметы в любые хранилища (сундуки, бочки, шалкеры и т.п.)
 on inventory click:
@@ -3617,79 +3609,8 @@ function artifactRuinTrySpawnChunk(wcx: number, wcz: number, w: world):
 
 function artifactRuinSummonObeliskItem() :: item:
     set {_i} to respawn anchor named "&6&lЗов Руин"
-    set lore of {_i} to "&7Выкини &fрядом (≈1 блок)&7 в оверворлде:", "&7чернокамень, обсидиан, аметист, железо, уголь", "&7— получишь этот предмет.", "&7Shift+ПКМ по блоку — вызвать руину.", "&0EVORUINSUMMON"
+    set lore of {_i} to "&7Сундук: &fпервые 5 слотов &7(верхний ряд):", "&7чернокамень, обсидиан, аметист, железо, уголь", "&7— открой сундук, когда всё положил.", "&7Shift+ПКМ по блоку в Оверворлде — руина.", "&0EVORUINSUMMON"
     return {_i}
-
-function ruinSummonConsumeOneDropped(ent: entity):
-    set {_st2} to item of {_ent}
-    set {_locE} to location of {_ent}
-    set {_amt} to amount of {_st2}
-    if {_amt} > 1:
-        set {_rem} to {_st2}
-        remove 1 from {_amt}
-        set amount of {_rem} to {_amt}
-        drop {_rem} at {_locE}
-    kill {_ent}
-
-function tryRuinSummonGroundMerge(center: location, who: player):
-    set {_w} to world of {_center}
-    if environment of {_w} is not normal:
-        stop
-    delete {_e1}
-    delete {_e2}
-    delete {_e3}
-    delete {_e4}
-    delete {_e5}
-    loop entities in radius 1.2 around {_center}:
-        if loop-entity is not an item:
-            continue
-        set {_st} to item of loop-entity
-        if {_st} is air:
-            continue
-        if {_e1} is not set:
-            if {_st} is blackstone:
-                set {_e1} to loop-entity
-                continue
-        if {_e2} is not set:
-            if {_st} is obsidian:
-                set {_e2} to loop-entity
-                continue
-        if {_e3} is not set:
-            if {_st} is amethyst shard:
-                set {_e3} to loop-entity
-                continue
-        if {_e4} is not set:
-            if {_st} is iron ingot:
-                set {_e4} to loop-entity
-                continue
-        if {_e5} is not set:
-            if {_st} is coal:
-                set {_e5} to loop-entity
-                continue
-    if {_e1} is not set:
-        stop
-    if {_e2} is not set:
-        stop
-    if {_e3} is not set:
-        stop
-    if {_e4} is not set:
-        stop
-    if {_e5} is not set:
-        stop
-    ruinSummonConsumeOneDropped({_e1})
-    ruinSummonConsumeOneDropped({_e2})
-    ruinSummonConsumeOneDropped({_e3})
-    ruinSummonConsumeOneDropped({_e4})
-    ruinSummonConsumeOneDropped({_e5})
-    set {_gift} to artifactRuinSummonObeliskItem()
-    giveOrDrop({_gift}, {_who}, {_center})
-    play sound "block.enchantment_table.use" with volume 1 and pitch 1 at {_center} for all players
-    execute console command "execute positioned %x-coordinate of {_center}% %y-coordinate of {_center}% %z-coordinate of {_center}% run particle minecraft:enchant ~ ~0.2 ~ 0.4 0.15 0.4 0.03 40 force"
-    set {_rid} to diaryRecipeEntryFromItem({_gift})
-    if {_rid} is not "":
-        addDiaryRecipePage({_who}, {_rid})
-        send action bar "&6+Рецепт в Дневник" to {_who}
-    send "{@prefix} &6Предметы слились: получен &eЗов Руин&6." to {_who}
 
 function isArtifactRuinSummonItem(i: item) :: boolean:
     if {_i} is air:
@@ -3894,6 +3815,20 @@ function tryBuildAwakeningAltarAtChestBlock(cb: block, opener: player):
         set {_chestOk} to true
     if {_chestOk} is true:
         set {_cinv} to inventory of {_cb}
+        if isArtifactRecipeByFive({_cinv}, blackstone, obsidian, amethyst shard, iron ingot, coal) is true:
+            loop 5 times:
+                set slot (loop-number - 1) of {_cinv} to air
+            set {_gift} to artifactRuinSummonObeliskItem()
+            set {_cloc} to location of {_cb}
+            giveOrDrop({_gift}, {_opener}, {_cloc})
+            play sound "block.enchantment_table.use" with volume 1 and pitch 0.85 at {_cloc} for all players
+            execute console command "execute positioned %x-coordinate of {_cloc}% %y-coordinate of {_cloc}% %z-coordinate of {_cloc}% run particle minecraft:enchant ~ ~1 ~ 0.35 0.2 0.35 0.02 28 force"
+            set {_rid} to diaryRecipeEntryFromItem({_gift})
+            if {_rid} is not "":
+                addDiaryRecipePage({_opener}, {_rid})
+                send action bar "&6+Рецепт в Дневник" to {_opener}
+            send "{@prefix} &6Сундук выдал &eЗов Руин&6 — Shift+ПКМ по блоку в Оверворлде." to {_opener}
+            stop
         if isAltarChestRecipeExact({_cinv}) is true:
             clear {_cinv}
             buildAwakeningAltarFromChest({_cb}, {_opener})
@@ -3906,6 +3841,15 @@ function tryBuildAwakeningAltarAtChestBlock(cb: block):
         set {_chestOk} to true
     if {_chestOk} is true:
         set {_cinv} to inventory of {_cb}
+        if isArtifactRecipeByFive({_cinv}, blackstone, obsidian, amethyst shard, iron ingot, coal) is true:
+            loop 5 times:
+                set slot (loop-number - 1) of {_cinv} to air
+            set {_gift} to artifactRuinSummonObeliskItem()
+            set {_cloc} to location of {_cb}
+            drop {_gift} at {_cloc}
+            play sound "block.enchantment_table.use" with volume 1 and pitch 0.85 at {_cloc} for all players
+            execute console command "execute positioned %x-coordinate of {_cloc}% %y-coordinate of {_cloc}% %z-coordinate of {_cloc}% run particle minecraft:enchant ~ ~1 ~ 0.35 0.2 0.35 0.02 28 force"
+            stop
         if isAltarChestRecipeExact({_cinv}) is true:
             clear {_cinv}
             buildAwakeningAltarShellFromChest({_cb})
@@ -13139,7 +13083,7 @@ function initAncientScrollRecipes():
     set {ancient_scroll_recipes::nightlens::ing::*} to "Стекло", "Светокаменная пыль", "Аметистовый осколок", "Мембрана фантома", "Паучий глаз"
     set {ancient_scroll_recipes::ruin_summon::name} to "Зов Руин"
     set {ancient_scroll_recipes::ruin_summon::tier} to "medium"
-    set {ancient_scroll_recipes::ruin_summon::ing::*} to "Чернокамень (выкинуть рядом)", "Обсидиан", "Аметистовый осколок", "Железный слиток", "Уголь"
+    set {ancient_scroll_recipes::ruin_summon::ing::*} to "Чернокамень", "Обсидиан", "Аметистовый осколок", "Железный слиток", "Уголь"
     set {ancient_scroll_recipes::cursedgift::name} to "Дар Проклятого Короля"
     set {ancient_scroll_recipes::cursedgift::tier} to "absolute"
     set {ancient_scroll_recipes::cursedgift::ing::*} to "Посох Некро-Тирана", "Корона Высшего Разума", "Зачарованное золотое яблоко", "Голова игрока", "Слиток незерита"
