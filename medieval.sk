@@ -4194,7 +4194,7 @@ function quantumDuplicatorArtifactItem() :: item:
     return {_i}
 
 function facelessMaskArtifactItem() :: item:
-    set {_i} to carved pumpkin named "&7&lАртефакт: Маска Безликого"
+    set {_i} to skeleton skull named "&7&lАртефакт: Маска Безликого"
     set lore of {_i} to "&7Скрывает никнейм над головой", "&8Эффект: &aАКТИВЕН"
     return {_i}
 
@@ -4350,7 +4350,7 @@ function quantumDuplicatorItem() :: item:
     return {_i}
 
 function facelessMaskItem() :: item:
-    set {_i} to player head named "&7&lАртефакт: Маска Безликого"
+    set {_i} to skeleton skull named "&7&lАртефакт: Маска Безликого"
     set lore of {_i} to "&7Скрывает никнейм над головой", "&8Эффект: &aАКТИВЕН"
     return {_i}
 
@@ -4631,6 +4631,8 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to quantumDuplicatorItem()
     else if isArtifactRecipeByFive({_inv}, leather, white wool, potion of invisibility, ink sac, gold ingot) is true:
         set {_outItem} to facelessMaskItem()
+    else if isArtifactRecipeByFive({_inv}, grass block, golden apple, diamond, netherrack, end stone) is true:
+        set {_outItem} to player head
     else if isCursedGiftAltarRecipe({_inv}) is true:
         set {_outItem} to cursedKingGiftItem()
     else:
@@ -4803,6 +4805,7 @@ command /altar:
         send "{@prefix} &eУдачи: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &eзолотой блок + &9лазурит"
         send "{@prefix} &5Пустоты: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &8обсидиан + &5эндер-жемчуг"
         send "{@prefix} &6Омни-слияние: &7положи в 0–4 все 5 алтарных кирок (Эфирная, Пламенная, Жильная, Удачи, Пустоты)."
+        send "{@prefix} &fГолова игрока: &aдёрн + &6золотое яблоко + &bалмаз + &cnetherrack + &fкамень энда."
         send "{@prefix} &6Корона Высшего Разума: &6Эфирный Разум + &dЗвезда Азуры + &eзолотой шлем + &fenchanted book + &aпузырёк опыта."
         send "{@prefix} &6Портативный Нагреватель: &7печка + blaze powder + медный блок + уголь + железный слиток"
         send "{@prefix} &6Ловец Снов: &7нить + паутина + светокаменная пыль + перо + золотой самородок"
