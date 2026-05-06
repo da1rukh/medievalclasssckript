@@ -11301,28 +11301,53 @@ on right click on trapped chest:
     send "{@prefix} &5Вы нашли Ключ пустоты в руинах портала." to player
     play sound "entity.experience_orb.pickup" with volume 0.9 and pitch 1 at player for player
 
+function evoRuinFirstNormalWorld() :: world:
+    loop all worlds:
+        if environment of loop-world is normal:
+            return loop-world
+    return world("world")
 
 # ==========================================
 # АДМИН-КОМАНДЫ
 # ==========================================
-command /evoruinspawn [<number>] [<number>]:
+command /evoruinspawn [<number>] [<number>] [<text>]:
+    executable by: players and console
     permission: evo.admin
     permission message: {@prefix} &cУ вас нет прав!
     trigger:
         if arg-1 is set:
             if arg-2 is not set:
-                send "{@prefix} &cИспользование: /evoruinspawn <x> <z>"
+                send "{@prefix} &cИспользование: /evoruinspawn <x> <z> [мир]"
                 stop
             set {_x} to floor(arg-1)
             set {_z} to floor(arg-2)
-            set {_feet} to artifactRuinFeetAtColumn({_x}, {_z}, world of player)
+            delete {_w}
+            if arg-3 is set:
+                set {_wn} to "%arg-3%"
+                set {_w} to world("%{_wn}%")
+                if {_w} is not set:
+                    send "{@prefix} &cМир &f%{_wn}% &cне найден."
+                    stop
+            else:
+                if sender is a player:
+                    set {_w} to world of player
+                else:
+                    set {_w} to evoRuinFirstNormalWorld()
+            if environment of {_w} is not normal:
+                send "{@prefix} &cНужен мир с типом Оверворлд (normal)."
+                stop
+            set {_feet} to artifactRuinFeetAtColumn({_x}, {_z}, {_w})
             if artifactRuinFeetValid({_feet}) is false:
-                send "{@prefix} &cНет подходящей поверхности у колонки X=%{_x}% Z=%{_z}%."
+                send "{@prefix} &cНет подходящей поверхности у колонки X=%{_x}% Z=%{_z}% в &f%{_w}%&c."
                 stop
             if artifactRuinBuild({_feet}, "common") is true:
-                send "{@prefix} &aПостроена руина с центром пола: &f%{_x}% %{_z}%"
+                send "{@prefix} &aПостроена руина в &f%{_w}%&a: центр пола &f%{_x}% %{_z}%"
                 stop
             send "{@prefix} &cНе удалось построить руину по этим координатам."
+            stop
+        if sender is not a player:
+            send "{@prefix} &cС консоли: &f/evoruinspawn <x> <z> [мир]"
+            send "{@prefix} &7Без [мир] используется первый оверворлд из списка миров сервера."
             stop
         if artifactRuinAdminSpawnHere(player) is true:
             send "{@prefix} &aПостроена руина: &7чёрный камень = легендарный артефакт, &fцветной пол = обычный&a. Сундук в башне."
@@ -11330,24 +11355,44 @@ command /evoruinspawn [<number>] [<number>]:
         else:
             send "{@prefix} &cНе удалось: нужен Оверворлд и твёрдая поверхность под колонкой X/Z."
 
-command /evoruinlegspawn [<number>] [<number>]:
+command /evoruinlegspawn [<number>] [<number>] [<text>]:
+    executable by: players and console
     permission: evo.admin
     permission message: {@prefix} &cУ вас нет прав!
     trigger:
         if arg-1 is set:
             if arg-2 is not set:
-                send "{@prefix} &cИспользование: /evoruinlegspawn <x> <z>"
+                send "{@prefix} &cИспользование: /evoruinlegspawn <x> <z> [мир]"
                 stop
             set {_x} to floor(arg-1)
             set {_z} to floor(arg-2)
-            set {_feet} to artifactRuinFeetAtColumn({_x}, {_z}, world of player)
+            delete {_w}
+            if arg-3 is set:
+                set {_wn} to "%arg-3%"
+                set {_w} to world("%{_wn}%")
+                if {_w} is not set:
+                    send "{@prefix} &cМир &f%{_wn}% &cне найден."
+                    stop
+            else:
+                if sender is a player:
+                    set {_w} to world of player
+                else:
+                    set {_w} to evoRuinFirstNormalWorld()
+            if environment of {_w} is not normal:
+                send "{@prefix} &cНужен мир с типом Оверворлд (normal)."
+                stop
+            set {_feet} to artifactRuinFeetAtColumn({_x}, {_z}, {_w})
             if artifactRuinFeetValid({_feet}) is false:
-                send "{@prefix} &cНет подходящей поверхности у колонки X=%{_x}% Z=%{_z}%."
+                send "{@prefix} &cНет подходящей поверхности у колонки X=%{_x}% Z=%{_z}% в &f%{_w}%&c."
                 stop
             if artifactRuinBuild({_feet}, "legendary") is true:
-                send "{@prefix} &6Построена легендарная руина с центром пола: &f%{_x}% %{_z}%"
+                send "{@prefix} &6Построена легендарная руина в &f%{_w}%&6: центр пола &f%{_x}% %{_z}%"
                 stop
             send "{@prefix} &cНе удалось построить легендарную руину по этим координатам."
+            stop
+        if sender is not a player:
+            send "{@prefix} &cС консоли: &f/evoruinlegspawn <x> <z> [мир]"
+            send "{@prefix} &7Без [мир] используется первый оверворлд из списка миров сервера."
             stop
         if artifactRuinAdminSpawnHereKind(player, "legendary") is true:
             send "{@prefix} &6Построена &lлегендарная&6 руина: &7чернокаменный стиль, в сундуке башни — &6легендарный&7 артефакт."
@@ -11475,8 +11520,8 @@ command /evo [<offline player>] [<text>] [<text>]:
             send "&e/evo <player> sync"
             send "&e/evo <player> debug"
             send "&e/evo <player> reset"
-            send "&e/evoruinspawn &7— тест: руина (тип как при спавне в мире)"
-            send "&e/evoruinlegspawn &7— тест: &6легендарная&7 руина под ногами"
+            send "&e/evoruinspawn [x z [мир]] &7— руина; консоль: &f/evoruinspawn x z [мир]"
+            send "&e/evoruinlegspawn [x z [мир]] &7— легендарная; консоль: &f/evoruinlegspawn x z [мир]"
             send "&8&l----------------------------"
             stop
 
