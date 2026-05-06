@@ -11275,9 +11275,11 @@ command /evogive [<player>]:
 on inventory click:
     if name of event-inventory is "&0EVO GIVE":
         cancel event
-        if clicked inventory is not player's current inventory:
+        if clicked inventory is not event-inventory:
             stop
         set {_slot} to index of event-slot
+        if {_slot} is not set:
+            set {_slot} to clicked slot
         if {_slot} is 53:
             close player's inventory
             stop
