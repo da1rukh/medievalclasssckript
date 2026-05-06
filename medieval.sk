@@ -2266,6 +2266,9 @@ function artifactFromSlot(s: number) :: item:
     else if {_s} is 25:
         set {_i} to glass bottle named "&f&lАртефакт: Воздушный шарик"
         set lore of {_i} to "&7Двойной прыжок + анти-урон от падения", "&7ПКМ в руке: поглотить в ядро", "&8Эффект: &aАКТИВЕН"
+    else if {_s} is 26:
+        set {_i} to golden helmet named "&6&lАртефакт: Корона Высшего Разума"
+        set lore of {_i} to "&7Пассивно: &aх3 опыт из всех источников", "&7Твои зачарования считаются на +1 уровень", "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function artifactKeyFromSlot(s: number) :: text:
@@ -2309,6 +2312,8 @@ function artifactKeyFromSlot(s: number) :: text:
         return "luckcoin"
     else if {_s} is 25:
         return "cloudjump"
+    else if {_s} is 26:
+        return "crownmind"
     return ""
 
 function artifactSlotFromKey(k: text) :: number:
@@ -2352,6 +2357,8 @@ function artifactSlotFromKey(k: text) :: number:
         return 24
     else if {_k} is "cloudjump":
         return 25
+    else if {_k} is "crownmind":
+        return 26
     return -1
 
 function artifactKeyFromItemName(n: text) :: text:
@@ -2397,6 +2404,8 @@ function artifactKeyFromItemName(n: text) :: text:
         return "voidcompass"
     else if {_n} contains "Монета удачи":
         return "luckcoin"
+    else if {_n} contains "Корона Высшего Разума":
+        return "crownmind"
     return ""
 
 function artifactDesc(k: text) :: texts:
@@ -2462,6 +2471,9 @@ function artifactDesc(k: text) :: texts:
     else if {_k} is "cloudjump":
         add "&7Воздушный шарик: двойной прыжок в воздухе" to {_d::*}
         add "&7и гашение урона от падения после подброса." to {_d::*}
+    else if {_k} is "crownmind":
+        add "&7Корона Высшего Разума: х3 опыт из всех источников" to {_d::*}
+        add "&7Все твои зачарования работают как будто на +1 уровень." to {_d::*}
     else:
         add "&7Описание отсутствует." to {_d::*}
     return {_d::*}
@@ -2513,7 +2525,7 @@ function artifactRuinLegendaryRandomArtifact() :: item:
     return artifactFromSlot({_pick})
 
 function artifactRuinCommonArtifactRandom() :: item:
-    set {_pool::*} to 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24 and 25
+    set {_pool::*} to 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25 and 26
     set {_pick} to random element out of {_pool::*}
     return artifactFromSlot({_pick})
 
@@ -4091,6 +4103,74 @@ function isEtherPickaxeAltarRecipeExact(inv: inventory) :: boolean:
         return false
     return true
 
+function crownHigherMindArtifactItem() :: item:
+    set {_i} to golden helmet named "&6&lАртефакт: Корона Высшего Разума"
+    set lore of {_i} to "&7Пассивно: &aх3 опыт из всех источников", "&7Твои зачарования считаются на +1 уровень", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function isCrownHigherMindAltarRecipe(inv: inventory) :: boolean:
+    set {_mindN} to 0
+    set {_azuraN} to 0
+    set {_helmN} to 0
+    set {_bookN} to 0
+    set {_xpBottleN} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_it} to slot (loop-number - 1) of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            set {_nm} to name of {_it}
+            if {_nm} is set:
+                if {_nm} contains "Эфирный Разум":
+                    add 1 to {_mindN}
+                else if {_nm} contains "Звезда Азуры":
+                    add 1 to {_azuraN}
+                else:
+                    if {_it} is golden helmet:
+                        add 1 to {_helmN}
+                    else if {_it} is enchanted book:
+                        add 1 to {_bookN}
+                    else if {_it} is experience bottle:
+                        add 1 to {_xpBottleN}
+                    else:
+                        set {_bad} to true
+            else:
+                if {_it} is golden helmet:
+                    add 1 to {_helmN}
+                else if {_it} is enchanted book:
+                    add 1 to {_bookN}
+                else if {_it} is experience bottle:
+                    add 1 to {_xpBottleN}
+                else:
+                    set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_mindN} is not 1:
+        return false
+    if {_azuraN} is not 1:
+        return false
+    if {_helmN} is not 1:
+        return false
+    if {_bookN} is not 1:
+        return false
+    if {_xpBottleN} is not 1:
+        return false
+    return true
+
+# Единая выдача опыта с поддержкой Короны Высшего Разума.
+function giveArtifactScaledExperience(p: player, amount: number):
+    set {_xp} to round({_amount})
+    if {_xp} < 1:
+        set {_xp} to 1
+    if hasArtifact({_p}, "crownmind") is true:
+        set {_xp} to {_xp} * 3
+    give {_xp} experience to {_p}
+
 function debugEtherPickaxeRecipe(inv: inventory, p: player):
     set {_voidN} to 0
     set {_retN} to 0
@@ -4169,6 +4249,8 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to altarVoidPickaxeItem()
     else if isOmniPickaxeAltarRecipe({_inv}) is true:
         set {_outItem} to altarOmniPickaxeItem()
+    else if isCrownHigherMindAltarRecipe({_inv}) is true:
+        set {_outItem} to crownHigherMindArtifactItem()
     else:
         if {_crafter} is set:
             send "{@prefix} &8[debug] recipe-check: FAIL" to {_crafter}
@@ -4337,6 +4419,7 @@ command /altar:
         send "{@prefix} &eУдачи: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &eзолотой блок + &9лазурит"
         send "{@prefix} &5Пустоты: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &8обсидиан + &5эндер-жемчуг"
         send "{@prefix} &6Омни-слияние: &7положи в 0–4 все 5 алтарных кирок (Эфирная, Пламенная, Жильная, Удачи, Пустоты)."
+        send "{@prefix} &6Корона Высшего Разума: &6Эфирный Разум + &dЗвезда Азуры + &eзолотой шлем + &fenchanted book + &aпузырёк опыта."
 
 function pullArtifactFromCore(p: player, key: text) :: boolean:
     set {_u} to uuid of {_p}
@@ -4714,6 +4797,24 @@ every 2 ticks:
 
 # ---- Артефакты: боевые эффекты ----
 on damage:
+    # Корона Высшего Разума: зачарования работают на +1 уровень (боевой эквивалент).
+    if attacker is a player:
+        if hasArtifact(attacker, "crownmind") is true:
+            if attacker's tool is enchanted with sharpness:
+                add 1 to damage
+            if projectile is set:
+                if attacker's tool is enchanted with power:
+                    set damage to damage * 1.1
+
+    if victim is a player:
+        if hasArtifact(victim, "crownmind") is true:
+            set {_protBoost} to 0
+            loop helmet, chestplate, leggings and boots of victim:
+                if loop-value is enchanted with protection:
+                    add 0.04 to {_protBoost}
+            if {_protBoost} > 0:
+                set damage to damage * (1 - {_protBoost})
+
     # Временная неуязвимость легендарки Scout
     if victim is a player:
         set {_vuImm} to victim's uuid
@@ -5054,6 +5155,8 @@ on respawn:
 on death:
     if attacker is a player:
         set {_u} to attacker's uuid
+        if hasArtifact(attacker, "crownmind") is true:
+            set dropped experience to dropped experience * 3
 
         # Звезда Азуры: заряд от убийств
         if hasArtifact(attacker, "azura") is true:
@@ -5534,7 +5637,7 @@ on break:
                 cancel event
                 set event-block to air
                 giveAltarSilkBlockItem(player, {_b}, location of {_b})
-                give 1 experience to player
+                giveArtifactScaledExperience(player, 1)
                 stop
             if {altar_ether_trash_mode::%uuid of player%} is not true:
                 stop
@@ -5558,7 +5661,7 @@ on break:
                 if isVoidPickaxe(player's tool) is not true:
                     set {_dust} to gunpowder
                     giveOrDrop({_dust}, player, location of {_b})
-            give 1 experience to player
+            giveArtifactScaledExperience(player, 1)
             stop
         if isEtherValuableOre({_b}) is true:
             cancel event
@@ -5577,7 +5680,7 @@ on break:
                 loop {_cnt} times:
                     set {_it} to diamond
                     giveOrDrop({_it}, player, {_dropLoc})
-                give 3 experience to player
+                giveArtifactScaledExperience(player, 3)
             else if {_b} is deepslate diamond ore:
                 set {_cnt} to 1
                 if {_fortuneOn} is true:
@@ -5587,7 +5690,7 @@ on break:
                 loop {_cnt} times:
                     set {_it} to diamond
                     giveOrDrop({_it}, player, {_dropLoc})
-                give 3 experience to player
+                giveArtifactScaledExperience(player, 3)
             else if {_b} is gold ore:
                 set {_it} to raw gold
                 if isFlamePickaxe(player's tool) is true:
@@ -5596,7 +5699,7 @@ on break:
                 if isOmniPickaxe(player's tool) is true:
                     set {_it} to gold ingot
                 giveOrDrop({_it}, player, {_dropLoc})
-                give 2 experience to player
+                giveArtifactScaledExperience(player, 2)
             else if {_b} is deepslate gold ore:
                 set {_it} to raw gold
                 if isFlamePickaxe(player's tool) is true:
@@ -5605,7 +5708,7 @@ on break:
                 if isOmniPickaxe(player's tool) is true:
                     set {_it} to gold ingot
                 giveOrDrop({_it}, player, {_dropLoc})
-                give 2 experience to player
+                giveArtifactScaledExperience(player, 2)
             else if {_b} is nether gold ore:
                 set {_nug} to 2
                 if {_fortuneOn} is true:
@@ -5615,7 +5718,7 @@ on break:
                 loop {_nug} times:
                     set {_it} to gold nugget
                     giveOrDrop({_it}, player, {_dropLoc})
-                give 2 experience to player
+                giveArtifactScaledExperience(player, 2)
             else if {_b} is iron ore:
                 set {_it} to raw iron
                 if isFlamePickaxe(player's tool) is true:
@@ -5624,7 +5727,7 @@ on break:
                 if isOmniPickaxe(player's tool) is true:
                     set {_it} to iron ingot
                 giveOrDrop({_it}, player, {_dropLoc})
-                give 2 experience to player
+                giveArtifactScaledExperience(player, 2)
             else if {_b} is deepslate iron ore:
                 set {_it} to raw iron
                 if isFlamePickaxe(player's tool) is true:
@@ -5633,7 +5736,7 @@ on break:
                 if isOmniPickaxe(player's tool) is true:
                     set {_it} to iron ingot
                 giveOrDrop({_it}, player, {_dropLoc})
-                give 2 experience to player
+                giveArtifactScaledExperience(player, 2)
             else if {_b} is coal ore:
                 set {_cnt} to 1
                 if {_fortuneOn} is true:
@@ -5643,7 +5746,7 @@ on break:
                 loop {_cnt} times:
                     set {_it} to coal
                     giveOrDrop({_it}, player, {_dropLoc})
-                give 2 experience to player
+                giveArtifactScaledExperience(player, 2)
             else if {_b} is deepslate coal ore:
                 set {_cnt} to 1
                 if {_fortuneOn} is true:
@@ -5653,7 +5756,7 @@ on break:
                 loop {_cnt} times:
                     set {_it} to coal
                     giveOrDrop({_it}, player, {_dropLoc})
-                give 2 experience to player
+                giveArtifactScaledExperience(player, 2)
             else if {_b} is lapis ore:
                 set {_cnt} to 4
                 if {_fortuneOn} is true:
@@ -5663,7 +5766,7 @@ on break:
                 loop {_cnt} times:
                     set {_it} to lapis lazuli
                     giveOrDrop({_it}, player, {_dropLoc})
-                give 3 experience to player
+                giveArtifactScaledExperience(player, 3)
             else if {_b} is deepslate lapis ore:
                 set {_cnt} to 4
                 if {_fortuneOn} is true:
@@ -5673,7 +5776,7 @@ on break:
                 loop {_cnt} times:
                     set {_it} to lapis lazuli
                     giveOrDrop({_it}, player, {_dropLoc})
-                give 3 experience to player
+                giveArtifactScaledExperience(player, 3)
             else if {_b} is redstone ore:
                 set {_cnt} to 3
                 if {_fortuneOn} is true:
@@ -5683,7 +5786,7 @@ on break:
                 loop {_cnt} times:
                     set {_it} to redstone
                     giveOrDrop({_it}, player, {_dropLoc})
-                give 3 experience to player
+                giveArtifactScaledExperience(player, 3)
             else if {_b} is deepslate redstone ore:
                 set {_cnt} to 3
                 if {_fortuneOn} is true:
@@ -5693,11 +5796,11 @@ on break:
                 loop {_cnt} times:
                     set {_it} to redstone
                     giveOrDrop({_it}, player, {_dropLoc})
-                give 3 experience to player
+                giveArtifactScaledExperience(player, 3)
             else if {_b} is ancient debris:
                 set {_it} to ancient debris
                 giveOrDrop({_it}, player, {_dropLoc})
-                give 5 experience to player
+                giveArtifactScaledExperience(player, 5)
             # Жильная/Омни: дополнительно срубает руду того же типа в радиусе 1.
             set {_veinMode} to false
             if isVeinPickaxe(player's tool) is true:
@@ -5718,59 +5821,59 @@ on break:
                         else if {_b} is diamond ore:
                             set {_it} to diamond
                             giveOrDrop({_it}, player, {_lb})
-                            give 2 experience to player
+                            giveArtifactScaledExperience(player, 2)
                         else if {_b} is deepslate diamond ore:
                             set {_it} to diamond
                             giveOrDrop({_it}, player, {_lb})
-                            give 2 experience to player
+                            giveArtifactScaledExperience(player, 2)
                         else if {_b} is gold ore:
                             set {_it} to raw gold
                             giveOrDrop({_it}, player, {_lb})
-                            give 1 experience to player
+                            giveArtifactScaledExperience(player, 1)
                         else if {_b} is deepslate gold ore:
                             set {_it} to raw gold
                             giveOrDrop({_it}, player, {_lb})
-                            give 1 experience to player
+                            giveArtifactScaledExperience(player, 1)
                         else if {_b} is nether gold ore:
                             set {_it} to gold nugget
                             giveOrDrop({_it}, player, {_lb})
-                            give 1 experience to player
+                            giveArtifactScaledExperience(player, 1)
                         else if {_b} is iron ore:
                             set {_it} to raw iron
                             giveOrDrop({_it}, player, {_lb})
-                            give 1 experience to player
+                            giveArtifactScaledExperience(player, 1)
                         else if {_b} is deepslate iron ore:
                             set {_it} to raw iron
                             giveOrDrop({_it}, player, {_lb})
-                            give 1 experience to player
+                            giveArtifactScaledExperience(player, 1)
                         else if {_b} is coal ore:
                             set {_it} to coal
                             giveOrDrop({_it}, player, {_lb})
-                            give 1 experience to player
+                            giveArtifactScaledExperience(player, 1)
                         else if {_b} is deepslate coal ore:
                             set {_it} to coal
                             giveOrDrop({_it}, player, {_lb})
-                            give 1 experience to player
+                            giveArtifactScaledExperience(player, 1)
                         else if {_b} is lapis ore:
                             set {_it} to lapis lazuli
                             giveOrDrop({_it}, player, {_lb})
-                            give 1 experience to player
+                            giveArtifactScaledExperience(player, 1)
                         else if {_b} is deepslate lapis ore:
                             set {_it} to lapis lazuli
                             giveOrDrop({_it}, player, {_lb})
-                            give 1 experience to player
+                            giveArtifactScaledExperience(player, 1)
                         else if {_b} is redstone ore:
                             set {_it} to redstone
                             giveOrDrop({_it}, player, {_lb})
-                            give 1 experience to player
+                            giveArtifactScaledExperience(player, 1)
                         else if {_b} is deepslate redstone ore:
                             set {_it} to redstone
                             giveOrDrop({_it}, player, {_lb})
-                            give 1 experience to player
+                            giveArtifactScaledExperience(player, 1)
                         else if {_b} is ancient debris:
                             set {_it} to ancient debris
                             giveOrDrop({_it}, player, {_lb})
-                            give 2 experience to player
+                            giveArtifactScaledExperience(player, 2)
             # Доп. бафы Омни.
             # Кирка Пустоты: короткий рывок к дропу после добычи руды.
             if isVoidPickaxe(player's tool) is true:
@@ -7159,7 +7262,7 @@ command /artifacts:
         set slot 4 of player's current inventory to nether star named "&6&lАРТЕФАКТЫ: ЯДРО"
         set lore of slot 4 of player's current inventory to "&7ПКМ: включить/выключить артефакт", "&7ЛКМ: извлечь в предмет", "&7Легендарные: отдельное меню &e/legendary", "&8Эффекты работают без предмета"
 
-        loop 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24 and 25:
+        loop 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25 and 26:
             set {_art} to artifactMenuItem(player, loop-value)
             if {_art} is not air:
                 set slot loop-value of player's current inventory to {_art}
@@ -7318,7 +7421,7 @@ command /artifactpull <text>:
         set {_id} to arg-1 in lower case
         if {_id} is "all":
             set {_c} to 0
-            loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin" and "cloudjump":
+            loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump" and "crownmind":
                 if pullArtifactFromCore(player, loop-value) is true:
                     add 1 to {_c}
             if {_c} > 0:
@@ -7327,9 +7430,9 @@ command /artifactpull <text>:
             else:
                 send "{@prefix} &7В ядре нет артефактов для извлечения."
             stop
-        if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin" or "cloudjump":
+        if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump" or "crownmind":
             send "{@prefix} &cНеизвестный id артефакта."
-            send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump"
+            send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind"
             stop
         if pullArtifactFromCore(player, {_id}) is true:
             send "{@prefix} &aАртефакт &e%{_id}% &aизвлечён из ядра в предмет."
@@ -7456,20 +7559,20 @@ command /evo [<offline player>] [<text>] [<text>]:
         else if arg-2 is "artifactgive":
             if arg-3 is not set:
                 send "{@prefix} &eИспользование: /evo <player> artifactgive <id|all>"
-                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump"
+                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind"
                 stop
             set {_id} to arg-3 in lower case
             if {_id} is "all":
-                loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin" and "cloudjump":
+                loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump" and "crownmind":
                     set {art_found::%{_u}%::%loop-value%} to true
                     set {art_enabled::%{_u}%::%loop-value%} to true
                 send "{@prefix} &aИгроку &e%arg-1% &aвыданы все артефакты."
                 if arg-1 is online:
                     send "{@prefix} &aТебе выданы все артефакты. Открой &e/artifacts" to arg-1
                 stop
-            if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin" or "cloudjump":
+            if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump" or "crownmind":
                 send "{@prefix} &cНеизвестный id артефакта."
-                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump"
+                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind"
                 stop
             set {art_found::%{_u}%::%{_id}%} to true
             set {art_enabled::%{_u}%::%{_id}%} to true
@@ -7480,11 +7583,11 @@ command /evo [<offline player>] [<text>] [<text>]:
         else if arg-2 is "artifactpull":
             if arg-3 is not set:
                 send "{@prefix} &eИспользование: /evo <player> artifactpull <id|all>"
-                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump"
+                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind"
                 stop
             set {_id} to arg-3 in lower case
             if {_id} is "all":
-                loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin" and "cloudjump":
+                loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump" and "crownmind":
                     if {art_found::%{_u}%::%loop-value%} is true:
                         set {_s} to artifactSlotFromKey(loop-value)
                         set {_it} to artifactFromSlot({_s})
@@ -7499,9 +7602,9 @@ command /evo [<offline player>] [<text>] [<text>]:
                 if arg-1 is online:
                     send "{@prefix} &eВсе артефакты извлечены из ядра в предметы." to arg-1
                 stop
-            if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin" or "cloudjump":
+            if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump" or "crownmind":
                 send "{@prefix} &cНеизвестный id артефакта."
-                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump"
+                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind"
                 stop
             if {art_found::%{_u}%::%{_id}%} is not true:
                 send "{@prefix} &cУ игрока нет этого артефакта в ядре."
@@ -7714,7 +7817,7 @@ command /evo [<offline player>] [<text>] [<text>]:
             set {_foundCount} to 0
             set {_enabledCount} to 0
             send "{@prefix} &8[DBG] --- ARTIFACT CORE STATE: %arg-1% ---"
-            loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin" and "cloudjump":
+            loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump" and "crownmind":
                 set {_f} to {art_found::%{_u}%::%loop-value%} ? false
                 set {_e} to {art_enabled::%{_u}%::%loop-value%} ? false
                 if {_f} is true:
