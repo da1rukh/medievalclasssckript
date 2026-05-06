@@ -11256,8 +11256,10 @@ function voidRuinRoomLocation(p: player) :: location:
     set {_tries} to 0
     while {_tries} < 120:
         add 1 to {_tries}
-        set {_bx} to random integer between 22000 and 52000
-        set {_bz} to random integer between 22000 and 52000
+        set {_cx} to random integer between 1375 and 3250
+        set {_cz} to random integer between 1375 and 3250
+        set {_bx} to ({_cx} * 16) + 8
+        set {_bz} to ({_cz} * 16) + 8
         chance of 50%:
             set {_bx} to {_bx} * -1
         chance of 50%:
@@ -11364,6 +11366,18 @@ function ensureVoidRuinRoomAt(loc: location):
     set {evo_void_room_floor_y::%{_rid}%} to {_yFloor}
     set {evo_void_room_ceil_y::%{_rid}%} to {_yCeil}
     add {_rid} to {evo_void_rooms::*}
+
+    # Обелиск из обсидиана рядом со спавном
+    set {_ox} to {_cx} + 6
+    set {_oz} to {_cz}
+    loop integers between 0 and 8:
+        set {_ob} to block at location at {_ox}, {_yFloor} + 1 + loop-value, {_oz} in {_w}
+        set {_ob} to obsidian
+    set block at location at {_ox}, {_yFloor} + 10, {_oz} in {_w} to crying obsidian
+    set block at location at {_ox} + 1, {_yFloor} + 8, {_oz} in {_w} to obsidian
+    set block at location at {_ox} - 1, {_yFloor} + 8, {_oz} in {_w} to obsidian
+    set block at location at {_ox}, {_yFloor} + 8, {_oz} + 1 in {_w} to obsidian
+    set block at location at {_ox}, {_yFloor} + 8, {_oz} - 1 in {_w} to obsidian
 
     # 2-5 сундуков на руину
     set {_chestsNeed} to random integer between 2 and 5
