@@ -4125,7 +4125,7 @@ function desertHeartArtifactItem() :: item:
 
 function quantumDuplicatorArtifactItem() :: item:
     set {_i} to dispenser named "&b&lАртефакт: Квантовый Дубликатор"
-    set lore of {_i} to "&710%% шанс дублировать крафт на верстаке", "&7Не работает на алтарные предметы", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&710 процентов шанс дублировать крафт на верстаке", "&7Не работает на алтарные предметы", "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function facelessMaskArtifactItem() :: item:
@@ -4274,7 +4274,7 @@ function desertHeartItem() :: item:
 
 function quantumDuplicatorItem() :: item:
     set {_i} to dispenser named "&b&lАртефакт: Квантовый Дубликатор"
-    set lore of {_i} to "&710%% шанс удвоить крафт на верстаке", "&7Не работает на алтарных предметах", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&710 процентов шанс удвоить крафт на верстаке", "&7Не работает на алтарных предметах", "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function facelessMaskItem() :: item:
