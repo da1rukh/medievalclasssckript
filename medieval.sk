@@ -5218,6 +5218,17 @@ on place of hopper:
     set {_pit} to event-item
     tryCompleteAwakeningAltarHopper(player, event-block, {_pit})
 
+# «Зов Руин» — якорь возрождения: без Shift легко поставить блок и потерять предмет; постройка руины только Shift+ПКМ.
+on place of respawn anchor:
+    if player is not set:
+        stop
+    set {_pit} to event-item
+    if isArtifactRuinSummonItem({_pit}) is false:
+        stop
+    if player is not sneaking:
+        cancel event
+        send action bar "&7Зов Руин: зажми Shift и ПКМ по блоку в Оверворлде — вызвать руину." to player
+
 # Алтарь из сундука: проверка при изменении инвентаря сундука.
 on inventory click:
     set {_do} to false
