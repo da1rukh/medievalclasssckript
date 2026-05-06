@@ -11736,6 +11736,9 @@ command /evo [<offline player>] [<text>] [<text>]:
             delete {art_enabled::%{_u}%::*}
             delete {util_found::%{_u}%::*}
             delete {util_enabled::%{_u}%::*}
+            # Полная очистка дневника приключенца
+            delete {adv_diary::%{_u}%::*}
+            delete {adv_diary_open_page::%{_u}%}
             delete {art_hermes_prev::%{_u}%}
             delete {art_azura_charge::%{_u}%}
             delete {art_last_death::%{_u}%}
