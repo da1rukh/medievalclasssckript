@@ -11274,31 +11274,120 @@ function ensureVoidRuinRoomAt(loc: location):
     set {_cx} to floor(x-coordinate of {_loc})
     set {_cy} to floor(y-coordinate of {_loc})
     set {_cz} to floor(z-coordinate of {_loc})
-    loop integers between -3 and 3:
+    set {_rid} to "%{_w}%:%{_cx}%:%{_cz}%"
+    if {evo_void_room_built::%{_rid}%} is true:
+        stop
+    loop integers between -50 and 49:
         set {_dx} to loop-value
-        loop integers between -3 and 3:
+        loop integers between -50 and 49:
             set {_dz} to loop-value-1
+            set {_bb} to block at location at {_cx} + {_dx}, {_cy} - 2, {_cz} + {_dz} in {_w}
+            set {_bb} to bedrock
             set {_floor} to block at location at {_cx} + {_dx}, {_cy} - 1, {_cz} + {_dz} in {_w}
-            set {_ceil} to block at location at {_cx} + {_dx}, {_cy} + 4, {_cz} + {_dz} in {_w}
-            set {_floor} to polished blackstone bricks
-            set {_ceil} to polished blackstone bricks
-            loop integers between 0 and 3:
+            set {_r} to random integer between 1 and 100
+            if {_r} <= 35:
+                set {_floor} to cracked polished blackstone bricks
+            else if {_r} <= 60:
+                set {_floor} to polished blackstone bricks
+            else if {_r} <= 75:
+                set {_floor} to blackstone
+            else if {_r} <= 88:
+                set {_floor} to crying obsidian
+            else:
+                set {_floor} to netherrack
+            set {_top} to block at location at {_cx} + {_dx}, {_cy} + 6, {_cz} + {_dz} in {_w}
+            set {_top} to barrier
+            loop integers between 0 and 5:
                 set {_yy} to {_cy} + loop-value-1
                 set {_wall} to false
-                if {_dx} is -3:
+                if {_dx} is -50:
                     set {_wall} to true
-                else if {_dx} is 3:
+                else if {_dx} is 49:
                     set {_wall} to true
-                else if {_dz} is -3:
+                else if {_dz} is -50:
                     set {_wall} to true
-                else if {_dz} is 3:
+                else if {_dz} is 49:
                     set {_wall} to true
                 set {_b} to block at location at {_cx} + {_dx}, {_yy}, {_cz} + {_dz} in {_w}
                 if {_wall} is true:
-                    set {_b} to obsidian
+                    set {_b} to barrier
                 else:
                     set {_b} to air
     set block at location at {_cx}, {_cy}, {_cz} in {_w} to hopper
+    set {evo_void_room_center_x::%{_rid}%} to {_cx}
+    set {evo_void_room_center_z::%{_rid}%} to {_cz}
+    set {evo_void_room_world::%{_rid}%} to "%{_w}%"
+    add {_rid} to {evo_void_rooms::*}
+    loop 16 times:
+        set {_rx} to random integer between -45 and 45
+        set {_rz} to random integer between -45 and 45
+        set {_cb} to block at location at {_cx} + {_rx}, {_cy}, {_cz} + {_rz} in {_w}
+        if {_cb} is air:
+            set {_cb} to chest
+            set {_inv} to inventory of {_cb}
+            clear {_inv}
+            loop 27 times:
+                chance of 35%:
+                    set {_slot} to loop-number - 1
+                    set slot {_slot} of {_inv} to artifactRuinLootMaterialsOnly("boss")
+            chance of 22%:
+                set slot random integer between 0 and 26 of {_inv} to ancientScrollItem(random element out of "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens" and "cursedgift")
+            chance of 10%:
+                set slot random integer between 0 and 26 of {_inv} to artifactRuinCommonArtifactRandom()
+            chance of 3%:
+                set slot random integer between 0 and 26 of {_inv} to artifactRuinLegendaryRandomArtifact()
+    set {evo_void_spawning_guards} to true
+    loop 12 times:
+        set {_gx} to {_cx} + random integer between -40 and 40
+        set {_gz} to {_cz} + random integer between -40 and 40
+        set {_gl} to location at {_gx}, {_cy}, {_gz} in {_w}
+        spawn a vindicator at {_gl}
+        set {evo_void_guard::%uuid of last spawned entity%} to true
+    loop 8 times:
+        set {_gx2} to {_cx} + random integer between -40 and 40
+        set {_gz2} to {_cz} + random integer between -40 and 40
+        set {_gl2} to location at {_gx2}, {_cy}, {_gz2} in {_w}
+        spawn a wither skeleton at {_gl2}
+        set {evo_void_guard::%uuid of last spawned entity%} to true
+    delete {evo_void_spawning_guards}
+    set {evo_void_room_built::%{_rid}%} to true
+
+function isInAnyVoidRuinRoom(loc: location) :: boolean:
+    set {_lw} to world of {_loc}
+    set {_lx} to floor(x-coordinate of {_loc})
+    set {_ly} to floor(y-coordinate of {_loc})
+    set {_lz} to floor(z-coordinate of {_loc})
+    loop {evo_void_rooms::*}:
+        set {_rid} to loop-value
+        if {evo_void_room_world::%{_rid}%} is not "%{_lw}%":
+            continue
+        set {_cx} to {evo_void_room_center_x::%{_rid}%}
+        set {_cz} to {evo_void_room_center_z::%{_rid}%}
+        if {_cx} is not set:
+            continue
+        if {_cz} is not set:
+            continue
+        if abs({_lx} - {_cx}) > 50:
+            continue
+        if abs({_lz} - {_cz}) > 50:
+            continue
+        if {_ly} < 246:
+            continue
+        if {_ly} > 258:
+            continue
+        return true
+    return false
+
+on spawn of living entity:
+    if event-entity is a player:
+        stop
+    if {evo_void_spawning_guards} is true:
+        stop
+    if isInAnyVoidRuinRoom(location of event-entity) is false:
+        stop
+    if {evo_void_guard::%uuid of event-entity%} is true:
+        stop
+    cancel event
 
 on right click on obsidian:
     if player's tool is set:
