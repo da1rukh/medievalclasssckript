@@ -141,6 +141,7 @@ on join:
     if {class_lock::%{_u}%} is not set:
         set {class_lock::%{_u}%} to false
     syncProgress(player)
+    ensureStarterAdventureDiaryPages(player)
     # Приоритет призрака при входе: сразу вернуть призрачный режим и полёт
     if {ghost::%{_u}%} is true:
         wait 2 ticks
@@ -4786,7 +4787,7 @@ function evoAdminItemIdList() :: texts:
     add "lootmagnet" to {_ids::*}
     add "nightlens" to {_ids::*}
     # Свитки для всех артефактов
-    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon" and "cursedgift":
+    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon", "awakening_altar" and "cursedgift":
         set {_sid} to "scroll_%loop-value%"
         add {_sid} to {_ids::*}
     return {_ids::*}
@@ -4885,11 +4886,15 @@ function addDiaryRecipePage(p: player, rid: text):
     set {_tag} to "recipe::%{_r}%"
     addDiaryPage({_p}, {_tag})
 
+function ensureStarterAdventureDiaryPages(p: player):
+    addDiaryRecipePage({_p}, "awakening_altar")
+    addDiaryRecipePage({_p}, "ruin_summon")
+
 function diaryRecipeEntryFromItem(it: item) :: text:
     set {_nm} to name of {_it}
     if {_nm} is not set:
         return ""
-    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon" and "cursedgift":
+    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon", "awakening_altar" and "cursedgift":
         set {_n} to {ancient_scroll_recipes::%loop-value%::name}
         if {_n} is set:
             if {_nm} contains {_n}:
@@ -12101,6 +12106,8 @@ command /evo [<offline player>] [<text>] [<text>]:
             # Полная очистка дневника приключенца
             delete {adv_diary::%{_u}%::*}
             delete {adv_diary_open_page::%{_u}%}
+            if arg-1 is online:
+                ensureStarterAdventureDiaryPages(arg-1)
             delete {evo_death_return::%{_u}%}
             delete {art_hermes_prev::%{_u}%}
             delete {art_azura_charge::%{_u}%}
@@ -13153,7 +13160,10 @@ function initAncientScrollRecipes():
     set {ancient_scroll_recipes::nightlens::ing::*} to "Стекло", "Светокаменная пыль", "Аметистовый осколок", "Мембрана фантома", "Паучий глаз"
     set {ancient_scroll_recipes::ruin_summon::name} to "Зов Руин"
     set {ancient_scroll_recipes::ruin_summon::tier} to "medium"
-    set {ancient_scroll_recipes::ruin_summon::ing::*} to "Чернокамень", "Обсидиан", "Аметистовый осколок", "Железный слиток", "Уголь"
+    set {ancient_scroll_recipes::ruin_summon::ing::*} to "Чернокамень", "Обсидиан", "Аметистовый осколок", "Железный слиток", "Уголь (слоты сундука 0–4)"
+    set {ancient_scroll_recipes::awakening_altar::name} to "Сундук — Алтарь Создания"
+    set {ancient_scroll_recipes::awakening_altar::tier} to "medium"
+    set {ancient_scroll_recipes::awakening_altar::ing::*} to "Ключ пустоты — 5 шт. (в сумме)", "Плачущий обсидиан — 3 шт.", "Обсидиан — 3 шт.", "Аметистовый осколок — 3 шт.", "Только это в сундуке — открыть"
     set {ancient_scroll_recipes::cursedgift::name} to "Дар Проклятого Короля"
     set {ancient_scroll_recipes::cursedgift::tier} to "absolute"
     set {ancient_scroll_recipes::cursedgift::ing::*} to "Посох Некро-Тирана", "Корона Высшего Разума", "Зачарованное золотое яблоко", "Голова игрока", "Слиток незерита"
