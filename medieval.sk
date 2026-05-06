@@ -7854,6 +7854,19 @@ on enchant prepare:
         cancel event
         stop
 
+# Корона Высшего Разума: +1 к каждому зачару с стола зачарований
+# (включая книги), поверх того что выдал стол.
+on enchant:
+    if hasArtifact(player, "crownmind") is true:
+        set {_it} to event-item
+        if {_it} is set:
+            loop enchantments of {_it}:
+                set {_lvl} to level of loop-value of {_it}
+                if {_lvl} > 0:
+                    set {_up} to {_lvl} + 1
+                    enchant {_it} with loop-value {_up}
+            set event-item to {_it}
+
 # Наковальня: классовые предметы (PrepareAnvil в Skript нельзя cancel — блокируем клики по слотам 1 и 2)
 on inventory click:
     if event-inventory is set:
