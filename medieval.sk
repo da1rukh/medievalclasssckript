@@ -4287,6 +4287,70 @@ function cursedKingGiftItem() :: item:
     set lore of {_i} to "&7Воскрешает союзника-дуо рядом", "&7КД 5 минут на цель", "&7Цена: -10 уровней владельцу", "&8Эффект: &aАКТИВЕН"
     return {_i}
 
+function evoAdminItemById(id: text) :: item:
+    set {_id} to {_id} in lower case
+
+    # Базовые altar/ключевые предметы
+    if {_id} is "void_key" or {_id} is "key_void":
+        set {_k} to tripwire hook named "&5&lКлюч Пустоты"
+        set lore of {_k} to "&8Админ-выдача"
+        return {_k}
+    if {_id} is "return_key" or {_id} is "key_return":
+        set {_k} to tripwire hook named "&b&lКлюч Возврата"
+        set lore of {_k} to "&8Админ-выдача"
+        return {_k}
+    if {_id} is "altar_hopper" or {_id} is "awakening_hopper":
+        return awakeningHopperTokenItem()
+
+    # Кирки алтаря
+    if {_id} is "ether_pick":
+        return altarEtherPickaxeItem()
+    if {_id} is "flame_pick":
+        return altarFlamePickaxeItem()
+    if {_id} is "vein_pick":
+        return altarVeinPickaxeItem()
+    if {_id} is "fortune_pick":
+        return altarFortunePickaxeItem()
+    if {_id} is "void_pick":
+        return altarVoidPickaxeItem()
+    if {_id} is "omni_pick":
+        return altarOmniPickaxeItem()
+
+    # Новые крафтабельные артефакты вне ядра
+    if {_id} is "heater":
+        return portableHeaterItem()
+    if {_id} is "dreamcatcher":
+        return dreamCatcherItem()
+    if {_id} is "desertheart":
+        return desertHeartItem()
+    if {_id} is "quantdup":
+        return quantumDuplicatorItem()
+    if {_id} is "facelessmask":
+        return facelessMaskItem()
+    if {_id} is "cursedgift":
+        return cursedKingGiftItem()
+
+    # Древние свитки
+    if {_id} is "scroll_heater":
+        return ancientScrollItem("heater")
+    if {_id} is "scroll_dreamcatcher":
+        return ancientScrollItem("dreamcatcher")
+    if {_id} is "scroll_desertheart":
+        return ancientScrollItem("desertheart")
+    if {_id} is "scroll_quantdup":
+        return ancientScrollItem("quantdup")
+    if {_id} is "scroll_facelessmask":
+        return ancientScrollItem("facelessmask")
+    if {_id} is "scroll_cursedgift":
+        return ancientScrollItem("cursedgift")
+
+    # Артефакты из основной системы по id
+    set {_slot} to artifactSlotFromKey({_id})
+    if {_slot} >= 0:
+        return artifactFromSlot({_slot})
+
+    return air
+
 function isArtifactRecipeByFive(inv: inventory, i1: item, i2: item, i3: item, i4: item, i5: item) :: boolean:
     set {_a} to 0
     set {_b} to 0
@@ -7674,6 +7738,41 @@ command /evoruinlegspawn:
             play sound "block.respawn_anchor.set_spawn" with volume 1 and pitch 1.15 at player for player
         else:
             send "{@prefix} &cНе удалось: нужен Оверворлд и твёрдая поверхность под колонкой X/Z."
+
+command /evogive <text> [<number>] [<player>]:
+    permission: evo.admin
+    permission message: {@prefix} &cУ вас нет прав!
+    trigger:
+        set {_id} to arg-1 in lower case
+        set {_it} to evoAdminItemById({_id})
+        if {_it} is air:
+            send "{@prefix} &cНеизвестный id предмета: &e%{_id}%"
+            send "&7Примеры: &fvoid_key, return_key, altar_hopper, ether_pick, flame_pick, vein_pick, fortune_pick, void_pick, omni_pick"
+            send "&7Артефакты: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind"
+            send "&7Новые: &fheater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift"
+            send "&7Свитки: &fscroll_heater, scroll_dreamcatcher, scroll_desertheart, scroll_quantdup, scroll_facelessmask, scroll_cursedgift"
+            stop
+
+        set {_amount} to arg-2 parsed as number
+        if {_amount} is not set:
+            set {_amount} to 1
+        if {_amount} < 1:
+            set {_amount} to 1
+        if {_amount} > 64:
+            set {_amount} to 64
+        set amount of {_it} to {_amount}
+
+        set {_target} to player
+        if arg-3 is set:
+            set {_target} to arg-3
+        if {_target} is not set:
+            send "{@prefix} &cЦелевой игрок не найден."
+            stop
+
+        giveOrDrop({_it}, {_target}, location of {_target})
+        send "{@prefix} &aВыдано: &e%{_id}% &7x%{_amount}% &aигроку &e%{_target}%&a."
+        if {_target} is not player:
+            send "{@prefix} &aАдмин выдал вам: &e%{_id}% &7x%{_amount}%" to {_target}
 
 command /evo [<offline player>] [<text>] [<text>]:
     permission: evo.admin
