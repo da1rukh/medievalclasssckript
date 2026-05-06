@@ -8955,7 +8955,7 @@ every 5 seconds:
 
 on bed enter:
     if hasArtifactItemInInventory(player, "Ловец Снов") is true:
-        set time in world of player to 0 ticks
+        set time in world of player to 6:00
         clear weather in world of player
         apply luck 1 without particles to player for 1200 seconds
         send action bar "&d&lЛОВЕЦ СНОВ: ночь мгновенно рассеялась" to player
@@ -8963,21 +8963,21 @@ on bed enter:
 on craft:
     if hasArtifactItemInInventory(player, "Квантовый Дубликатор") is true:
         set {_res} to event-item
-            set {_blocked} to false
-            set {_nm} to name of {_res}
-            if {_nm} is set:
-                if {_nm} contains "Алтар":
-                    set {_blocked} to true
-                if {_nm} contains "Артефакт:":
-                    set {_blocked} to true
-                if {_nm} contains "Легендарный артефакт:":
-                    set {_blocked} to true
-            if {_blocked} is false:
-                chance of 10%:
-                    wait 1 tick
-                    if {_res} is set:
-                        give {_res} to player
-                        send action bar "&b&lКВАНТОВЫЙ ДУБЛИКАТОР: +1 копия!" to player
+        set {_blocked} to false
+        set {_nm} to name of {_res}
+        if {_nm} is set:
+            if {_nm} contains "Алтар":
+                set {_blocked} to true
+            if {_nm} contains "Артефакт:":
+                set {_blocked} to true
+            if {_nm} contains "Легендарный артефакт:":
+                set {_blocked} to true
+        if {_blocked} is false:
+            chance of 10%:
+                wait 1 tick
+                if {_res} is set:
+                    give {_res} to player
+                    send action bar "&b&lКВАНТОВЫЙ ДУБЛИКАТОР: +1 копия!" to player
 
 # Сердце Пустыни и Дар Проклятого Короля
 on death of player:
@@ -9020,13 +9020,14 @@ every 2 ticks:
                     set loop-block to air
                     execute console command "particle minecraft:cloud %x-coordinate of {_ploc}% %y-coordinate of {_ploc}% %z-coordinate of {_ploc}% 0.2 0.2 0.2 0.01 8 force"
             loop all living entities in radius 3 around loop-player:
-                if loop-entity is a player:
-                    if uuid of loop-entity is uuid of loop-player:
+                set {_target} to loop-entity
+                if {_target} is a player:
+                    if uuid of {_target} is uuid of loop-player:
                         continue
-                    if areDuo(loop-player, loop-entity) is true:
+                    if areDuo(loop-player, {_target}) is true:
                         continue
-                apply hunger 1 without particles to loop-entity for 3 seconds
-                apply wither 1 without particles to loop-entity for 2 seconds
+                apply hunger 1 without particles to {_target} for 3 seconds
+                apply wither 1 without particles to {_target} for 2 seconds
 
 # ---- Древние свитки ----
 function initAncientScrollRecipes():
