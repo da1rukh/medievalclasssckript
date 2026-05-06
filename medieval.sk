@@ -4351,6 +4351,57 @@ function evoAdminItemById(id: text) :: item:
 
     return air
 
+function evoAdminItemIdList() :: texts:
+    delete {_ids::*}
+    # Ключи / алтарь
+    add "void_key" to {_ids::*}
+    add "return_key" to {_ids::*}
+    add "altar_hopper" to {_ids::*}
+    # Кирки алтаря
+    add "ether_pick" to {_ids::*}
+    add "flame_pick" to {_ids::*}
+    add "vein_pick" to {_ids::*}
+    add "fortune_pick" to {_ids::*}
+    add "void_pick" to {_ids::*}
+    add "omni_pick" to {_ids::*}
+    # Основные артефакты
+    add "leg_warrior" to {_ids::*}
+    add "leg_scout" to {_ids::*}
+    add "leg_tank" to {_ids::*}
+    add "leg_archer" to {_ids::*}
+    add "leg_mage" to {_ids::*}
+    add "leg_necro" to {_ids::*}
+    add "hermes" to {_ids::*}
+    add "windring" to {_ids::*}
+    add "vampcharm" to {_ids::*}
+    add "etherdash" to {_ids::*}
+    add "mehrunes" to {_ids::*}
+    add "starfury" to {_ids::*}
+    add "icewalker" to {_ids::*}
+    add "frostheart" to {_ids::*}
+    add "ankhshield" to {_ids::*}
+    add "azura" to {_ids::*}
+    add "rottenapple" to {_ids::*}
+    add "voidcompass" to {_ids::*}
+    add "luckcoin" to {_ids::*}
+    add "cloudjump" to {_ids::*}
+    add "crownmind" to {_ids::*}
+    # Новые крафтабельные артефакты
+    add "heater" to {_ids::*}
+    add "dreamcatcher" to {_ids::*}
+    add "desertheart" to {_ids::*}
+    add "quantdup" to {_ids::*}
+    add "facelessmask" to {_ids::*}
+    add "cursedgift" to {_ids::*}
+    # Свитки
+    add "scroll_heater" to {_ids::*}
+    add "scroll_dreamcatcher" to {_ids::*}
+    add "scroll_desertheart" to {_ids::*}
+    add "scroll_quantdup" to {_ids::*}
+    add "scroll_facelessmask" to {_ids::*}
+    add "scroll_cursedgift" to {_ids::*}
+    return {_ids::*}
+
 function isArtifactRecipeByFive(inv: inventory, i1: item, i2: item, i3: item, i4: item, i5: item) :: boolean:
     set {_a} to 0
     set {_b} to 0
@@ -7739,40 +7790,74 @@ command /evoruinlegspawn:
         else:
             send "{@prefix} &cНе удалось: нужен Оверворлд и твёрдая поверхность под колонкой X/Z."
 
-command /evogive <text> [<number>] [<player>]:
+command /evogive [<player>]:
     permission: evo.admin
     permission message: {@prefix} &cУ вас нет прав!
     trigger:
-        set {_id} to arg-1 in lower case
-        set {_it} to evoAdminItemById({_id})
-        if {_it} is air:
-            send "{@prefix} &cНеизвестный id предмета: &e%{_id}%"
-            send "&7Примеры: &fvoid_key, return_key, altar_hopper, ether_pick, flame_pick, vein_pick, fortune_pick, void_pick, omni_pick"
-            send "&7Артефакты: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind"
-            send "&7Новые: &fheater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift"
-            send "&7Свитки: &fscroll_heater, scroll_dreamcatcher, scroll_desertheart, scroll_quantdup, scroll_facelessmask, scroll_cursedgift"
-            stop
-
-        set {_amount} to arg-2 parsed as number
-        if {_amount} is not set:
-            set {_amount} to 1
-        if {_amount} < 1:
-            set {_amount} to 1
-        if {_amount} > 64:
-            set {_amount} to 64
-        set amount of {_it} to {_amount}
-
         set {_target} to player
-        if arg-3 is set:
-            set {_target} to arg-3
+        if arg-1 is set:
+            set {_target} to arg-1
         if {_target} is not set:
             send "{@prefix} &cЦелевой игрок не найден."
             stop
+        set {evo_give_target::%uuid of player%} to uuid of {_target}
+        delete {evo_give_slot_id::%uuid of player%::*}
+        open chest inventory with 6 rows named "&0EVO GIVE" to player
+        set {_slot} to 0
+        loop evoAdminItemIdList():
+            if {_slot} > 52:
+                stop
+            set {_id} to loop-value
+            set {_it} to evoAdminItemById({_id})
+            if {_it} is not air:
+                set {_l::*} to lore of {_it}
+                add " " to {_l::*}
+                add "&8ID: %{_id}%" to {_l::*}
+                add "&7ЛКМ: выдать x1" to {_l::*}
+                add "&7ПКМ: выдать x64" to {_l::*}
+                set lore of {_it} to {_l::*}
+                set slot {_slot} of player's current inventory to {_it}
+                set {evo_give_slot_id::%uuid of player%::%{_slot}%} to {_id}
+                add 1 to {_slot}
+        set slot 53 of player's current inventory to barrier named "&cЗакрыть" with lore "&7Цель выдачи: &e%{_target}%"
+        send "{@prefix} &7GUI выдачи открыт. Цель: &e%{_target}%&7."
 
+on inventory click:
+    if name of event-inventory is "&0EVO GIVE":
+        cancel event
+        if clicked inventory is not player's current inventory:
+            stop
+        set {_slot} to index of event-slot
+        if {_slot} is 53:
+            close player's inventory
+            stop
+        set {_id} to {evo_give_slot_id::%uuid of player%::%{_slot}%}
+        if {_id} is not set:
+            stop
+        set {_tu} to {evo_give_target::%uuid of player%}
+        set {_target} to player from {_tu}
+        if {_target} is not online:
+            send "{@prefix} &cЦелевой игрок офлайн. Открой GUI заново."
+            close player's inventory
+            stop
+        set {_it} to evoAdminItemById({_id})
+        if {_it} is air:
+            send "{@prefix} &cПредмет с этим id недоступен."
+            stop
+        set {_amount} to 1
+        set {_click} to "%click type%" in lower case
+        if {_click} contains "right":
+            set {_amount} to 64
+        set amount of {_it} to {_amount}
         giveOrDrop({_it}, {_target}, location of {_target})
         send "{@prefix} &aВыдано: &e%{_id}% &7x%{_amount}% &aигроку &e%{_target}%&a."
         if {_target} is not player:
             send "{@prefix} &aАдмин выдал вам: &e%{_id}% &7x%{_amount}%" to {_target}
+
+on inventory close:
+    if name of event-inventory is "&0EVO GIVE":
+        delete {evo_give_slot_id::%uuid of player%::*}
+        delete {evo_give_target::%uuid of player%}
 
 command /evo [<offline player>] [<text>] [<text>]:
     permission: evo.admin
