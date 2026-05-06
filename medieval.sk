@@ -2281,6 +2281,10 @@ function artifactFromSlot(s: number) :: item:
         set {_i} to facelessMaskArtifactItem()
     else if {_s} is 32:
         set {_i} to cursedKingGiftArtifactItem()
+    else if {_s} is 33:
+        set {_i} to lootMagnetItem()
+    else if {_s} is 34:
+        set {_i} to nightLensItem()
     return {_i}
 
 function artifactKeyFromSlot(s: number) :: text:
@@ -2338,6 +2342,10 @@ function artifactKeyFromSlot(s: number) :: text:
         return "facelessmask"
     else if {_s} is 32:
         return "cursedgift"
+    else if {_s} is 33:
+        return "lootmagnet"
+    else if {_s} is 34:
+        return "nightlens"
     return ""
 
 function artifactSlotFromKey(k: text) :: number:
@@ -2395,6 +2403,10 @@ function artifactSlotFromKey(k: text) :: number:
         return 31
     else if {_k} is "cursedgift":
         return 32
+    else if {_k} is "lootmagnet":
+        return 33
+    else if {_k} is "nightlens":
+        return 34
     return -1
 
 function artifactKeyFromItemName(n: text) :: text:
@@ -2454,6 +2466,10 @@ function artifactKeyFromItemName(n: text) :: text:
         return "facelessmask"
     else if {_n} contains "Дар Проклятого Короля":
         return "cursedgift"
+    else if {_n} contains "Магнит Добытчика":
+        return "lootmagnet"
+    else if {_n} contains "Ночная Линза":
+        return "nightlens"
     return ""
 
 function artifactDesc(k: text) :: texts:
@@ -2539,6 +2555,10 @@ function artifactDesc(k: text) :: texts:
     else if {_k} is "cursedgift":
         add "&7Дар Проклятого Короля: воскрешает союзника-дуо рядом." to {_d::*}
         add "&7Цена: -10 уровней, КД 5 минут на цель." to {_d::*}
+    else if {_k} is "lootmagnet":
+        add "&7Магнит Добытчика: притягивает лут в радиусе 6 блоков." to {_d::*}
+    else if {_k} is "nightlens":
+        add "&7Ночная Линза: постоянное ночное зрение." to {_d::*}
     else:
         add "&7Описание отсутствует." to {_d::*}
     return {_d::*}
@@ -4218,6 +4238,49 @@ function hasArtifactCoreOrInventory(p: player, key: text, mark: text) :: boolean
         return true
     return false
 
+function isUtilityArtifactKey(k: text) :: boolean:
+    if {_k} is "heater":
+        return true
+    else if {_k} is "quantdup":
+        return true
+    else if {_k} is "dreamcatcher":
+        return true
+    else if {_k} is "facelessmask":
+        return true
+    else if {_k} is "lootmagnet":
+        return true
+    else if {_k} is "nightlens":
+        return true
+    return false
+
+function hasUtilityArtifact(p: player, key: text) :: boolean:
+    set {_u} to uuid of {_p}
+    if {ghost::%{_u}%} is true:
+        return false
+    if {util_found::%{_u}%::%{_key}%} is true:
+        if {util_enabled::%{_u}%::%{_key}%} is true:
+            return true
+    return false
+
+function hasUtilityCoreOrInventory(p: player, key: text, mark: text) :: boolean:
+    if hasUtilityArtifact({_p}, {_key}) is true:
+        return true
+    if hasArtifactItemInInventory({_p}, {_mark}) is true:
+        return true
+    return false
+
+function migrateUtilityCoreVars(p: player):
+    set {_u} to uuid of {_p}
+    loop "heater", "dreamcatcher", "quantdup", "facelessmask", "lootmagnet" and "nightlens":
+        if {art_found::%{_u}%::%loop-value%} is true:
+            set {util_found::%{_u}%::%loop-value%} to true
+            if {art_enabled::%{_u}%::%loop-value%} is true:
+                set {util_enabled::%{_u}%::%loop-value%} to true
+            else:
+                set {util_enabled::%{_u}%::%loop-value%} to false
+            delete {art_found::%{_u}%::%loop-value%}
+            delete {art_enabled::%{_u}%::%loop-value%}
+
 function isArtifactResultBlockedForQuantDup(it: item) :: boolean:
     set {_nm} to name of {_it}
     if {_nm} is set:
@@ -4354,9 +4417,29 @@ function facelessMaskItem() :: item:
     set lore of {_i} to "&7Скрывает никнейм над головой", "&8Эффект: &aАКТИВЕН"
     return {_i}
 
+function lootMagnetItem() :: item:
+    set {_i} to lodestone named "&b&lАртефакт: Магнит Добытчика"
+    set lore of {_i} to "&7Подтягивает выбитые предметы рядом", "&7Радиус: 5 блоков", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function nightLensItem() :: item:
+    set {_i} to tinted glass named "&9&lАртефакт: Ночная Линза"
+    set lore of {_i} to "&7Даёт постоянное ночное зрение", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
 function cursedKingGiftItem() :: item:
     set {_i} to netherite ingot named "&4&lАртефакт: Дар Проклятого Короля"
     set lore of {_i} to "&7Воскрешает союзника-дуо рядом", "&7КД 5 минут на цель", "&7Цена: -10 уровней владельцу", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function utilityMagnetItem() :: item:
+    set {_i} to lightning rod named "&b&lУтилити-артефакт: Магнит добычи"
+    set lore of {_i} to "&7Притягивает предметы в радиусе 6", "&7Работает из Utility Core и из инвентаря", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function utilityNightLensItem() :: item:
+    set {_i} to tinted glass named "&9&lУтилити-артефакт: Линза ночи"
+    set lore of {_i} to "&7Пассивно даёт Night Vision", "&7Работает из Utility Core и из инвентаря", "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function evoAdminItemById(id: text) :: item:
@@ -4411,6 +4494,10 @@ function evoAdminItemById(id: text) :: item:
         return facelessMaskItem()
     if {_id} is "cursedgift":
         return cursedKingGiftItem()
+    if {_id} is "lootmagnet":
+        return lootMagnetItem()
+    if {_id} is "nightlens":
+        return nightLensItem()
 
     # Древние свитки
     if {_id} is "scroll_heater":
@@ -4475,6 +4562,8 @@ function evoAdminItemIdList() :: texts:
     add "quantdup" to {_ids::*}
     add "facelessmask" to {_ids::*}
     add "cursedgift" to {_ids::*}
+    add "lootmagnet" to {_ids::*}
+    add "nightlens" to {_ids::*}
     # Свитки
     add "scroll_heater" to {_ids::*}
     add "scroll_dreamcatcher" to {_ids::*}
@@ -4631,6 +4720,10 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to quantumDuplicatorItem()
     else if isArtifactRecipeByFive({_inv}, leather, white wool, potion of invisibility, ink sac, gold ingot) is true:
         set {_outItem} to facelessMaskItem()
+    else if isArtifactRecipeByFive({_inv}, hopper, redstone, iron ingot, ender pearl, gold nugget) is true:
+        set {_outItem} to lootMagnetItem()
+    else if isArtifactRecipeByFive({_inv}, glass, glowstone dust, amethyst shard, phantom membrane, spider eye) is true:
+        set {_outItem} to nightLensItem()
     else if isArtifactRecipeByFive({_inv}, grass block, golden apple, diamond, netherrack, end stone) is true:
         set {_outItem} to player head
     else if isCursedGiftAltarRecipe({_inv}) is true:
@@ -4812,6 +4905,8 @@ command /altar:
         send "{@prefix} &6Сердце Пустыни: &7кактус + песок душ + blaze powder + золотой слиток + кремень"
         send "{@prefix} &6Квантовый Дубликатор: &7раздатчик + аметист + медный слиток + блок редстоуна + светопыль"
         send "{@prefix} &6Маска Безликого: &7кожа + белая шерсть + зелье невидимости + чернильный мешок + золотой слиток"
+        send "{@prefix} &6Магнит Добытчика: &7воронка + железный слиток + редстоун + эндер-жемчуг + золотой самородок"
+        send "{@prefix} &6Линза Ночи: &7стекло + светокаменная пыль + аметистовый осколок + мембрана фантома + паучий глаз"
         send "{@prefix} &6Дар Проклятого Короля: &7посох некро-тирана + корона + зачар. золотое яблоко + голова + незерит"
 
 function pullArtifactFromCore(p: player, key: text) :: boolean:
@@ -4843,7 +4938,7 @@ function hasArtifact(p: player, key: text) :: boolean:
 function artifactCoreCount(p: player) :: number:
     set {_u} to uuid of {_p}
     set {_n} to 0
-    loop "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask" and "cursedgift":
+    loop "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "desertheart" and "cursedgift":
         if {art_found::%{_u}%::%loop-value%} is true:
             add 1 to {_n}
     return {_n}
@@ -4851,7 +4946,7 @@ function artifactCoreCount(p: player) :: number:
 function artifactCoreKeyByIndex(p: player, idx: number) :: text:
     set {_u} to uuid of {_p}
     set {_n} to 0
-    loop "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask" and "cursedgift":
+    loop "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "desertheart" and "cursedgift":
         if {art_found::%{_u}%::%loop-value%} is true:
             add 1 to {_n}
             if {_n} is {_idx}:
@@ -4870,6 +4965,52 @@ function artifactCoreGuiIndexBySlot(s: number) :: number:
     else if {_s} is 15:
         return 5
     return 0
+
+function utilityCoreCount(p: player) :: number:
+    set {_u} to uuid of {_p}
+    set {_n} to 0
+    loop "heater", "quantdup", "dreamcatcher", "facelessmask", "lootmagnet" and "nightlens":
+        if {util_found::%{_u}%::%loop-value%} is true:
+            add 1 to {_n}
+    return {_n}
+
+function utilityCoreKeyByIndex(p: player, idx: number) :: text:
+    set {_u} to uuid of {_p}
+    set {_n} to 0
+    loop "heater", "quantdup", "dreamcatcher", "facelessmask", "lootmagnet" and "nightlens":
+        if {util_found::%{_u}%::%loop-value%} is true:
+            add 1 to {_n}
+            if {_n} is {_idx}:
+                return loop-value
+    return ""
+
+function utilityCoreGuiIndexBySlot(s: number) :: number:
+    if {_s} is 11:
+        return 1
+    else if {_s} is 12:
+        return 2
+    else if {_s} is 13:
+        return 3
+    else if {_s} is 14:
+        return 4
+    else if {_s} is 15:
+        return 5
+    return 0
+
+function pullUtilityFromCore(p: player, key: text) :: boolean:
+    set {_u} to uuid of {_p}
+    if {util_found::%{_u}%::%{_key}%} is not true:
+        return false
+    set {_s} to artifactSlotFromKey({_key})
+    if {_s} < 0:
+        return false
+    set {_it} to artifactFromSlot({_s})
+    if {_it} is air:
+        return false
+    set {util_found::%{_u}%::%{_key}%} to false
+    set {util_enabled::%{_u}%::%{_key}%} to false
+    give {_it} to {_p}
+    return true
 
 function isLegendaryArtifact(k: text) :: boolean:
     if {_k} is "leg_warrior":
@@ -5094,6 +5235,22 @@ on right click:
             stop
         cancel event
         set {_u} to player's uuid
+        if isUtilityArtifactKey({_key}) is true:
+            if {util_found::%{_u}%::%{_key}%} is true:
+                dbgEvo(player, "utility use: already in core key=%{_key}%")
+                send action bar "&eЭтот utility-артефакт уже есть в Utility Core." to player
+                stop
+            if utilityCoreCount(player) >= 5:
+                send "{@prefix} &cВ Utility Core максимум 5 utility-артефактов." to player
+                play sound "entity.villager.no" with volume 0.8 and pitch 1 at player for player
+                stop
+            remove 1 of player's tool from player
+            set {util_found::%{_u}%::%{_key}%} to true
+            set {util_enabled::%{_u}%::%{_key}%} to true
+            send "{@prefix} &aUtility-артефакт поглощён: &f%{_n}%" to player
+            send "{@prefix} &7Теперь его можно включать/выключать в &e/utilities" to player
+            play sound "ui.toast.challenge_complete" with volume 1 and pitch 1 at player for player
+            stop
         if {art_found::%{_u}%::%{_key}%} is true:
             dbgEvo(player, "artifact use: already in core key=%{_key}%")
             send action bar "&eЭтот артефакт уже есть в ядре." to player
@@ -7696,13 +7853,14 @@ on inventory click:
 # ==========================================
 command /artifacts:
     trigger:
+        migrateUtilityCoreVariables(player)
         open chest inventory with 3 rows named "&8Artifacts Core" to player
         dbgEvo(player, "opened /artifacts GUI")
         loop 27 times:
             set slot (loop-number - 1) of player's current inventory to gray stained glass pane named " "
 
         set slot 4 of player's current inventory to nether star named "&6&lАРТЕФАКТЫ: ЯДРО"
-        set lore of slot 4 of player's current inventory to "&75 слотов ядра (обычные артефакты)", "&7ПКМ: включить/выключить", "&7ЛКМ: извлечь в предмет", "&7Легендарные: &e/legendary"
+        set lore of slot 4 of player's current inventory to "&75 слотов ядра (обычные артефакты)", "&7ПКМ: включить/выключить", "&7ЛКМ: извлечь в предмет", "&7Utility-ядро: &e/utilities", "&7Легендарные: &e/legendary"
 
         loop 5 times:
             set {_idx} to loop-number
@@ -7767,6 +7925,74 @@ on inventory click:
             set {_rkey} to artifactCoreKeyByIndex(player, {_idx})
             if {_rkey} is "":
                 set slot {_rslot} of player's current inventory to black stained glass pane named "&8Пустой слот ядра"
+            else:
+                set {_rs} to artifactSlotFromKey({_rkey})
+                if {_rs} >= 0:
+                    set {_rit} to artifactMenuItem(player, {_rs})
+                    if {_rit} is not air:
+                        set slot {_rslot} of player's current inventory to {_rit}
+
+command /utilities:
+    aliases: /utility
+    trigger:
+        migrateUtilityCoreVariables(player)
+        open chest inventory with 3 rows named "&8Utility Core" to player
+        loop 27 times:
+            set slot (loop-number - 1) of player's current inventory to light blue stained glass pane named " "
+        set slot 4 of player's current inventory to clock named "&b&lUTILITY: ЯДРО"
+        set lore of slot 4 of player's current inventory to "&75 слотов utility-ядра", "&7ПКМ: включить/выключить", "&7ЛКМ: извлечь в предмет", "&7Обычные артефакты: &e/artifacts"
+        loop 5 times:
+            set {_idx} to loop-number
+            set {_slot} to 10 + loop-number
+            set {_key} to utilityCoreKeyByIndex(player, {_idx})
+            if {_key} is "":
+                set slot {_slot} of player's current inventory to black stained glass pane named "&8Пустой utility-слот"
+            else:
+                set {_s} to artifactSlotFromKey({_key})
+                if {_s} >= 0:
+                    set {_art} to artifactMenuItem(player, {_s})
+                    if {_art} is not air:
+                        set slot {_slot} of player's current inventory to {_art}
+
+on inventory click:
+    if name of event-inventory contains "Utility Core":
+        cancel event
+        set {_slot} to index of event-slot
+        if {_slot} is not between 0 and 26:
+            stop
+        set {_i} to utilityCoreGuiIndexBySlot({_slot})
+        if {_i} is 0:
+            stop
+        set {_key} to utilityCoreKeyByIndex(player, {_i})
+        if {_key} is "":
+            stop
+        set {_u} to uuid of player
+        set {_enabled_now} to {util_enabled::%{_u}%::%{_key}%} ? false
+        set {_click} to "%click type%"
+        if {_click} contains "left mouse button":
+            if pullUtilityFromCore(player, {_key}) is true:
+                send "{@prefix} &eUtility-артефакт извлечён в предмет."
+                play sound "item.bundle.remove_one" with volume 0.9 and pitch 1 at player for player
+        else if {_click} contains "right mouse button":
+            if {_enabled_now} is true:
+                set {util_enabled::%{_u}%::%{_key}%} to false
+            else:
+                set {util_enabled::%{_u}%::%{_key}%} to true
+            if {util_enabled::%{_u}%::%{_key}%} is true:
+                send "{@prefix} &aUtility-эффект включён."
+                play sound "entity.experience_orb.pickup" with volume 1 and pitch 1.2 at player for player
+            else:
+                send "{@prefix} &cUtility-эффект выключен."
+                play sound "block.note_block.bass" with volume 1 and pitch 0.8 at player for player
+        else:
+            stop
+        wait 1 tick
+        loop 5 times:
+            set {_idx} to loop-number
+            set {_rslot} to 10 + loop-number
+            set {_rkey} to utilityCoreKeyByIndex(player, {_idx})
+            if {_rkey} is "":
+                set slot {_rslot} of player's current inventory to black stained glass pane named "&8Пустой utility-слот"
             else:
                 set {_rs} to artifactSlotFromKey({_rkey})
                 if {_rs} >= 0:
@@ -7848,7 +8074,7 @@ command /artifactpull <text>:
         set {_id} to arg-1 in lower case
         if {_id} is "all":
             set {_c} to 0
-            loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask" and "cursedgift":
+            loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "cursedgift", "lootmagnet" and "nightlens":
                 if pullArtifactFromCore(player, loop-value) is true:
                     add 1 to {_c}
             if {_c} > 0:
@@ -7857,9 +8083,9 @@ command /artifactpull <text>:
             else:
                 send "{@prefix} &7В ядре нет артефактов для извлечения."
             stop
-        if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask" or "cursedgift":
+        if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "cursedgift", "lootmagnet" or "nightlens":
             send "{@prefix} &cНеизвестный id артефакта."
-            send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind, heater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift"
+            send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind, heater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift, lootmagnet, nightlens"
             stop
         if pullArtifactFromCore(player, {_id}) is true:
             send "{@prefix} &aАртефакт &e%{_id}% &aизвлечён из ядра в предмет."
@@ -8055,7 +8281,7 @@ command /evo [<offline player>] [<text>] [<text>]:
         else if arg-2 is "artifactgive":
             if arg-3 is not set:
                 send "{@prefix} &eИспользование: /evo <player> artifactgive <id|all>"
-                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind, heater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift"
+                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind, heater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift, lootmagnet, nightlens"
                 stop
             if arg-1 is not online:
                 send "{@prefix} &cИгрок должен быть онлайн для выдачи предмета артефакта."
@@ -8063,7 +8289,7 @@ command /evo [<offline player>] [<text>] [<text>]:
             set {_t} to arg-1
             set {_id} to arg-3 in lower case
             if {_id} is "all":
-                loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask" and "cursedgift":
+                loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "cursedgift", "lootmagnet" and "nightlens":
                     set {_s} to artifactSlotFromKey(loop-value)
                     if {_s} >= 0:
                         set {_it} to artifactFromSlot({_s})
@@ -8072,9 +8298,9 @@ command /evo [<offline player>] [<text>] [<text>]:
                 send "{@prefix} &aИгроку &e%arg-1% &aвыданы все артефакты предметами в инвентарь."
                 send "{@prefix} &aТебе выданы предметы артефактов. Поглощение: возьми в руку и нажми &eПКМ&a." to {_t}
                 stop
-            if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask" or "cursedgift":
+            if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "cursedgift", "lootmagnet" or "nightlens":
                 send "{@prefix} &cНеизвестный id артефакта."
-                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind, heater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift"
+                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind, heater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift, lootmagnet, nightlens"
                 stop
             set {_s} to artifactSlotFromKey({_id})
             if {_s} < 0:
@@ -8091,11 +8317,11 @@ command /evo [<offline player>] [<text>] [<text>]:
         else if arg-2 is "artifactpull":
             if arg-3 is not set:
                 send "{@prefix} &eИспользование: /evo <player> artifactpull <id|all>"
-                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind, heater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift"
+                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind, heater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift, lootmagnet, nightlens"
                 stop
             set {_id} to arg-3 in lower case
             if {_id} is "all":
-                loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask" and "cursedgift":
+                loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "cursedgift", "lootmagnet" and "nightlens":
                     if {art_found::%{_u}%::%loop-value%} is true:
                         set {_s} to artifactSlotFromKey(loop-value)
                         set {_it} to artifactFromSlot({_s})
@@ -8110,9 +8336,9 @@ command /evo [<offline player>] [<text>] [<text>]:
                 if arg-1 is online:
                     send "{@prefix} &eВсе артефакты извлечены из ядра в предметы." to arg-1
                 stop
-            if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask" or "cursedgift":
+            if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "cursedgift", "lootmagnet" or "nightlens":
                 send "{@prefix} &cНеизвестный id артефакта."
-                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind, heater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift"
+                send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind, heater, dreamcatcher, desertheart, quantdup, facelessmask, cursedgift, lootmagnet, nightlens"
                 stop
             if {art_found::%{_u}%::%{_id}%} is not true:
                 send "{@prefix} &cУ игрока нет этого артефакта в ядре."
@@ -8325,7 +8551,7 @@ command /evo [<offline player>] [<text>] [<text>]:
             set {_foundCount} to 0
             set {_enabledCount} to 0
             send "{@prefix} &8[DBG] --- ARTIFACT CORE STATE: %arg-1% ---"
-            loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask" and "cursedgift":
+            loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "cursedgift", "lootmagnet" and "nightlens":
                 set {_f} to {art_found::%{_u}%::%loop-value%} ? false
                 set {_e} to {art_enabled::%{_u}%::%loop-value%} ? false
                 if {_f} is true:
@@ -8371,6 +8597,8 @@ command /evo [<offline player>] [<text>] [<text>]:
             # Полная очистка ядра артефактов и связанных состояний
             delete {art_found::%{_u}%::*}
             delete {art_enabled::%{_u}%::*}
+            delete {util_found::%{_u}%::*}
+            delete {util_enabled::%{_u}%::*}
             delete {art_hermes_prev::%{_u}%}
             delete {art_azura_charge::%{_u}%}
             delete {art_last_death::%{_u}%}
@@ -9208,7 +9436,7 @@ every 5 seconds:
         execute console command "team modify evo_faceless nametagVisibility never"
         set {evo_faceless_team_ready} to true
     loop all players:
-        if hasArtifactCoreOrInventory(loop-player, "heater", "Портативный Нагреватель") is true:
+        if hasUtilityCoreOrInventory(loop-player, "heater", "Портативный Нагреватель") is true:
             set {_t} to loop-player's tool
             if {_t} is beef:
                 remove 1 beef from loop-player
@@ -9233,7 +9461,7 @@ every 5 seconds:
                 give 1 cooked salmon to loop-player
 
         set {_pu} to uuid of loop-player
-        if hasArtifactCoreOrInventory(loop-player, "facelessmask", "Маска Безликого") is true:
+        if hasUtilityCoreOrInventory(loop-player, "facelessmask", "Маска Безликого") is true:
             if {evo_faceless_applied::%{_pu}%} is not true:
                 execute console command "team join evo_faceless %loop-player%"
                 set {evo_faceless_applied::%{_pu}%} to true
@@ -9243,14 +9471,14 @@ every 5 seconds:
                 delete {evo_faceless_applied::%{_pu}%}
 
 on bed enter:
-    if hasArtifactCoreOrInventory(player, "dreamcatcher", "Ловец Снов") is true:
+    if hasUtilityCoreOrInventory(player, "dreamcatcher", "Ловец Снов") is true:
         set time in world of player to 6:00
         clear weather in world of player
         apply luck 1 without particles to player for 1200 seconds
         send action bar "&d&lЛОВЕЦ СНОВ: ночь мгновенно рассеялась" to player
 
 on craft:
-    if hasArtifactCoreOrInventory(player, "quantdup", "Квантовый Дубликатор") is true:
+    if hasUtilityCoreOrInventory(player, "quantdup", "Квантовый Дубликатор") is true:
         set {_res} to event-item
         set {_blocked} to false
         set {_nm} to name of {_res}
@@ -9317,6 +9545,14 @@ every 2 ticks:
                         continue
                 apply hunger 1 without particles to {_target} for 3 seconds
                 apply wither 1 without particles to {_target} for 2 seconds
+
+every 2 seconds:
+    loop all players:
+        if hasUtilityCoreOrInventory(loop-player, "lootmagnet", "Магнит Добытчика") is true:
+            loop all dropped items in radius 6 around loop-player:
+                teleport loop-entity to loop-player
+        if hasUtilityCoreOrInventory(loop-player, "nightlens", "Ночная Линза") is true:
+            apply night vision 1 without particles to loop-player for 4 seconds
 
 # ---- Древние свитки ----
 function initAncientScrollRecipes():
