@@ -121,6 +121,9 @@ options:
     artifact_ruin_boss_chest_scroll_percent: 78
     # Обычные сундуки руины: при заполнении слота ресурсами — шанс подставить свиток (0–100).
     artifact_ruin_side_chest_scroll_substitute_percent: 30
+    # Обычные сундуки: шанс ключа возврата и (суммарно после него) ключа пустоты на один «лут-слот» (0–100).
+    artifact_ruin_side_chest_return_key_percent: 11
+    artifact_ruin_side_chest_void_key_percent: 3
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -2789,18 +2792,41 @@ function artifactRuinFillChest(loc: location, tier: text):
         set {_sl} to loop-number - 1
         set {_rn} to random integer between 1 and 100
         if {_rn} <= {_fp}:
-            set {_subp} to "{@artifact_ruin_side_chest_scroll_substitute_percent}" parsed as number
-            if {_subp} is not set:
-                set {_subp} to 30
-            if {_subp} < 0:
-                set {_subp} to 0
-            if {_subp} > 100:
-                set {_subp} to 100
-            set {_rsc} to random integer between 1 and 100
-            if {_rsc} <= {_subp}:
-                set slot {_sl} of inventory of {_b} to artifactRuinRandomScrollItem()
+            set {_retp} to "{@artifact_ruin_side_chest_return_key_percent}" parsed as number
+            if {_retp} is not set:
+                set {_retp} to 11
+            if {_retp} < 0:
+                set {_retp} to 0
+            if {_retp} > 100:
+                set {_retp} to 100
+            set {_voidp} to "{@artifact_ruin_side_chest_void_key_percent}" parsed as number
+            if {_voidp} is not set:
+                set {_voidp} to 3
+            if {_voidp} < 0:
+                set {_voidp} to 0
+            if {_voidp} > 100:
+                set {_voidp} to 100
+            set {_keyhi} to {_retp} + {_voidp}
+            if {_keyhi} > 100:
+                set {_keyhi} to 100
+            set {_rkey} to random integer between 1 and 100
+            if {_rkey} <= {_retp}:
+                set slot {_sl} of inventory of {_b} to evoAdminItemById("return_key")
+            else if {_rkey} <= {_keyhi}:
+                set slot {_sl} of inventory of {_b} to evoAdminItemById("void_key")
             else:
-                set slot {_sl} of inventory of {_b} to artifactRuinLootMaterialsOnly({_tier})
+                set {_subp} to "{@artifact_ruin_side_chest_scroll_substitute_percent}" parsed as number
+                if {_subp} is not set:
+                    set {_subp} to 30
+                if {_subp} < 0:
+                    set {_subp} to 0
+                if {_subp} > 100:
+                    set {_subp} to 100
+                set {_rsc} to random integer between 1 and 100
+                if {_rsc} <= {_subp}:
+                    set slot {_sl} of inventory of {_b} to artifactRuinRandomScrollItem()
+                else:
+                    set slot {_sl} of inventory of {_b} to artifactRuinLootMaterialsOnly({_tier})
 
 function artifactRuinFillChestBoss(loc: location, kind: text):
     if {_kind} is "legendary":
