@@ -11252,35 +11252,27 @@ function ruinNetherWorld() :: world:
     return world("world")
 
 function voidRuinRoomLocation(p: player) :: location:
-    set {_nw} to ruinNetherWorld()
-    set {_tries} to 0
-    while {_tries} < 120:
-        add 1 to {_tries}
-        set {_cx} to random integer between 1600 and 3200
-        set {_cz} to random integer between 1600 and 3200
-        set {_bx} to ({_cx} * 16) + 8
-        set {_bz} to ({_cz} * 16) + 8
-        chance of 50%:
-            set {_bx} to {_bx} * -1
-        chance of 50%:
-            set {_bz} to {_bz} * -1
-        set {_ok} to true
-        loop {evo_void_rooms::*}:
-            set {_rid} to loop-value
-            if {evo_void_room_world::%{_rid}%} is not "%{_nw}%":
-                continue
-            set {_ox} to {evo_void_room_center_x::%{_rid}%}
-            set {_oz} to {evo_void_room_center_z::%{_rid}%}
-            if {_ox} is not set:
-                continue
-            if {_oz} is not set:
-                continue
-            if abs({_bx} - {_ox}) < 1200:
-                if abs({_bz} - {_oz}) < 1200:
-                    set {_ok} to false
-        if {_ok} is true:
-            return location at {_bx}, 250, {_bz} in {_nw}
-    return location at (random integer between -52000 and 52000), 250, (random integer between -52000 and 52000) in {_nw}
+    set {_w} to world of {_p}
+    set {_bx} to floor(x-coordinate of {_p})
+    set {_bz} to floor(z-coordinate of {_p})
+    add random integer between -96 and 96 to {_bx}
+    add random integer between -96 and 96 to {_bz}
+    # Выравниваем к центру чанка (.., +8)
+    set {_mx} to {_bx}
+    while {_mx} >= 16:
+        remove 16 from {_mx}
+    while {_mx} <= -16:
+        add 16 to {_mx}
+    remove {_mx} from {_bx}
+    add 8 to {_bx}
+    set {_mz} to {_bz}
+    while {_mz} >= 16:
+        remove 16 from {_mz}
+    while {_mz} <= -16:
+        add 16 to {_mz}
+    remove {_mz} from {_bz}
+    add 8 to {_bz}
+    return location at {_bx}, 155, {_bz} in {_w}
 
 function preloadVoidRuinArea(loc: location):
     set {_cx} to floor(x-coordinate of {_loc})
@@ -11577,23 +11569,19 @@ on right click on obsidian:
             if environment of world of player is not normal:
                 send action bar "&cКлюч пустоты работает только в Оверворлде." to player
                 stop
-            set {_sw} to ruinSkyWorld()
-            if {_sw} is not set:
-                send action bar "&cНе найден мир для руин." to player
-                stop
             cancel event
             set {evo_void_return::%uuid of player%} to location of player
-            set {_r0} to voidRuinRoomLocation(player)
-            set {_rx} to floor(x-coordinate of {_r0})
-            set {_ry} to floor(y-coordinate of {_r0})
-            set {_rz} to floor(z-coordinate of {_r0})
-            set {_room} to location at {_rx}, {_ry}, {_rz} in {_sw}
+            set {_room} to voidRuinRoomLocation(player)
             if isEvoDebug(player) is true:
-                send "{@prefix} &8[debug] void-key target: &f%x-coordinate of {_room}%,%y-coordinate of {_room}%,%z-coordinate of {_room}% &7in &f%world of {_room}%" to player
+                send "{@prefix} &8[debug] void-key target: &f%x-coordinate of {_room}%,155,%z-coordinate of {_room}% &7in &f%world of {_room}%" to player
             preloadVoidRuinArea({_room})
+            set block at {_room} to bedrock
             prepareSkyRuinArena({_room})
             remove 1 of player's tool from player
-            teleport player to {_room}
+            set {_tpx} to floor(x-coordinate of {_room})
+            set {_tpz} to floor(z-coordinate of {_room})
+            set {_tp} to location at {_tpx}, 156, {_tpz} in world of {_room}
+            teleport player to {_tp}
             spawnSkyRuinLikeCommand(player, {_room})
             if isEvoDebug(player) is true:
                 send "{@prefix} &8[debug] void-key spawn: &aOK (80/20 via kind)" to player
@@ -11619,20 +11607,44 @@ on right click on obsidian:
 # ==========================================
 # АДМИН-КОМАНДЫ
 # ==========================================
-command /evoruinspawn:
+command /evoruinspawn [<number>] [<number>]:
     permission: evo.admin
     permission message: {@prefix} &cУ вас нет прав!
     trigger:
+        if arg-1 is set:
+            if arg-2 is not set:
+                send "{@prefix} &cИспользование: /evoruinspawn <x> <z>"
+                stop
+            set {_x} to floor(arg-1)
+            set {_z} to floor(arg-2)
+            set {_feet} to location at {_x}, 156, {_z} in world of player
+            if artifactRuinBuild({_feet}, "common") is true:
+                send "{@prefix} &aПостроена руина с центром пола: &f%{_x}% %{_z}%"
+                stop
+            send "{@prefix} &cНе удалось построить руину по этим координатам."
+            stop
         if artifactRuinAdminSpawnHere(player) is true:
             send "{@prefix} &aПостроена руина: &7чёрный камень = легендарный артефакт, &fцветной пол = обычный&a. Сундук в башне."
             play sound "block.beacon.activate" with volume 1 and pitch 1.2 at player for player
         else:
             send "{@prefix} &cНе удалось: нужен Оверворлд и твёрдая поверхность под колонкой X/Z."
 
-command /evoruinlegspawn:
+command /evoruinlegspawn [<number>] [<number>]:
     permission: evo.admin
     permission message: {@prefix} &cУ вас нет прав!
     trigger:
+        if arg-1 is set:
+            if arg-2 is not set:
+                send "{@prefix} &cИспользование: /evoruinlegspawn <x> <z>"
+                stop
+            set {_x} to floor(arg-1)
+            set {_z} to floor(arg-2)
+            set {_feet} to location at {_x}, 156, {_z} in world of player
+            if artifactRuinBuild({_feet}, "legendary") is true:
+                send "{@prefix} &6Построена легендарная руина с центром пола: &f%{_x}% %{_z}%"
+                stop
+            send "{@prefix} &cНе удалось построить легендарную руину по этим координатам."
+            stop
         if artifactRuinAdminSpawnHereKind(player, "legendary") is true:
             send "{@prefix} &6Построена &lлегендарная&6 руина: &7чернокаменный стиль, в сундуке башни — &6легендарный&7 артефакт."
             play sound "block.respawn_anchor.set_spawn" with volume 1 and pitch 1.15 at player for player
