@@ -8948,10 +8948,15 @@ every 5 seconds:
                 remove 1 salmon from loop-player
                 give 1 cooked salmon to loop-player
 
+        set {_pu} to uuid of loop-player
         if hasArtifactItemInInventory(loop-player, "Маска Безликого") is true:
-            execute console command "team join evo_faceless %loop-player%"
+            if {evo_faceless_applied::%{_pu}%} is not true:
+                execute console command "team join evo_faceless %loop-player%"
+                set {evo_faceless_applied::%{_pu}%} to true
         else:
-            execute console command "team leave %loop-player%"
+            if {evo_faceless_applied::%{_pu}%} is true:
+                execute console command "team leave %loop-player%"
+                delete {evo_faceless_applied::%{_pu}%}
 
 on bed enter:
     if hasArtifactItemInInventory(player, "Ловец Снов") is true:
@@ -9020,7 +9025,7 @@ every 2 ticks:
                     set loop-block to air
                     execute console command "particle minecraft:cloud %x-coordinate of {_ploc}% %y-coordinate of {_ploc}% %z-coordinate of {_ploc}% 0.2 0.2 0.2 0.01 8 force"
             loop all living entities in radius 3 around loop-player:
-                set {_target} to loop-entity
+                set {_target} to loop-entity-1
                 if {_target} is a player:
                     if uuid of {_target} is uuid of loop-player:
                         continue
