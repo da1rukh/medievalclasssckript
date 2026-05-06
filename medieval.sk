@@ -4593,19 +4593,13 @@ function evoAdminItemById(id: text) :: item:
     if {_id} is "nightlens":
         return nightLensItem()
 
-    # Древние свитки
-    if {_id} is "scroll_heater":
-        return ancientScrollItem("heater")
-    if {_id} is "scroll_dreamcatcher":
-        return ancientScrollItem("dreamcatcher")
-    if {_id} is "scroll_desertheart":
-        return ancientScrollItem("desertheart")
-    if {_id} is "scroll_quantdup":
-        return ancientScrollItem("quantdup")
-    if {_id} is "scroll_facelessmask":
-        return ancientScrollItem("facelessmask")
-    if {_id} is "scroll_cursedgift":
-        return ancientScrollItem("cursedgift")
+    # Древние свитки (для любого артефакта)
+    if {_id} starts with "scroll_":
+        set {_sid} to {_id}
+        replace all "scroll_" in {_sid} with ""
+        set {_sc} to ancientScrollItem({_sid})
+        if {_sc} is not air:
+            return {_sc}
 
     # Артефакты из основной системы по id
     set {_slot} to artifactSlotFromKey({_id})
@@ -4658,13 +4652,10 @@ function evoAdminItemIdList() :: texts:
     add "cursedgift" to {_ids::*}
     add "lootmagnet" to {_ids::*}
     add "nightlens" to {_ids::*}
-    # Свитки
-    add "scroll_heater" to {_ids::*}
-    add "scroll_dreamcatcher" to {_ids::*}
-    add "scroll_desertheart" to {_ids::*}
-    add "scroll_quantdup" to {_ids::*}
-    add "scroll_facelessmask" to {_ids::*}
-    add "scroll_cursedgift" to {_ids::*}
+    # Свитки для всех артефактов
+    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens" and "cursedgift":
+        set {_sid} to "scroll_%loop-value%"
+        add {_sid} to {_ids::*}
     return {_ids::*}
 
 function isArtifactRecipeByFive(inv: inventory, i1: item, i2: item, i3: item, i4: item, i5: item) :: boolean:
@@ -4965,7 +4956,7 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to artifactFromSlot(1)
     else if isArtifactRecipeByFive({_inv}, netherite chestplate, obsidian, shield, iron block, golden apple) is true:
         set {_outItem} to artifactFromSlot(2)
-    else if isArtifactRecipeByFive({_inv}, spectral arrow, bow, string, ender eye, emerald block) is true:
+    else if isArtifactRecipeByFive({_inv}, spectral arrow, bow, netherite ingot, ender eye, emerald block) is true:
         set {_outItem} to artifactFromSlot(6)
     else if isArtifactRecipeByFive({_inv}, amethyst block, blaze rod, enchanted book, ender eye, ghast tear) is true:
         set {_outItem} to artifactFromSlot(7)
@@ -12684,7 +12675,7 @@ function initAncientScrollRecipes():
     set {ancient_scroll_recipes::leg_tank::ing::*} to "Незеритовый нагрудник", "Обсидиан", "Щит", "Железный блок", "Золотое яблоко"
     set {ancient_scroll_recipes::leg_archer::name} to "Око Хищника"
     set {ancient_scroll_recipes::leg_archer::tier} to "absolute"
-    set {ancient_scroll_recipes::leg_archer::ing::*} to "Спектральная стрела", "Лук", "Нить", "Око Эндера", "Изумрудный блок"
+    set {ancient_scroll_recipes::leg_archer::ing::*} to "Спектральная стрела", "Лук", "Незеритовый слиток", "Око Эндера", "Изумрудный блок"
     set {ancient_scroll_recipes::leg_mage::name} to "Эфирный Разум"
     set {ancient_scroll_recipes::leg_mage::tier} to "absolute"
     set {ancient_scroll_recipes::leg_mage::ing::*} to "Аметистовый блок", "Огненный стержень", "Книга чар", "Око Эндера", "Слеза гаста"
