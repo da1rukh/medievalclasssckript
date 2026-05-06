@@ -11382,7 +11382,7 @@ function ensureVoidRuinRoomAt(loc: location):
                 else:
                     set block at location at {_cx} + {_k}, {_hh}, {_cz} + {_wz} in {_w} to air
                     set block at location at {_cx} + {_wz}, {_hh}, {_cz} + {_k} in {_w} to air
-    # Несколько комнат-кубиков/коробок
+    # Несколько комнат-кубиков/коробок (декор без дополнительных сундуков)
     loop 8 times:
         set {_rx} to {_cx} + random integer between -35 and 35
         set {_rz} to {_cz} + random integer between -35 and 35
@@ -11406,29 +11406,50 @@ function ensureVoidRuinRoomAt(loc: location):
                         set {_rb} to blackstone
                     else:
                         set {_rb} to air
-        set block at location at {_rx}, {_cy} - 1, {_rz} in {_w} to chest
+        set block at location at {_rx}, {_cy} - 1, {_rz} in {_w} to barrel
     set {evo_void_room_center_x::%{_rid}%} to {_cx}
     set {evo_void_room_center_z::%{_rid}%} to {_cz}
     set {evo_void_room_world::%{_rid}%} to "%{_w}%"
     add {_rid} to {evo_void_rooms::*}
-    loop 16 times:
-        set {_rx} to random integer between -45 and 45
-        set {_rz} to random integer between -45 and 45
-        set {_cb} to block at location at {_cx} + {_rx}, {_cy}, {_cz} + {_rz} in {_w}
-        if {_cb} is air:
-            set {_cb} to chest
+    # Строгий лимит сундуков в руине: 2-5
+    set {_chestsNeed} to random integer between 2 and 5
+    set {_tries} to 0
+    while {_tries} < 300:
+        if size of {_chestLocs::*} >= {_chestsNeed}:
+            set {_tries} to 300
+        else:
+            add 1 to {_tries}
+            set {_rx} to random integer between -45 and 45
+            set {_rz} to random integer between -45 and 45
+            set {_cb} to block at location at {_cx} + {_rx}, {_cy}, {_cz} + {_rz} in {_w}
+            if {_cb} is air:
+                set {_cb} to chest
+                add location of {_cb} to {_chestLocs::*}
+    loop {_chestLocs::*}:
+        set {_cb} to block at loop-value
+        if {_cb} is chest:
             set {_inv} to inventory of {_cb}
             clear {_inv}
             loop 27 times:
                 chance of 35%:
                     set {_slot} to random integer between 0 and 26
                     set slot {_slot} of {_inv} to artifactRuinLootMaterialsOnly("boss")
-            chance of 22%:
+            chance of 28%:
                 set slot random integer between 0 and 26 of {_inv} to ancientScrollItem(random element out of "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens" and "cursedgift")
-            chance of 10%:
-                set slot random integer between 0 and 26 of {_inv} to artifactRuinCommonArtifactRandom()
-            chance of 3%:
-                set slot random integer between 0 and 26 of {_inv} to artifactRuinLegendaryRandomArtifact()
+    # Строгий лимит артефактов в руине: 1-3 (всего)
+    set {_artNeed} to random integer between 1 and 3
+    loop {_artNeed} times:
+        if size of {_chestLocs::*} <= 0:
+            stop
+        set {_pickLoc} to random element out of {_chestLocs::*}
+        set {_cb} to block at {_pickLoc}
+        if {_cb} is chest:
+            set {_inv} to inventory of {_cb}
+            set {_slot} to random integer between 0 and 26
+            chance of 20%:
+                set slot {_slot} of {_inv} to artifactRuinLegendaryRandomArtifact()
+            else:
+                set slot {_slot} of {_inv} to artifactRuinCommonArtifactRandom()
     set {evo_void_spawning_guards} to true
     loop 12 times:
         set {_gx} to {_cx} + random integer between -40 and 40
