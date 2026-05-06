@@ -11220,6 +11220,44 @@ command /evoruinlegspawn:
         else:
             send "{@prefix} &cНе удалось: нужен Оверворлд и твёрдая поверхность под колонкой X/Z."
 
+function openEvoGivePage(v: player, target: player, page: number):
+    set {_ids::*} to evoAdminItemIdList()
+    set {_total} to size of {_ids::*}
+    set {_pages} to floor(({_total} - 1) / 45) + 1
+    if {_pages} < 1:
+        set {_pages} to 1
+    set {_pg} to {_page}
+    if {_pg} < 1:
+        set {_pg} to 1
+    if {_pg} > {_pages}:
+        set {_pg} to {_pages}
+    set {evo_give_page::%uuid of {_v}%} to {_pg}
+    delete {evo_give_slot_id::%uuid of {_v}%::*}
+    open chest inventory with 6 rows named "&0EVO GIVE" to {_v}
+    set {_start} to ({_pg} - 1) * 45 + 1
+    set {_slot} to 0
+    loop 45 times:
+        set {_idx} to {_start} + loop-number - 1
+        set {_id} to {_ids::%{_idx}%}
+        if {_id} is set:
+            set {_it} to evoAdminItemById({_id})
+            if {_it} is not air:
+                set {_l::*} to lore of {_it}
+                add " " to {_l::*}
+                add "&8ID: %{_id}%" to {_l::*}
+                add "&7ЛКМ: выдать x1" to {_l::*}
+                add "&7ПКМ: выдать x64" to {_l::*}
+                set lore of {_it} to {_l::*}
+                set slot {_slot} of {_v}'s current inventory to {_it}
+                set {evo_give_slot_id::%uuid of {_v}%::%{_slot}%} to {_id}
+        add 1 to {_slot}
+    if {_pg} > 1:
+        set slot 45 of {_v}'s current inventory to arrow named "&e← Назад" with lore "&7Страница %{_pg}%/%{_pages}%"
+    set slot 49 of {_v}'s current inventory to paper named "&6Страница %{_pg}%/%{_pages}%" with lore "&7Цель: &e%{_target}%"
+    if {_pg} < {_pages}:
+        set slot 52 of {_v}'s current inventory to arrow named "&eВперёд →" with lore "&7Страница %{_pg}%/%{_pages}%"
+    set slot 53 of {_v}'s current inventory to barrier named "&cЗакрыть" with lore "&7Цель выдачи: &e%{_target}%"
+
 command /evogive [<player>]:
     permission: evo.admin
     permission message: {@prefix} &cУ вас нет прав!
@@ -11231,25 +11269,7 @@ command /evogive [<player>]:
             send "{@prefix} &cЦелевой игрок не найден."
             stop
         set {evo_give_target::%uuid of player%} to uuid of {_target}
-        delete {evo_give_slot_id::%uuid of player%::*}
-        open chest inventory with 6 rows named "&0EVO GIVE" to player
-        set {_slot} to 0
-        loop evoAdminItemIdList():
-            if {_slot} > 52:
-                stop
-            set {_id} to loop-value
-            set {_it} to evoAdminItemById({_id})
-            if {_it} is not air:
-                set {_l::*} to lore of {_it}
-                add " " to {_l::*}
-                add "&8ID: %{_id}%" to {_l::*}
-                add "&7ЛКМ: выдать x1" to {_l::*}
-                add "&7ПКМ: выдать x64" to {_l::*}
-                set lore of {_it} to {_l::*}
-                set slot {_slot} of player's current inventory to {_it}
-                set {evo_give_slot_id::%uuid of player%::%{_slot}%} to {_id}
-                add 1 to {_slot}
-        set slot 53 of player's current inventory to barrier named "&cЗакрыть" with lore "&7Цель выдачи: &e%{_target}%"
+        openEvoGivePage(player, {_target}, 1)
         send "{@prefix} &7GUI выдачи открыт. Цель: &e%{_target}%&7."
 
 on inventory click:
@@ -11261,14 +11281,23 @@ on inventory click:
         if {_slot} is 53:
             close player's inventory
             stop
-        set {_id} to {evo_give_slot_id::%uuid of player%::%{_slot}%}
-        if {_id} is not set:
-            stop
         set {_tu} to {evo_give_target::%uuid of player%}
         set {_target} to player from {_tu}
         if {_target} is not online:
             send "{@prefix} &cЦелевой игрок офлайн. Открой GUI заново."
             close player's inventory
+            stop
+        set {_pg} to {evo_give_page::%uuid of player%} ? 1
+        if {_slot} is 45:
+            set {evo_give_reopen::%uuid of player%} to true
+            openEvoGivePage(player, {_target}, {_pg} - 1)
+            stop
+        if {_slot} is 52:
+            set {evo_give_reopen::%uuid of player%} to true
+            openEvoGivePage(player, {_target}, {_pg} + 1)
+            stop
+        set {_id} to {evo_give_slot_id::%uuid of player%::%{_slot}%}
+        if {_id} is not set:
             stop
         set {_it} to evoAdminItemById({_id})
         if {_it} is air:
@@ -11286,8 +11315,12 @@ on inventory click:
 
 on inventory close:
     if name of event-inventory is "&0EVO GIVE":
+        if {evo_give_reopen::%uuid of player%} is true:
+            delete {evo_give_reopen::%uuid of player%}
+            stop
         delete {evo_give_slot_id::%uuid of player%::*}
         delete {evo_give_target::%uuid of player%}
+        delete {evo_give_page::%uuid of player%}
 
 command /evo [<offline player>] [<text>] [<text>]:
     permission: evo.admin
