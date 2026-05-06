@@ -4125,7 +4125,7 @@ function desertHeartArtifactItem() :: item:
 
 function quantumDuplicatorArtifactItem() :: item:
     set {_i} to dispenser named "&b&lАртефакт: Квантовый Дубликатор"
-    set lore of {_i} to "&710% шанс дублировать крафт на верстаке", "&7Не работает на алтарные предметы", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&710%% шанс дублировать крафт на верстаке", "&7Не работает на алтарные предметы", "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function facelessMaskArtifactItem() :: item:
@@ -4274,7 +4274,7 @@ function desertHeartItem() :: item:
 
 function quantumDuplicatorItem() :: item:
     set {_i} to dispenser named "&b&lАртефакт: Квантовый Дубликатор"
-    set lore of {_i} to "&710% шанс удвоить крафт на верстаке", "&7Не работает на алтарных предметах", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&710%% шанс удвоить крафт на верстаке", "&7Не работает на алтарных предметах", "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function facelessMaskItem() :: item:
@@ -8919,49 +8919,50 @@ command /sponsorkit:
 
 # ---- Новые крафтабельные артефакты (инвентарь) ----
 every 5 seconds:
-    execute console command "scoreboard teams add evo_faceless"
-    execute console command "scoreboard teams option evo_faceless nametagVisibility never"
+    if {evo_faceless_team_ready} is not true:
+        execute console command "team add evo_faceless"
+        execute console command "team modify evo_faceless nametagVisibility never"
+        set {evo_faceless_team_ready} to true
     loop all players:
         if hasArtifactItemInInventory(loop-player, "Портативный Нагреватель") is true:
             set {_t} to loop-player's tool
-            if {_t} is raw beef:
-                remove 1 raw beef from loop-player
+            if {_t} is beef:
+                remove 1 beef from loop-player
                 give 1 cooked beef to loop-player
-            else if {_t} is raw porkchop:
-                remove 1 raw porkchop from loop-player
+            else if {_t} is porkchop:
+                remove 1 porkchop from loop-player
                 give 1 cooked porkchop to loop-player
-            else if {_t} is raw chicken:
-                remove 1 raw chicken from loop-player
+            else if {_t} is chicken:
+                remove 1 chicken from loop-player
                 give 1 cooked chicken to loop-player
-            else if {_t} is raw mutton:
-                remove 1 raw mutton from loop-player
+            else if {_t} is mutton:
+                remove 1 mutton from loop-player
                 give 1 cooked mutton to loop-player
-            else if {_t} is raw rabbit:
-                remove 1 raw rabbit from loop-player
+            else if {_t} is rabbit:
+                remove 1 rabbit from loop-player
                 give 1 cooked rabbit to loop-player
-            else if {_t} is raw cod:
-                remove 1 raw cod from loop-player
+            else if {_t} is cod:
+                remove 1 cod from loop-player
                 give 1 cooked cod to loop-player
-            else if {_t} is raw salmon:
-                remove 1 raw salmon from loop-player
+            else if {_t} is salmon:
+                remove 1 salmon from loop-player
                 give 1 cooked salmon to loop-player
 
         if hasArtifactItemInInventory(loop-player, "Маска Безликого") is true:
-            execute console command "scoreboard teams join evo_faceless %loop-player%"
+            execute console command "team join evo_faceless %loop-player%"
         else:
-            execute console command "scoreboard teams leave %loop-player%"
+            execute console command "team leave %loop-player%"
 
 on bed enter:
     if hasArtifactItemInInventory(player, "Ловец Снов") is true:
-        set time of world of player to 0
+        set time in world of player to 0 ticks
         clear weather in world of player
         apply luck 1 without particles to player for 1200 seconds
         send action bar "&d&lЛОВЕЦ СНОВ: ночь мгновенно рассеялась" to player
 
 on craft:
     if hasArtifactItemInInventory(player, "Квантовый Дубликатор") is true:
-        if inventory type of event-inventory is crafting table:
-            set {_res} to event-item
+        set {_res} to event-item
             set {_blocked} to false
             set {_nm} to name of {_res}
             if {_nm} is set:
@@ -9019,12 +9020,13 @@ every 2 ticks:
                     set loop-block to air
                     execute console command "particle minecraft:cloud %x-coordinate of {_ploc}% %y-coordinate of {_ploc}% %z-coordinate of {_ploc}% 0.2 0.2 0.2 0.01 8 force"
             loop all living entities in radius 3 around loop-player:
-                if loop-entity is not loop-player:
-                    if loop-entity is a player:
-                        if areDuo(loop-player, loop-entity) is true:
-                            continue
-                    apply hunger 1 without particles to loop-entity for 3 seconds
-                    apply wither 1 without particles to loop-entity for 2 seconds
+                if loop-entity is a player:
+                    if uuid of loop-entity is uuid of loop-player:
+                        continue
+                    if areDuo(loop-player, loop-entity) is true:
+                        continue
+                apply hunger 1 without particles to loop-entity for 3 seconds
+                apply wither 1 without particles to loop-entity for 2 seconds
 
 # ---- Древние свитки ----
 function initAncientScrollRecipes():
