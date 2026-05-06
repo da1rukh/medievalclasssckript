@@ -11335,7 +11335,7 @@ function ensureVoidRuinRoomAt(loc: location):
             add 8 to {_m8}
         if {_m8} is 0:
             loop integers between 0 and 4:
-                set {_h} to {_cy} + loop-value
+                set {_h} to {_cy} + loop-value-1
                 set block at location at {_cx} - 48, {_h}, {_cz} + {_s} in {_w} to obsidian
                 set block at location at {_cx} + 47, {_h}, {_cz} + {_s} in {_w} to obsidian
                 set block at location at {_cx} + {_s}, {_h}, {_cz} - 48 in {_w} to obsidian
