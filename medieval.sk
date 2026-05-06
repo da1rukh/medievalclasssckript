@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины (Оверворлд): on chunk load/generate — спавн структур; главный сундук башни — Ключ пустоты; /evoruinspawn
+  #   - Руины (Оверворлд): крафт «Зов Руин» на алтаре, Shift+ПКМ по блоку — постройка; опционально автоспавн (artifact_ruin_auto_chunk_spawn); /evoruinspawn
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -107,15 +107,16 @@ options:
     duotpa_cooldown: 90
     duotpa_request_ttl: 60
     combat_log_duration: 15
-    # Руины: шанс при загрузке чанка (on chunk load). Было 1/160 — почти не видно; 1/20 даёт заметно чаще попытки в пустом регионе (evo_ruin_reg).
+    # Руины: 0 = не спавнить при загрузке чанков; 1 = включить случайный спавн (шанс 1/denominator в пустом регионе).
+    artifact_ruin_auto_chunk_spawn: 0
     artifact_ruin_denominator: 20
     artifact_ruin_region_chunks: 6
-    # Мин. расстояние от world spawn (блоки). 400 отсекало большую часть обычных прогулок; 160 ≈ 10 чанков.
+    # Мин. расстояние от world spawn (блоки) — для игрока «Зов Руин» и автоспавна.
     artifact_ruin_min_spawn_blocks: 160
     artifact_ruin_legendary_chance_percent: 14
-    # Замена разрушенного портала при генерации чанка: 1–100 — до L легендарная, до C обычная, иначе портал не трогаем
+    # Замена разрушенного портала при генерации: common_max 0 = никогда не заменять (руины только вручную / админ).
     artifact_ruin_portal_roll_legendary_max: 10
-    artifact_ruin_portal_roll_common_max: 78
+    artifact_ruin_portal_roll_common_max: 0
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -167,9 +168,14 @@ every 2 seconds:
     loop all players:
         syncProgress(loop-player)
 
-# Руины: on chunk load — срабатывает при подгрузке чанка (полёт, ходьба, новый мир). on chunk generate не вызывается для уже сгенерированных чанков, поэтому в старом мире основной путь — этот.
+# Руины: on chunk load — опциональный автоспавн (по умолчанию выключен: artifact_ruin_auto_chunk_spawn 0).
 on chunk load:
     wait 2 ticks
+    set {_auto} to "{@artifact_ruin_auto_chunk_spawn}" parsed as number
+    if {_auto} is not set:
+        set {_auto} to 0
+    if {_auto} <= 0:
+        stop
     set {_ch} to event-chunk
     set {_w} to world of {_ch}
     if environment of {_w} is not normal:
@@ -3601,6 +3607,33 @@ function artifactRuinTrySpawnChunk(wcx: number, wcz: number, w: world):
                     set {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} to true
                     stop
 
+function artifactRuinSummonObeliskItem() :: item:
+    set {_i} to respawn anchor named "&6&lЗов Руин"
+    set lore of {_i} to "&7Крафт на Алтаре Создания", "&7Shift+ПКМ по блоку в Оверворлде", "&7— руина на этой колонке (1 расход)", "&7Легендарный тип — как у случайного спавна", "&0EVORUINSUMMON"
+    return {_i}
+
+function isArtifactRuinSummonItem(i: item) :: boolean:
+    if {_i} is air:
+        return false
+    set {_ls::*} to lore of {_i}
+    loop {_ls::*}:
+        if "%loop-value%" contains "EVORUINSUMMON":
+            return true
+    return false
+
+function artifactRuinRegisterRegionForBlock(w: world, bx: number, bz: number):
+    set {_rc} to "{@artifact_ruin_region_chunks}" parsed as number
+    if {_rc} is not set:
+        set {_rc} to 6
+    if {_rc} < 1:
+        set {_rc} to 6
+    set {_wcx} to floor({_bx} / 16)
+    set {_wcz} to floor({_bz} / 16)
+    set {_rx} to floor({_wcx} / {_rc})
+    set {_rz} to floor({_wcz} / {_rc})
+    set {_wn} to "%{_w}%"
+    set {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} to true
+
 # ----- Алтарь пробуждения (Незер): сундук → оболочка 3×3×3 + именная воронка в инвентарь → установка на центральный аметист -----
 # Дыры по центру боковых граней среднего слоя (доступ); низ и верх центра не «дыры»: аметист и плачущий обсидиан.
 
@@ -4575,6 +4608,8 @@ function evoAdminItemById(id: text) :: item:
         return awakeningHopperTokenItem()
     if {_id} is "awakening_hopper":
         return awakeningHopperTokenItem()
+    if {_id} is "ruin_summon":
+        return artifactRuinSummonObeliskItem()
 
     # Кирки алтаря
     if {_id} is "ether_pick":
@@ -4629,6 +4664,7 @@ function evoAdminItemIdList() :: texts:
     add "void_key" to {_ids::*}
     add "return_key" to {_ids::*}
     add "altar_hopper" to {_ids::*}
+    add "ruin_summon" to {_ids::*}
     # Кирки алтаря
     add "ether_pick" to {_ids::*}
     add "flame_pick" to {_ids::*}
@@ -4668,7 +4704,7 @@ function evoAdminItemIdList() :: texts:
     add "lootmagnet" to {_ids::*}
     add "nightlens" to {_ids::*}
     # Свитки для всех артефактов
-    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens" and "cursedgift":
+    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon" and "cursedgift":
         set {_sid} to "scroll_%loop-value%"
         add {_sid} to {_ids::*}
     return {_ids::*}
@@ -4771,7 +4807,7 @@ function diaryRecipeEntryFromItem(it: item) :: text:
     set {_nm} to name of {_it}
     if {_nm} is not set:
         return ""
-    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens" and "cursedgift":
+    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon" and "cursedgift":
         set {_n} to {ancient_scroll_recipes::%loop-value%::name}
         if {_n} is set:
             if {_nm} contains {_n}:
@@ -5024,6 +5060,8 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to nightLensItem()
     else if isArtifactRecipeByFive({_inv}, grass block, golden apple, diamond, netherrack, end stone) is true:
         set {_outItem} to player head
+    else if isArtifactRecipeByFive({_inv}, polished blackstone, crying obsidian, nether star, amethyst block, echo shard) is true:
+        set {_outItem} to artifactRuinSummonObeliskItem()
     else if isCursedGiftAltarRecipe({_inv}) is true:
         set {_outItem} to cursedKingGiftItem()
     else:
@@ -5600,6 +5638,57 @@ on right click:
     delete {evo_death_return::%uuid of player%}
     play sound "entity.enderman.teleport" with volume 1 and pitch 1 at player for player
     send "{@prefix} &bКлюч возврата: вы перенесены на место смерти." to player
+
+# Зов Руин: Shift+ПКМ по блоку в Оверворлде (крафт на алтаре)
+on right click:
+    if player is not sneaking:
+        stop
+    if event-block is not set:
+        stop
+    if player's tool is not set:
+        stop
+    if isArtifactRuinSummonItem(player's tool) is false:
+        stop
+    set {_w} to world of event-block
+    if environment of {_w} is not normal:
+        send action bar "&cЗов Руин работает только в Оверворлде." to player
+        stop
+    cancel event
+    set {_bx} to floor(x-coordinate of location of event-block)
+    set {_bz} to floor(z-coordinate of location of event-block)
+    set {_feet} to artifactRuinFeetAtColumn({_bx}, {_bz}, {_w})
+    if artifactRuinFeetValid({_feet}) is false:
+        send action bar "&cЗдесь нельзя поставить руину (колонка поверхности)." to player
+        stop
+    if artifactRuinFarFromSpawn({_feet}, {_w}) is false:
+        send action bar "&cСлишком близко к спавну мира (нужно дальше)." to player
+        stop
+    set {_cx} to floor(x-coordinate of {_feet})
+    set {_cz} to floor(z-coordinate of {_feet})
+    if artifactRuinTerrainTooSteep({_cx}, {_cz}, 9, {_w}) is true:
+        send action bar "&cРельеф слишком крутой для руины." to player
+        stop
+    set {_rc} to "{@artifact_ruin_region_chunks}" parsed as number
+    if {_rc} is not set:
+        set {_rc} to 6
+    if {_rc} < 1:
+        set {_rc} to 6
+    set {_wcx} to floor({_bx} / 16)
+    set {_wcz} to floor({_bz} / 16)
+    set {_rx} to floor({_wcx} / {_rc})
+    set {_rz} to floor({_wcz} / {_rc})
+    set {_wn} to "%{_w}%"
+    if {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} is true:
+        send action bar "&cВ этом регионе уже отмечена руина (слот мира)." to player
+        stop
+    set {_kind} to artifactRuinRandomKind()
+    if artifactRuinBuild({_feet}, {_kind}) is false:
+        send action bar "&cНе удалось возвести руину (проверь место)." to player
+        stop
+    artifactRuinRegisterRegionForBlock({_w}, {_bx}, {_bz})
+    remove 1 of player's tool from player
+    play sound "block.beacon.activate" with volume 1 and pitch 1 at event-block for all players
+    send "{@prefix} &6Руина возведена. &7Сундук башни открывается &5Ключом пустоты&7." to player
 
 # Воздушный шарик: второй прыжок в воздухе
 on toggle flight:
@@ -12971,6 +13060,9 @@ function initAncientScrollRecipes():
     set {ancient_scroll_recipes::nightlens::name} to "Ночная Линза"
     set {ancient_scroll_recipes::nightlens::tier} to "medium"
     set {ancient_scroll_recipes::nightlens::ing::*} to "Стекло", "Светокаменная пыль", "Аметистовый осколок", "Мембрана фантома", "Паучий глаз"
+    set {ancient_scroll_recipes::ruin_summon::name} to "Зов Руин"
+    set {ancient_scroll_recipes::ruin_summon::tier} to "medium"
+    set {ancient_scroll_recipes::ruin_summon::ing::*} to "Полированный чернокамень", "Плачущий обсидиан", "Звезда Незера", "Аметистовый блок", "Эхо-осколок"
     set {ancient_scroll_recipes::cursedgift::name} to "Дар Проклятого Короля"
     set {ancient_scroll_recipes::cursedgift::tier} to "absolute"
     set {ancient_scroll_recipes::cursedgift::ing::*} to "Посох Некро-Тирана", "Корона Высшего Разума", "Зачарованное золотое яблоко", "Голова игрока", "Слиток незерита"
@@ -13068,7 +13160,7 @@ on death:
                     drop {_as} at location of victim
             else:
                 chance of 2%:
-                    set {_mid::*} to "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet" and "nightlens"
+                    set {_mid::*} to "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens" and "ruin_summon"
                     set {_pick} to random element out of {_mid::*}
                     set {_ms} to ancientScrollItem({_pick})
                     if {_ms} is not air:
