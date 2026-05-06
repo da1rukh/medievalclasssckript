@@ -107,14 +107,15 @@ options:
     duotpa_cooldown: 90
     duotpa_request_ttl: 60
     combat_log_duration: 15
-    # Руины: шанс при загрузке чанка в память (on chunk load) — работает и для старых миров. Чем меньше denominator, тем чаще попытки. Регион — сколько чанков по стороне занимает «слот» одной руины (меньше = больше руин в мире).
-    artifact_ruin_denominator: 160
+    # Руины: шанс при загрузке чанка (on chunk load). Было 1/160 — почти не видно; 1/20 даёт заметно чаще попытки в пустом регионе (evo_ruin_reg).
+    artifact_ruin_denominator: 20
     artifact_ruin_region_chunks: 6
-    artifact_ruin_min_spawn_blocks: 400
+    # Мин. расстояние от world spawn (блоки). 400 отсекало большую часть обычных прогулок; 160 ≈ 10 чанков.
+    artifact_ruin_min_spawn_blocks: 160
     artifact_ruin_legendary_chance_percent: 14
-    # Замена разрушенного портала (Оверворлд) на руину при генерации чанка: бросок 1–100 — до L = легендарная, до C = обычная, иначе портал остаётся
+    # Замена разрушенного портала при генерации чанка: 1–100 — до L легендарная, до C обычная, иначе портал не трогаем
     artifact_ruin_portal_roll_legendary_max: 10
-    artifact_ruin_portal_roll_common_max: 60
+    artifact_ruin_portal_roll_common_max: 78
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -166,16 +167,26 @@ every 2 seconds:
     loop all players:
         syncProgress(loop-player)
 
-# Руины: on chunk load — срабатывает при подгрузке чанка (полёт, ходьба, новый мир). on chunk generate не вызывается для уже сгенерированных чанков, поэтому раньше в старом мире руин не было.
+# Руины: on chunk load — срабатывает при подгрузке чанка (полёт, ходьба, новый мир). on chunk generate не вызывается для уже сгенерированных чанков, поэтому в старом мире основной путь — этот.
 on chunk load:
     wait 2 ticks
     set {_ch} to event-chunk
     set {_w} to world of {_ch}
     if environment of {_w} is not normal:
         stop
+    set {_wcx} to x coordinate of {_ch}
+    set {_wcz} to z coordinate of {_ch}
+    set {_rc} to "{@artifact_ruin_region_chunks}" parsed as number
+    if {_rc} is not set:
+        set {_rc} to 6
+    if {_rc} < 1:
+        set {_rc} to 6
+    set {_rx} to floor({_wcx} / {_rc})
+    set {_rz} to floor({_wcz} / {_rc})
+    set {_wn} to "%{_w}%"
+    if {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} is true:
+        stop
     chance of 1/{@artifact_ruin_denominator}:
-        set {_wcx} to x coordinate of {_ch}
-        set {_wcz} to z coordinate of {_ch}
         artifactRuinTrySpawnChunk({_wcx}, {_wcz}, {_w})
 
 # Разрушенный портал (Оверворлд): при генерации чанка — шанс заменить на руину (остальной шанс портал не трогаем)
@@ -3579,7 +3590,7 @@ function artifactRuinTrySpawnChunk(wcx: number, wcz: number, w: world):
     set {_wn} to "%{_w}%"
     if {evo_ruin_reg::%{_wn}%::%{_rx}%::%{_rz}%} is true:
         stop
-    loop 6 times:
+    loop 12 times:
         set {_bx} to {_wcx} * 16 + random integer between 3 and 12
         set {_bz} to {_wcz} * 16 + random integer between 3 and 12
         set {_feet} to artifactRuinFeetAtColumn({_bx}, {_bz}, {_w})
