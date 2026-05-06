@@ -7853,7 +7853,7 @@ on inventory click:
 # ==========================================
 command /artifacts:
     trigger:
-        migrateUtilityCoreVariables(player)
+        migrateUtilityCoreVars(player)
         open chest inventory with 3 rows named "&8Artifacts Core" to player
         dbgEvo(player, "opened /artifacts GUI")
         loop 27 times:
@@ -7935,7 +7935,7 @@ on inventory click:
 command /utilities:
     aliases: /utility
     trigger:
-        migrateUtilityCoreVariables(player)
+        migrateUtilityCoreVars(player)
         open chest inventory with 3 rows named "&8Utility Core" to player
         loop 27 times:
             set slot (loop-number - 1) of player's current inventory to light blue stained glass pane named " "
@@ -9550,7 +9550,7 @@ every 2 seconds:
     loop all players:
         if hasUtilityCoreOrInventory(loop-player, "lootmagnet", "Магнит Добытчика") is true:
             loop all dropped items in radius 6 around loop-player:
-                teleport loop-entity to loop-player
+                teleport loop-entity-1 to loop-player
         if hasUtilityCoreOrInventory(loop-player, "nightlens", "Ночная Линза") is true:
             apply night vision 1 without particles to loop-player for 4 seconds
 
