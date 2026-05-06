@@ -5000,7 +5000,17 @@ function utilityCoreGuiIndexBySlot(s: number) :: number:
 function pullUtilityFromCore(p: player, key: text) :: boolean:
     set {_u} to uuid of {_p}
     if {util_found::%{_u}%::%{_key}%} is not true:
-        return false
+        # Фоллбек для старых сохранений до разделения ядер.
+        if {art_found::%{_u}%::%{_key}%} is true:
+            set {util_found::%{_u}%::%{_key}%} to true
+            if {art_enabled::%{_u}%::%{_key}%} is true:
+                set {util_enabled::%{_u}%::%{_key}%} to true
+            else:
+                set {util_enabled::%{_u}%::%{_key}%} to false
+            delete {art_found::%{_u}%::%{_key}%}
+            delete {art_enabled::%{_u}%::%{_key}%}
+        else:
+            return false
     set {_s} to artifactSlotFromKey({_key})
     if {_s} < 0:
         return false
@@ -5239,10 +5249,6 @@ on right click:
             if {util_found::%{_u}%::%{_key}%} is true:
                 dbgEvo(player, "utility use: already in core key=%{_key}%")
                 send action bar "&eЭтот utility-артефакт уже есть в Utility Core." to player
-                stop
-            if utilityCoreCount(player) >= 5:
-                send "{@prefix} &cВ Utility Core максимум 5 utility-артефактов." to player
-                play sound "entity.villager.no" with volume 0.8 and pitch 1 at player for player
                 stop
             remove 1 of player's tool from player
             set {util_found::%{_u}%::%{_key}%} to true
@@ -7940,7 +7946,7 @@ command /utilities:
         loop 27 times:
             set slot (loop-number - 1) of player's current inventory to light blue stained glass pane named " "
         set slot 4 of player's current inventory to clock named "&b&lUTILITY: ЯДРО"
-        set lore of slot 4 of player's current inventory to "&75 слотов utility-ядра", "&7ПКМ: включить/выключить", "&7ЛКМ: извлечь в предмет", "&7Обычные артефакты: &e/artifacts"
+        set lore of slot 4 of player's current inventory to "&7Utility-ядро без лимита слотов", "&7ПКМ: включить/выключить", "&7ЛКМ: извлечь в предмет", "&7Обычные артефакты: &e/artifacts"
         loop 5 times:
             set {_idx} to loop-number
             set {_slot} to 10 + loop-number
