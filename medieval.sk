@@ -6540,7 +6540,7 @@ on break:
                         set {_lb} to location of loop-block
                         set loop-block to air
                         if {altar_pick_silk_mode::%uuid of player%} is true:
-                            giveAltarSilkBlockItemById(player, {_sid})
+                            giveAltarSilkBlockItemById(player, {_sid}, {_lb})
                             giveAltarSilkOreXp(player, {_b})
                         else if {_b} is diamond ore:
                             set {_it} to diamond
