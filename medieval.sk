@@ -4865,8 +4865,9 @@ on death of player:
             add "%loop-value%" to {_pages::*}
     if size of {_pages::*} > 0:
         set {_pick} to random element out of {_pages::*}
+        remove {_pick} from {adv_diary::%{_u}%::*}
         set {_page} to paper named "&6Страница дневника приключенца"
-        set lore of {_page} to "&7%{_pick}%" and "&8Выпала после смерти"
+        set lore of {_page} to "&7%{_pick}%" and "&8ПКМ: изучить как свиток" and "&0EVODIARY:%{_pick}%"
         drop {_page} at location of victim
 
 function debugEtherPickaxeRecipe(inv: inventory, p: player):
@@ -11242,6 +11243,50 @@ on right click on trapped chest:
     send "{@prefix} &5Вы нашли Ключ пустоты в руинах портала." to player
     play sound "entity.experience_orb.pickup" with volume 0.9 and pitch 1 at player for player
 
+function ruinNetherWorld() :: world:
+    loop all worlds:
+        if environment of loop-world is nether:
+            return loop-world
+    loop all worlds:
+        return loop-world
+    return world("world")
+
+on right click on obsidian:
+    if player's tool is set:
+        if altarAwakeningVoidKey(player's tool) is true:
+            if environment of world of player is not normal:
+                send action bar "&cКлюч пустоты работает только в Оверворлде." to player
+                stop
+            set {_nw} to ruinNetherWorld()
+            if {_nw} is not set:
+                send action bar "&cНе найден мир Незера." to player
+                stop
+            cancel event
+            set {evo_void_return::%uuid of player%} to location of player
+            remove 1 of player's tool from player
+            teleport player to spawn point of {_nw}
+            set {_rk} to evoAdminItemById("return_key")
+            if {_rk} is not air:
+                giveOrDrop({_rk}, player, location of player)
+            play sound "block.portal.travel" with volume 1 and pitch 1 at player for player
+            send "{@prefix} &5Ключ пустоты активирован. Вы перемещены в мир руин." to player
+            stop
+        if altarAwakeningReturnKey(player's tool) is true:
+            if environment of world of player is not nether:
+                send action bar "&cКлюч возврата работает только в Незере." to player
+                stop
+            set {_back} to {evo_void_return::%uuid of player%}
+            if {_back} is not set:
+                send action bar "&cТочка возврата не найдена." to player
+                stop
+            cancel event
+            remove 1 of player's tool from player
+            teleport player to {_back}
+            delete {evo_void_return::%uuid of player%}
+            play sound "entity.enderman.teleport" with volume 1 and pitch 1 at player for player
+            send "{@prefix} &bКлюч возврата сработал. Вы вернулись обратно." to player
+            stop
+
 # ==========================================
 # АДМИН-КОМАНДЫ
 # ==========================================
@@ -12856,6 +12901,15 @@ function ancientScrollIdFromItem(i: item) :: text:
             return {_lv}
     return ""
 
+function diaryPageEntryFromItem(i: item) :: text:
+    set {_ls::*} to lore of {_i}
+    loop {_ls::*}:
+        set {_lv} to "%loop-value%"
+        if {_lv} starts with "&0EVODIARY:":
+            replace all "&0EVODIARY:" in {_lv} with ""
+            return {_lv}
+    return ""
+
 function ancientScrollDiaryEntry(id: text) :: text:
     set {_n} to {ancient_scroll_recipes::%{_id}%::name}
     if {_n} is not set:
@@ -12881,6 +12935,25 @@ on load:
 
 on right click:
     if player's tool is paper:
+        set {_entry} to diaryPageEntryFromItem(player's tool)
+        if {_entry} is not "":
+            cancel event
+            if {_entry} starts with "recipe::":
+                set {_rid} to {_entry}
+                replace all "recipe::" in {_rid} with ""
+                addDiaryRecipePage(player, {_rid})
+                set {_name} to {ancient_scroll_recipes::%{_rid}%::name}
+                if {_name} is not set:
+                    set {_name} to {_rid}
+                send title "&6Страница дневника" with subtitle "&f%{_name}%" to player for 2 seconds
+                send "{@prefix} &aРецепт со страницы добавлен в Дневник: &f%{_name}%" to player
+            else:
+                addDiaryPage(player, {_entry})
+                send title "&6Страница дневника" with subtitle "&fЗапись изучена" to player for 2 seconds
+                send "{@prefix} &aЗапись со страницы добавлена в ваш дневник." to player
+            play sound "block.enchantment_table.use" with volume 1 and pitch 1 at player for player
+            remove 1 of player's tool from player
+            stop
         set {_sid} to ancientScrollIdFromItem(player's tool)
         if {_sid} is not "":
             cancel event
