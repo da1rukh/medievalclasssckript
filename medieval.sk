@@ -11197,6 +11197,51 @@ command /artifactpull <text>:
         else:
             send "{@prefix} &7Этот артефакт не найден в твоём ядре."
 
+function isRuinedPortalChestLike(b: block) :: boolean:
+    if {_b} is not chest:
+        if {_b} is not trapped chest:
+            return false
+    set {_w} to world of {_b}
+    if environment of {_w} is not normal:
+        return false
+    set {_loc} to location of {_b}
+    loop blocks in radius 4 around {_loc}:
+        if loop-block is obsidian:
+            return true
+        if loop-block is crying obsidian:
+            return true
+        if loop-block is netherrack:
+            return true
+    return false
+
+on right click on chest:
+    if isRuinedPortalChestLike(event-block) is false:
+        stop
+    set {_id} to "%world of event-block%:%x-coordinate of event-block%:%y-coordinate of event-block%:%z-coordinate of event-block%"
+    if {evo_voidkey_taken::%{_id}%} is true:
+        stop
+    set {_k} to evoAdminItemById("void_key")
+    if {_k} is air:
+        stop
+    set {evo_voidkey_taken::%{_id}%} to true
+    giveOrDrop({_k}, player, location of event-block)
+    send "{@prefix} &5Вы нашли Ключ пустоты в руинах портала." to player
+    play sound "entity.experience_orb.pickup" with volume 0.9 and pitch 1 at player for player
+
+on right click on trapped chest:
+    if isRuinedPortalChestLike(event-block) is false:
+        stop
+    set {_id} to "%world of event-block%:%x-coordinate of event-block%:%y-coordinate of event-block%:%z-coordinate of event-block%"
+    if {evo_voidkey_taken::%{_id}%} is true:
+        stop
+    set {_k} to evoAdminItemById("void_key")
+    if {_k} is air:
+        stop
+    set {evo_voidkey_taken::%{_id}%} to true
+    giveOrDrop({_k}, player, location of event-block)
+    send "{@prefix} &5Вы нашли Ключ пустоты в руинах портала." to player
+    play sound "entity.experience_orb.pickup" with volume 0.9 and pitch 1 at player for player
+
 # ==========================================
 # АДМИН-КОМАНДЫ
 # ==========================================
