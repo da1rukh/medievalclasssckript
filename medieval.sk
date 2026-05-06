@@ -4063,14 +4063,53 @@ function isEtherValuableOre(b: block) :: boolean:
         return true
     return false
 
-# Целый блок как при шёлковом касании (через give — работает для любого minecraft:id).
-function giveAltarSilkBlockItemById(p: player, id: text):
-    if {_id} does not contain ":":
-        set {_id} to "minecraft:%{_id}%"
-    execute console command "give %{_p}% %{_id}% 1"
+# Целый блок как при шёлковом касании (без консольной команды, как обычный дроп через giveOrDrop).
+function giveAltarSilkBlockItemById(p: player, id: text, loc: location):
+    set {_t} to {_id} in lower case
+    set {_it} to air
+    if {_t} is "stone":
+        set {_it} to stone
+    else if {_t} is "cobblestone":
+        set {_it} to cobblestone
+    else if {_t} is "dirt":
+        set {_it} to dirt
+    else if {_t} is "gravel":
+        set {_it} to gravel
+    else if {_t} is "deepslate":
+        set {_it} to deepslate
+    else if {_t} is "diamond_ore":
+        set {_it} to diamond ore
+    else if {_t} is "deepslate_diamond_ore":
+        set {_it} to deepslate diamond ore
+    else if {_t} is "gold_ore":
+        set {_it} to gold ore
+    else if {_t} is "deepslate_gold_ore":
+        set {_it} to deepslate gold ore
+    else if {_t} is "nether_gold_ore":
+        set {_it} to nether gold ore
+    else if {_t} is "iron_ore":
+        set {_it} to iron ore
+    else if {_t} is "deepslate_iron_ore":
+        set {_it} to deepslate iron ore
+    else if {_t} is "coal_ore":
+        set {_it} to coal ore
+    else if {_t} is "deepslate_coal_ore":
+        set {_it} to deepslate coal ore
+    else if {_t} is "lapis_ore":
+        set {_it} to lapis ore
+    else if {_t} is "deepslate_lapis_ore":
+        set {_it} to deepslate lapis ore
+    else if {_t} is "redstone_ore":
+        set {_it} to redstone ore
+    else if {_t} is "deepslate_redstone_ore":
+        set {_it} to deepslate redstone ore
+    else if {_t} is "ancient_debris":
+        set {_it} to ancient debris
+    if {_it} is not air:
+        giveOrDrop({_it}, {_p}, {_loc})
 
 function giveAltarSilkBlockItem(p: player, b: block, loc: location):
-    giveAltarSilkBlockItemById({_p}, "%type of {_b}%")
+    giveAltarSilkBlockItemById({_p}, "%type of {_b}%", {_loc})
 
 # Опыт как у обычной добычи руды (под шёлк).
 function giveAltarSilkOreXp(p: player, b: block):
