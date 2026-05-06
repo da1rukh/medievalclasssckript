@@ -3945,6 +3945,30 @@ function altarOmniPickaxeItem() :: item:
     enchant {_p} with efficiency 6
     return {_p}
 
+function syncAltarSilkEnchant(p: player):
+    set {_u} to uuid of {_p}
+    set {_tk} to {_p}'s tool
+    if isAltarPickaxeTool({_tk}) is not true:
+        stop
+    set {_on} to {altar_pick_silk_mode::%{_u}%} ? false
+    if {_on} is true:
+        enchant {_tk} with silk touch 1
+        set {_p}'s tool to {_tk}
+        stop
+    # При выключении возвращаем базовый вариант кирки без Silk Touch.
+    if isOmniPickaxe({_tk}) is true:
+        set {_p}'s tool to altarOmniPickaxeItem()
+    else if isFlamePickaxe({_tk}) is true:
+        set {_p}'s tool to altarFlamePickaxeItem()
+    else if isVeinPickaxe({_tk}) is true:
+        set {_p}'s tool to altarVeinPickaxeItem()
+    else if isFortunePickaxe({_tk}) is true:
+        set {_p}'s tool to altarFortunePickaxeItem()
+    else if isVoidPickaxe({_tk}) is true:
+        set {_p}'s tool to altarVoidPickaxeItem()
+    else if isEtherPickaxe({_tk}) is true:
+        set {_p}'s tool to altarEtherPickaxeItem()
+
 function isEtherPickaxe(i: item) :: boolean:
     if {_i} is not diamond pickaxe:
         return false
@@ -6578,6 +6602,7 @@ on right click:
             else:
                 set {altar_pick_silk_mode::%{_u}%} to true
                 send action bar "&7Шёлковое касание: &aВКЛ &8(целые блоки)" to player
+            syncAltarSilkEnchant(player)
             play sound "ui.button.click" with volume 0.85 and pitch 1.15 at player for player
             stop
         # Для остальных алтарных кирок — только по воздуху, Эфирная исключена.
@@ -6593,6 +6618,7 @@ on right click:
                 else:
                     set {altar_pick_silk_mode::%{_u}%} to true
                     send action bar "&7Шёлковое касание: &aВКЛ &8(целые блоки)" to player
+                syncAltarSilkEnchant(player)
                 play sound "ui.button.click" with volume 0.85 and pitch 1.15 at player for player
                 stop
     set {_u} to player's uuid
