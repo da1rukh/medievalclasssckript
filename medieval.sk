@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины (Оверворлд): крафт «Зов Руин» на алтаре, Shift+ПКМ по блоку — постройка; опционально автоспавн (artifact_ruin_auto_chunk_spawn); /evoruinspawn
+  #   - Руины (Оверворлд): 5 предметов в первые слоты сундука → «Зов Руин»; Shift+ПКМ по блоку — постройка; /evoruinspawn
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -3609,7 +3609,7 @@ function artifactRuinTrySpawnChunk(wcx: number, wcz: number, w: world):
 
 function artifactRuinSummonObeliskItem() :: item:
     set {_i} to respawn anchor named "&6&lЗов Руин"
-    set lore of {_i} to "&7Крафт на Алтаре Создания", "&7Shift+ПКМ по блоку в Оверворлде", "&7— руина на этой колонке (1 расход)", "&7Легендарный тип — как у случайного спавна", "&0EVORUINSUMMON"
+    set lore of {_i} to "&7Сундук: положи в &fпервые 5 слотов &7(ряд сверху):", "&7чернокамень, плач. обсидиан, звезда Незера,", "&7аметистовый блок, эхо-осколок — и &fоткрой сундук&7.", "&7Потом Shift+ПКМ по блоку в Оверворлде — руина.", "&0EVORUINSUMMON"
     return {_i}
 
 function isArtifactRuinSummonItem(i: item) :: boolean:
@@ -3815,6 +3815,20 @@ function tryBuildAwakeningAltarAtChestBlock(cb: block, opener: player):
         set {_chestOk} to true
     if {_chestOk} is true:
         set {_cinv} to inventory of {_cb}
+        if isArtifactRecipeByFive({_cinv}, polished blackstone, crying obsidian, nether star, amethyst block, echo shard) is true:
+            loop 5 times:
+                set slot (loop-number - 1) of {_cinv} to air
+            set {_gift} to artifactRuinSummonObeliskItem()
+            set {_cloc} to location of {_cb}
+            giveOrDrop({_gift}, {_opener}, {_cloc})
+            play sound "block.enchantment_table.use" with volume 1 and pitch 0.85 at {_cloc} for all players
+            execute console command "execute positioned %x-coordinate of {_cloc}% %y-coordinate of {_cloc}% %z-coordinate of {_cloc}% run particle minecraft:enchant ~ ~1 ~ 0.35 0.2 0.35 0.02 28 force"
+            set {_rid} to diaryRecipeEntryFromItem({_gift})
+            if {_rid} is not "":
+                addDiaryRecipePage({_opener}, {_rid})
+                send action bar "&6+Рецепт в Дневник" to {_opener}
+            send "{@prefix} &6Сундук выдал &eЗов Руин&6 — Shift+ПКМ по блоку в Оверворлде." to {_opener}
+            stop
         if isAltarChestRecipeExact({_cinv}) is true:
             clear {_cinv}
             buildAwakeningAltarFromChest({_cb}, {_opener})
@@ -3827,6 +3841,15 @@ function tryBuildAwakeningAltarAtChestBlock(cb: block):
         set {_chestOk} to true
     if {_chestOk} is true:
         set {_cinv} to inventory of {_cb}
+        if isArtifactRecipeByFive({_cinv}, polished blackstone, crying obsidian, nether star, amethyst block, echo shard) is true:
+            loop 5 times:
+                set slot (loop-number - 1) of {_cinv} to air
+            set {_gift} to artifactRuinSummonObeliskItem()
+            set {_cloc} to location of {_cb}
+            drop {_gift} at {_cloc}
+            play sound "block.enchantment_table.use" with volume 1 and pitch 0.85 at {_cloc} for all players
+            execute console command "execute positioned %x-coordinate of {_cloc}% %y-coordinate of {_cloc}% %z-coordinate of {_cloc}% run particle minecraft:enchant ~ ~1 ~ 0.35 0.2 0.35 0.02 28 force"
+            stop
         if isAltarChestRecipeExact({_cinv}) is true:
             clear {_cinv}
             buildAwakeningAltarShellFromChest({_cb})
@@ -5060,8 +5083,6 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to nightLensItem()
     else if isArtifactRecipeByFive({_inv}, grass block, golden apple, diamond, netherrack, end stone) is true:
         set {_outItem} to player head
-    else if isArtifactRecipeByFive({_inv}, polished blackstone, crying obsidian, nether star, amethyst block, echo shard) is true:
-        set {_outItem} to artifactRuinSummonObeliskItem()
     else if isCursedGiftAltarRecipe({_inv}) is true:
         set {_outItem} to cursedKingGiftItem()
     else:
