@@ -11459,35 +11459,141 @@ on spawn of living entity:
         stop
     cancel event
 
+function ruinSkyWorld() :: world:
+    loop all worlds:
+        if environment of loop-world is normal:
+            return loop-world
+    loop all worlds:
+        return loop-world
+    return world("world")
+
+function prepareSkyRuinArena(center: location):
+    set {_w} to world of {_center}
+    set {_cx} to floor(x-coordinate of {_center})
+    set {_cz} to floor(z-coordinate of {_center})
+    set {_yFloor} to 155
+    set {_yCeil} to {_yFloor} + 95
+    loop integers between -32 and 31:
+        set {_dx} to loop-value
+        loop integers between -32 and 31:
+            set {_dz} to loop-value-1
+            set block at location at {_cx} + {_dx}, {_yFloor} - 1, {_cz} + {_dz} in {_w} to bedrock
+            set {_f} to block at location at {_cx} + {_dx}, {_yFloor}, {_cz} + {_dz} in {_w}
+            set {_r} to random integer between 1 and 100
+            if {_r} <= 35:
+                set {_f} to cracked polished blackstone bricks
+            else if {_r} <= 60:
+                set {_f} to polished blackstone bricks
+            else if {_r} <= 75:
+                set {_f} to blackstone
+            else if {_r} <= 88:
+                set {_f} to crying obsidian
+            else:
+                set {_f} to netherrack
+            set block at location at {_cx} + {_dx}, {_yCeil}, {_cz} + {_dz} in {_w} to barrier
+            set {_yMin} to {_yFloor} + 1
+            set {_yMax} to {_yCeil} - 1
+            loop integers between {_yMin} and {_yMax}:
+                set {_yy} to loop-value-1
+                if {_dx} is -32:
+                    set block at location at {_cx} + {_dx}, {_yy}, {_cz} + {_dz} in {_w} to barrier
+                else if {_dx} is 31:
+                    set block at location at {_cx} + {_dx}, {_yy}, {_cz} + {_dz} in {_w} to barrier
+                else if {_dz} is -32:
+                    set block at location at {_cx} + {_dx}, {_yy}, {_cz} + {_dz} in {_w} to barrier
+                else if {_dz} is 31:
+                    set block at location at {_cx} + {_dx}, {_yy}, {_cz} + {_dz} in {_w} to barrier
+                else:
+                    set block at location at {_cx} + {_dx}, {_yy}, {_cz} + {_dz} in {_w} to air
+
+function spawnSkyRuinLikeCommand(p: player, center: location):
+    set {_w} to world of {_center}
+    set {_cx} to floor(x-coordinate of {_center})
+    set {_cz} to floor(z-coordinate of {_center})
+    set {_feet} to location at {_cx}, 156, {_cz} in {_w}
+    set {_kind} to "common"
+    chance of 20%:
+        set {_kind} to "legendary"
+    set {_ok} to artifactRuinBuild({_feet}, {_kind})
+    if {_ok} is false:
+        set {_retry} to artifactRuinBuild({_feet}, {_kind})
+    # строгие лимиты поверх сгенерированной руины
+    set {_roomInvs} to 0
+    delete {_allChests::*}
+    loop blocks in radius 30 around {_feet}:
+        if loop-block is chest:
+            add location of loop-block to {_allChests::*}
+    loop {_allChests::*}:
+        add 1 to {_roomInvs}
+        if {_roomInvs} > 5:
+            set block at loop-value to air
+    # если сундуков меньше 2 — добавим
+    while {_roomInvs} < 2:
+        set {_rx} to random integer between -20 and 20
+        set {_rz} to random integer between -20 and 20
+        set {_cb} to block at location at {_cx} + {_rx}, 156, {_cz} + {_rz} in {_w}
+        if {_cb} is air:
+            set {_cb} to chest
+            add 1 to {_roomInvs}
+
+    # Жёсткий лимит артефактов на руину: 1-3 (чистим лишнее и добавляем заново)
+    loop blocks in radius 30 around {_feet}:
+        if loop-block is chest:
+            set {_inv} to inventory of loop-block
+            loop 27 times:
+                set {_sl} to loop-number - 1
+                set {_it} to slot {_sl} of {_inv}
+                if {_it} is not air:
+                    set {_nm} to name of {_it}
+                    if {_nm} is set:
+                        if {_nm} contains "Артефакт:":
+                            set slot {_sl} of {_inv} to air
+                        else if {_nm} contains "Легендарный артефакт:":
+                            set slot {_sl} of {_inv} to air
+    set {_artNeed} to random integer between 1 and 3
+    loop {_artNeed} times:
+        set {_placed} to false
+        set {_t} to 0
+        while {_placed} is false:
+            add 1 to {_t}
+            if {_t} > 60:
+                set {_placed} to true
+            set {_rx} to random integer between -20 and 20
+            set {_rz} to random integer between -20 and 20
+            set {_cb} to block at location at {_cx} + {_rx}, 156, {_cz} + {_rz} in {_w}
+            if {_cb} is chest:
+                set {_inv} to inventory of {_cb}
+                set {_slot} to random integer between 0 and 26
+                if slot {_slot} of {_inv} is air:
+                    chance of 20%:
+                        set slot {_slot} of {_inv} to artifactRuinLegendaryRandomArtifact()
+                    else:
+                        set slot {_slot} of {_inv} to artifactRuinCommonArtifactRandom()
+                    set {_placed} to true
+
 on right click on obsidian:
     if player's tool is set:
         if altarAwakeningVoidKey(player's tool) is true:
             if environment of world of player is not normal:
                 send action bar "&cКлюч пустоты работает только в Оверворлде." to player
                 stop
-            set {_nw} to ruinNetherWorld()
-            if {_nw} is not set:
-                send action bar "&cНе найден мир Незера." to player
+            set {_sw} to ruinSkyWorld()
+            if {_sw} is not set:
+                send action bar "&cНе найден мир для руин." to player
                 stop
             cancel event
             set {evo_void_return::%uuid of player%} to location of player
-            set {_room} to voidRuinRoomLocation(player)
+            set {_r0} to voidRuinRoomLocation(player)
+            set {_room} to location at (floor(x-coordinate of {_r0})), (floor(y-coordinate of {_r0})), (floor(z-coordinate of {_r0})) in {_sw}
             if isEvoDebug(player) is true:
                 send "{@prefix} &8[debug] void-key target: &f%x-coordinate of {_room}%,%y-coordinate of {_room}%,%z-coordinate of {_room}% &7in &f%world of {_room}%" to player
             preloadVoidRuinArea({_room})
-            if isEvoDebug(player) is true:
-                send "{@prefix} &8[debug] void-key preload: &aOK" to player
-            ensureVoidRuinRoomAt({_room})
-            if isEvoDebug(player) is true:
-                set {_rcx} to floor(x-coordinate of {_room})
-                set {_rcz} to floor(z-coordinate of {_room})
-                set {_rid} to "%world of {_room}%:%{_rcx}%:%{_rcz}%"
-                set {_built} to {evo_void_room_built::%{_rid}%} ? false
-                send "{@prefix} &8[debug] void-key build flag: &f%{_built}% &8(%{_rid}%)" to player
+            prepareSkyRuinArena({_room})
             remove 1 of player's tool from player
             teleport player to {_room}
+            spawnSkyRuinLikeCommand(player, {_room})
             if isEvoDebug(player) is true:
-                send "{@prefix} &8[debug] void-key teleport: &aDONE" to player
+                send "{@prefix} &8[debug] void-key spawn: &aOK (80/20 via kind)" to player
             set {_rk} to evoAdminItemById("return_key")
             if {_rk} is not air:
                 giveOrDrop({_rk}, player, location of player)
@@ -11495,9 +11601,6 @@ on right click on obsidian:
             send "{@prefix} &5Ключ пустоты активирован. Вы перемещены в мир руин." to player
             stop
         if altarAwakeningReturnKey(player's tool) is true:
-            if environment of world of player is not nether:
-                send action bar "&cКлюч возврата работает только в Незере." to player
-                stop
             set {_back} to {evo_void_return::%uuid of player%}
             if {_back} is not set:
                 send action bar "&cТочка возврата не найдена." to player
