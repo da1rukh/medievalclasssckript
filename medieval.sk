@@ -11253,22 +11253,34 @@ function ruinNetherWorld() :: world:
 
 function voidRuinRoomLocation(p: player) :: location:
     set {_nw} to ruinNetherWorld()
-    set {_u} to uuid of {_p}
-    set {_bx} to {evo_void_room_x::%{_u}%}
-    set {_bz} to {evo_void_room_z::%{_u}%}
-    if {_bx} is not set:
+    set {_tries} to 0
+    while {_tries} < 120:
+        add 1 to {_tries}
         set {_cx} to random integer between 1600 and 3200
-        set {_bx} to ({_cx} * 16) + 8
-        chance of 50%:
-            set {_bx} to {_bx} * -1
-        set {evo_void_room_x::%{_u}%} to {_bx}
-    if {_bz} is not set:
         set {_cz} to random integer between 1600 and 3200
+        set {_bx} to ({_cx} * 16) + 8
         set {_bz} to ({_cz} * 16) + 8
         chance of 50%:
+            set {_bx} to {_bx} * -1
+        chance of 50%:
             set {_bz} to {_bz} * -1
-        set {evo_void_room_z::%{_u}%} to {_bz}
-    return location at {_bx}, 250, {_bz} in {_nw}
+        set {_ok} to true
+        loop {evo_void_rooms::*}:
+            set {_rid} to loop-value
+            if {evo_void_room_world::%{_rid}%} is not "%{_nw}%":
+                continue
+            set {_ox} to {evo_void_room_center_x::%{_rid}%}
+            set {_oz} to {evo_void_room_center_z::%{_rid}%}
+            if {_ox} is not set:
+                continue
+            if {_oz} is not set:
+                continue
+            if abs({_bx} - {_ox}) < 1200:
+                if abs({_bz} - {_oz}) < 1200:
+                    set {_ok} to false
+        if {_ok} is true:
+            return location at {_bx}, 250, {_bz} in {_nw}
+    return location at (random integer between -52000 and 52000), 250, (random integer between -52000 and 52000) in {_nw}
 
 function preloadVoidRuinArea(loc: location):
     set {_cx} to floor(x-coordinate of {_loc})
@@ -11291,7 +11303,10 @@ function ensureVoidRuinRoomAt(loc: location):
     set {_yCeil} to {_yFloor} + 95
     set {_rid} to "%{_w}%:%{_cx}%:%{_cz}%"
     if {evo_void_room_built::%{_rid}%} is true:
-        stop
+        set {_probe} to block at location at {_cx}, 155, {_cz} in {_w}
+        if {_probe} is not air:
+            stop
+        delete {evo_void_room_built::%{_rid}%}
 
     # Каркас комнаты: пол, бедрок под полом, стены и потолок
     loop integers between -32 and 31:
