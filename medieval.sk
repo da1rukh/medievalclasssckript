@@ -4291,15 +4291,25 @@ function evoAdminItemById(id: text) :: item:
     set {_id} to {_id} in lower case
 
     # Базовые altar/ключевые предметы
-    if {_id} is "void_key" or {_id} is "key_void":
+    if {_id} is "void_key":
         set {_k} to tripwire hook named "&5&lКлюч Пустоты"
         set lore of {_k} to "&8Админ-выдача"
         return {_k}
-    if {_id} is "return_key" or {_id} is "key_return":
+    if {_id} is "key_void":
+        set {_k} to tripwire hook named "&5&lКлюч Пустоты"
+        set lore of {_k} to "&8Админ-выдача"
+        return {_k}
+    if {_id} is "return_key":
         set {_k} to tripwire hook named "&b&lКлюч Возврата"
         set lore of {_k} to "&8Админ-выдача"
         return {_k}
-    if {_id} is "altar_hopper" or {_id} is "awakening_hopper":
+    if {_id} is "key_return":
+        set {_k} to tripwire hook named "&b&lКлюч Возврата"
+        set lore of {_k} to "&8Админ-выдача"
+        return {_k}
+    if {_id} is "altar_hopper":
+        return awakeningHopperTokenItem()
+    if {_id} is "awakening_hopper":
         return awakeningHopperTokenItem()
 
     # Кирки алтаря
