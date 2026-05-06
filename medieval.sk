@@ -4108,6 +4108,100 @@ function crownHigherMindArtifactItem() :: item:
     set lore of {_i} to "&7Пассивно: &aх3 опыт из всех источников", "&7Твои зачарования считаются на +1 уровень", "&8Эффект: &aАКТИВЕН"
     return {_i}
 
+function portableHeaterArtifactItem() :: item:
+    set {_i} to blast furnace named "&6&lАртефакт: Портативный Нагреватель"
+    set lore of {_i} to "&7Пока в инвентаре: 1 сырая еда в руке", "&7автоматически жарится раз в 5 секунд", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function dreamCatcherArtifactItem() :: item:
+    set {_i} to cobweb named "&d&lАртефакт: Ловец Снов"
+    set lore of {_i} to "&7Сон мгновенно завершает ночь", "&7Даёт Luck I на следующий день", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function desertHeartArtifactItem() :: item:
+    set {_i} to dead bush named "&6&lАртефакт: Сердце Пустыни"
+    set lore of {_i} to "&7Испаряет воду в радиусе 5", "&7Сушит врагов (Hunger + Wither)", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function quantumDuplicatorArtifactItem() :: item:
+    set {_i} to dispenser named "&b&lАртефакт: Квантовый Дубликатор"
+    set lore of {_i} to "&710% шанс дублировать крафт на верстаке", "&7Не работает на алтарные предметы", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function facelessMaskArtifactItem() :: item:
+    set {_i} to carved pumpkin named "&7&lАртефакт: Маска Безликого"
+    set lore of {_i} to "&7Скрывает никнейм над головой", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function cursedKingGiftArtifactItem() :: item:
+    set {_i} to netherite ingot named "&4&lАртефакт: Дар Проклятого Короля"
+    set lore of {_i} to "&7Воскрешает союзника-дуо рядом (10 блоков)", "&7КД 5 минут на каждого игрока", "&7Цена: -10 уровней владельцу", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function hasArtifactItemInInventory(p: player, mark: text) :: boolean:
+    loop all items in {_p}'s inventory:
+        set {_nm} to name of loop-value
+        if {_nm} is set:
+            if {_nm} contains {_mark}:
+                return true
+    return false
+
+function isArtifactResultBlockedForQuantDup(it: item) :: boolean:
+    set {_nm} to name of {_it}
+    if {_nm} is set:
+        if {_nm} contains "Алтар":
+            return true
+        if {_nm} contains "Артефакт:":
+            return true
+        if {_nm} contains "Легендарный артефакт:":
+            return true
+    return false
+
+function isFiveItemRecipeExact(inv: inventory, a: item, b: item, c: item, d: item, e: item) :: boolean:
+    set {_an} to 0
+    set {_bn} to 0
+    set {_cn} to 0
+    set {_dn} to 0
+    set {_en} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_it} to slot (loop-number - 1) of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if {_it} is {_a}:
+                add 1 to {_an}
+            else if {_it} is {_b}:
+                add 1 to {_bn}
+            else if {_it} is {_c}:
+                add 1 to {_cn}
+            else if {_it} is {_d}:
+                add 1 to {_dn}
+            else if {_it} is {_e}:
+                add 1 to {_en}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_an} is not 1:
+        return false
+    if {_bn} is not 1:
+        return false
+    if {_cn} is not 1:
+        return false
+    if {_dn} is not 1:
+        return false
+    if {_en} is not 1:
+        return false
+    return true
+
+function isCursedKingGiftRecipe(inv: inventory) :: boolean:
+    return isFiveItemRecipeExact({_inv}, netherite ingot, enchanted golden apple, player head, crownHigherMindArtifactItem(), artifactFromSlot(8))
+
 function isCrownHigherMindAltarRecipe(inv: inventory) :: boolean:
     set {_mindN} to 0
     set {_azuraN} to 0
@@ -4163,6 +4257,81 @@ function isCrownHigherMindAltarRecipe(inv: inventory) :: boolean:
     return true
 
 # Единая выдача опыта с поддержкой Короны Высшего Разума.
+function portableHeaterItem() :: item:
+    set {_i} to blast furnace named "&6&lАртефакт: Портативный Нагреватель"
+    set lore of {_i} to "&7Пока в инвентаре: сырая еда в руке", "&7автоплавится по 1 шт каждые 5 секунд", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function dreamCatcherItem() :: item:
+    set {_i} to cobweb named "&d&lАртефакт: Ловец Снов"
+    set lore of {_i} to "&7Сон мгновенно пропускает ночь", "&7Бонус: Luck I на игровой день", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function desertHeartItem() :: item:
+    set {_i} to dead bush named "&6&lАртефакт: Сердце Пустыни"
+    set lore of {_i} to "&7Испаряет воду в радиусе 5", "&7Жара: голод/иссушение врагам", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function quantumDuplicatorItem() :: item:
+    set {_i} to dispenser named "&b&lАртефакт: Квантовый Дубликатор"
+    set lore of {_i} to "&710% шанс удвоить крафт на верстаке", "&7Не работает на алтарных предметах", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function facelessMaskItem() :: item:
+    set {_i} to player head named "&7&lАртефакт: Маска Безликого"
+    set lore of {_i} to "&7Скрывает никнейм над головой", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function cursedKingGiftItem() :: item:
+    set {_i} to netherite ingot named "&4&lАртефакт: Дар Проклятого Короля"
+    set lore of {_i} to "&7Воскрешает союзника-дуо рядом", "&7КД 5 минут на цель", "&7Цена: -10 уровней владельцу", "&8Эффект: &aАКТИВЕН"
+    return {_i}
+
+function isArtifactRecipeByFive(inv: inventory, i1: item, i2: item, i3: item, i4: item, i5: item) :: boolean:
+    set {_a} to 0
+    set {_b} to 0
+    set {_c} to 0
+    set {_d} to 0
+    set {_e} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_it} to slot (loop-number - 1) of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if {_it} is {_i1}:
+                add 1 to {_a}
+            else if {_it} is {_i2}:
+                add 1 to {_b}
+            else if {_it} is {_i3}:
+                add 1 to {_c}
+            else if {_it} is {_i4}:
+                add 1 to {_d}
+            else if {_it} is {_i5}:
+                add 1 to {_e}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_a} is not 1:
+        return false
+    if {_b} is not 1:
+        return false
+    if {_c} is not 1:
+        return false
+    if {_d} is not 1:
+        return false
+    if {_e} is not 1:
+        return false
+    return true
+
+function isCursedGiftAltarRecipe(inv: inventory) :: boolean:
+    return isArtifactRecipeByFive({_inv}, crownHigherMindArtifactItem(), artifactFromSlot(8), enchanted golden apple, player head, netherite ingot)
+
 function giveArtifactScaledExperience(p: player, amount: number):
     set {_xp} to round({_amount})
     if {_xp} < 1:
@@ -4255,6 +4424,18 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to altarOmniPickaxeItem()
     else if isCrownHigherMindAltarRecipe({_inv}) is true:
         set {_outItem} to crownHigherMindArtifactItem()
+    else if isArtifactRecipeByFive({_inv}, furnace, blaze powder, copper block, coal, iron ingot) is true:
+        set {_outItem} to portableHeaterItem()
+    else if isArtifactRecipeByFive({_inv}, string, cobweb, glowstone dust, feather, gold nugget) is true:
+        set {_outItem} to dreamCatcherItem()
+    else if isArtifactRecipeByFive({_inv}, cactus, soul sand, blaze powder, gold ingot, flint) is true:
+        set {_outItem} to desertHeartItem()
+    else if isArtifactRecipeByFive({_inv}, dispenser, amethyst shard, copper ingot, redstone block, glowstone dust) is true:
+        set {_outItem} to quantumDuplicatorItem()
+    else if isArtifactRecipeByFive({_inv}, leather, white wool, potion of invisibility, ink sac, gold ingot) is true:
+        set {_outItem} to facelessMaskItem()
+    else if isCursedGiftAltarRecipe({_inv}) is true:
+        set {_outItem} to cursedKingGiftItem()
     else:
         if {_crafter} is set:
             if isEvoDebug({_crafter}) is true:
@@ -4426,6 +4607,12 @@ command /altar:
         send "{@prefix} &5Пустоты: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &8обсидиан + &5эндер-жемчуг"
         send "{@prefix} &6Омни-слияние: &7положи в 0–4 все 5 алтарных кирок (Эфирная, Пламенная, Жильная, Удачи, Пустоты)."
         send "{@prefix} &6Корона Высшего Разума: &6Эфирный Разум + &dЗвезда Азуры + &eзолотой шлем + &fenchanted book + &aпузырёк опыта."
+        send "{@prefix} &6Портативный Нагреватель: &7печка + blaze powder + медный блок + уголь + железный слиток"
+        send "{@prefix} &6Ловец Снов: &7нить + паутина + светокаменная пыль + перо + золотой самородок"
+        send "{@prefix} &6Сердце Пустыни: &7кактус + песок душ + blaze powder + золотой слиток + кремень"
+        send "{@prefix} &6Квантовый Дубликатор: &7раздатчик + аметист + медный слиток + блок редстоуна + светопыль"
+        send "{@prefix} &6Маска Безликого: &7кожа + белая шерсть + зелье невидимости + чернильный мешок + золотой слиток"
+        send "{@prefix} &6Дар Проклятого Короля: &7посох некро-тирана + корона + зачар. золотое яблоко + голова + незерит"
 
 function pullArtifactFromCore(p: player, key: text) :: boolean:
     set {_u} to uuid of {_p}
@@ -8728,3 +8915,196 @@ command /sponsorkit:
         spSetCd(player, "kit", 86400)
         send "{@prefix} &eПолучен спонсорский космет.набор!"
         play sound "ui.toast.challenge_complete" at player for player
+
+
+# ---- Новые крафтабельные артефакты (инвентарь) ----
+every 5 seconds:
+    execute console command "scoreboard teams add evo_faceless"
+    execute console command "scoreboard teams option evo_faceless nametagVisibility never"
+    loop all players:
+        if hasArtifactItemInInventory(loop-player, "Портативный Нагреватель") is true:
+            set {_t} to loop-player's tool
+            if {_t} is raw beef:
+                remove 1 raw beef from loop-player
+                give 1 cooked beef to loop-player
+            else if {_t} is raw porkchop:
+                remove 1 raw porkchop from loop-player
+                give 1 cooked porkchop to loop-player
+            else if {_t} is raw chicken:
+                remove 1 raw chicken from loop-player
+                give 1 cooked chicken to loop-player
+            else if {_t} is raw mutton:
+                remove 1 raw mutton from loop-player
+                give 1 cooked mutton to loop-player
+            else if {_t} is raw rabbit:
+                remove 1 raw rabbit from loop-player
+                give 1 cooked rabbit to loop-player
+            else if {_t} is raw cod:
+                remove 1 raw cod from loop-player
+                give 1 cooked cod to loop-player
+            else if {_t} is raw salmon:
+                remove 1 raw salmon from loop-player
+                give 1 cooked salmon to loop-player
+
+        if hasArtifactItemInInventory(loop-player, "Маска Безликого") is true:
+            execute console command "scoreboard teams join evo_faceless %loop-player%"
+        else:
+            execute console command "scoreboard teams leave %loop-player%"
+
+on bed enter:
+    if hasArtifactItemInInventory(player, "Ловец Снов") is true:
+        set time of world of player to 0
+        clear weather in world of player
+        apply luck 1 without particles to player for 1200 seconds
+        send action bar "&d&lЛОВЕЦ СНОВ: ночь мгновенно рассеялась" to player
+
+on craft:
+    if hasArtifactItemInInventory(player, "Квантовый Дубликатор") is true:
+        if inventory type of event-inventory is crafting table:
+            set {_res} to event-item
+            set {_blocked} to false
+            set {_nm} to name of {_res}
+            if {_nm} is set:
+                if {_nm} contains "Алтар":
+                    set {_blocked} to true
+                if {_nm} contains "Артефакт:":
+                    set {_blocked} to true
+                if {_nm} contains "Легендарный артефакт:":
+                    set {_blocked} to true
+            if {_blocked} is false:
+                chance of 10%:
+                    wait 1 tick
+                    if {_res} is set:
+                        give {_res} to player
+                        send action bar "&b&lКВАНТОВЫЙ ДУБЛИКАТОР: +1 копия!" to player
+
+# Сердце Пустыни и Дар Проклятого Короля
+on death of player:
+    set {_vu} to victim's uuid
+    loop all players:
+        if hasArtifactItemInInventory(loop-player, "Дар Проклятого Короля") is true:
+            if loop-player is not victim:
+                if distance between loop-player and victim <= 10:
+                    if areDuo(loop-player, victim) is true:
+                        set {_ou} to uuid of loop-player
+                        set {_cd} to {cursedgift_cd::%{_ou}%::%{_vu}%} ? 0
+                        if {_cd} <= unix timestamp of now:
+                            set {_lv} to {level::%{_ou}%} ? 1
+                            if {_lv} > 10:
+                                set {cursedgift_cd::%{_ou}%::%{_vu}%} to (unix timestamp of now) + 300
+                                set {cursedgift_pending::%{_vu}%} to {_ou}
+                                set {level::%{_ou}%} to {_lv} - 10
+                                set {kills::%{_ou}%} to ({level::%{_ou}%} - 1) * {@kills_per_level}
+                                send action bar "&4Дар Проклятого Короля: -10 уровней" to loop-player
+                                exit loop
+
+on respawn:
+    set {_vu} to player's uuid
+    if {cursedgift_pending::%{_vu}%} is set:
+        set {_ou} to {cursedgift_pending::%{_vu}%}
+        delete {cursedgift_pending::%{_vu}%}
+        set {_owner} to player from {_ou}
+        if {_owner} is online:
+            teleport player to {_owner}
+            set health of player to 2
+            send title "&4&lВОСКРЕШЕНИЕ" with subtitle "&7Дар Проклятого Короля" to player for 2 seconds
+            send action bar "&cСоюзник воскрешён рядом" to {_owner}
+
+every 2 ticks:
+    loop all players:
+        if hasArtifactItemInInventory(loop-player, "Сердце Пустыни") is true:
+            loop blocks in radius 5 around loop-player:
+                if loop-block is water:
+                    set {_ploc} to location of loop-block
+                    set loop-block to air
+                    execute console command "particle minecraft:cloud %x-coordinate of {_ploc}% %y-coordinate of {_ploc}% %z-coordinate of {_ploc}% 0.2 0.2 0.2 0.01 8 force"
+            loop all living entities in radius 3 around loop-player:
+                if loop-entity is not loop-player:
+                    if loop-entity is a player:
+                        if areDuo(loop-player, loop-entity) is true:
+                            continue
+                    apply hunger 1 without particles to loop-entity for 3 seconds
+                    apply wither 1 without particles to loop-entity for 2 seconds
+
+# ---- Древние свитки ----
+function initAncientScrollRecipes():
+    delete {ancient_scroll_recipes::*}
+    set {ancient_scroll_recipes::heater::name} to "Портативный Нагреватель"
+    set {ancient_scroll_recipes::heater::tier} to "medium"
+    set {ancient_scroll_recipes::heater::ing::*} to "Печка", "Огненный порошок", "Медный блок", "Уголь", "Слиток железа"
+    set {ancient_scroll_recipes::dreamcatcher::name} to "Ловец Снов"
+    set {ancient_scroll_recipes::dreamcatcher::tier} to "medium"
+    set {ancient_scroll_recipes::dreamcatcher::ing::*} to "Нить", "Паутина", "Светокаменная пыль", "Перо", "Золотой самородок"
+    set {ancient_scroll_recipes::desertheart::name} to "Сердце Пустыни"
+    set {ancient_scroll_recipes::desertheart::tier} to "medium"
+    set {ancient_scroll_recipes::desertheart::ing::*} to "Кактус", "Песок душ", "Огненный порошок", "Золотой слиток", "Кремень"
+    set {ancient_scroll_recipes::quantdup::name} to "Квантовый Дубликатор"
+    set {ancient_scroll_recipes::quantdup::tier} to "medium"
+    set {ancient_scroll_recipes::quantdup::ing::*} to "Раздатчик", "Аметист", "Медный слиток", "Редстоун блок", "Светокаменная пыль"
+    set {ancient_scroll_recipes::facelessmask::name} to "Маска Безликого"
+    set {ancient_scroll_recipes::facelessmask::tier} to "medium"
+    set {ancient_scroll_recipes::facelessmask::ing::*} to "Кожа", "Белая шерсть", "Зелье невидимости", "Чернильный мешок", "Золотой слиток"
+    set {ancient_scroll_recipes::cursedgift::name} to "Дар Проклятого Короля"
+    set {ancient_scroll_recipes::cursedgift::tier} to "absolute"
+    set {ancient_scroll_recipes::cursedgift::ing::*} to "Посох Некро-Тирана", "Корона Высшего Разума", "Зачарованное золотое яблоко", "Голова игрока", "Слиток незерита"
+
+function ancientScrollItem(id: text) :: item:
+    set {_n} to {ancient_scroll_recipes::%{_id}%::name}
+    if {_n} is not set:
+        return air
+    set {_it} to paper named "&6Древний Свиток: %{_n}%"
+    enchant {_it} with unbreaking 1
+    set lore of {_it} to "&7Нажмите ПКМ, чтобы изучить рецепт."
+    return {_it}
+
+function ancientScrollIdFromItem(i: item) :: text:
+    set {_nm} to name of {_i}
+    if {_nm} is not set:
+        return ""
+    loop "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask" and "cursedgift":
+        set {_n} to {ancient_scroll_recipes::%loop-value%::name}
+        if {_n} is set:
+            if {_nm} contains {_n}:
+                return loop-value
+    return ""
+
+function isRuinDimension(w: world) :: boolean:
+    set {_wn} to "%{_w}%" in lower case
+    if {_wn} contains "руин":
+        return true
+    if {_wn} contains "ruin":
+        return true
+    return false
+
+on load:
+    initAncientScrollRecipes()
+
+on right click:
+    if player's tool is paper:
+        set {_sid} to ancientScrollIdFromItem(player's tool)
+        if {_sid} is not "":
+            cancel event
+            set {_name} to {ancient_scroll_recipes::%{_sid}%::name}
+            send title "&6Древний Свиток" with subtitle "&f%{_name}%" to player for 2 seconds
+            send "{@prefix} &6Рецепт артефакта: &f%{_name}%" to player
+            loop {ancient_scroll_recipes::%{_sid}%::ing::*}:
+                send "&8 • &f%loop-value%" to player
+            execute console command "particle minecraft:spell %x-coordinate of player% %y-coordinate of player% %z-coordinate of player% 0.4 0.6 0.4 0.03 25 force"
+            play sound "block.enchantment_table.use" with volume 1 and pitch 1 at player for player
+            remove 1 of player's tool from player
+            stop
+
+on death:
+    if victim is not a player:
+        if isRuinDimension(world of victim) is true:
+            chance of 0.5%:
+                set {_as} to ancientScrollItem("cursedgift")
+                if {_as} is not air:
+                    drop {_as} at location of victim
+            else:
+                chance of 2%:
+                    set {_mid::*} to "heater", "dreamcatcher", "desertheart", "quantdup" and "facelessmask"
+                    set {_pick} to random element out of {_mid::*}
+                    set {_ms} to ancientScrollItem({_pick})
+                    if {_ms} is not air:
+                        drop {_ms} at location of victim
