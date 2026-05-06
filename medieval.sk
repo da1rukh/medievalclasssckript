@@ -11305,16 +11305,17 @@ function ensureVoidRuinRoomAt(loc: location):
     set {_cx} to floor(x-coordinate of {_loc})
     set {_cy} to floor(y-coordinate of {_loc})
     set {_cz} to floor(z-coordinate of {_loc})
+    set {_half} to 47
+    set {_yMin} to {_cy} - 47
+    set {_yMax} to {_cy} + 47
     set {_rid} to "%{_w}%:%{_cx}%:%{_cz}%"
     if {evo_void_room_built::%{_rid}%} is true:
         stop
-    loop integers between -50 and 49:
+    loop integers between -47 and 47:
         set {_dx} to loop-value
-        loop integers between -50 and 49:
+        loop integers between -47 and 47:
             set {_dz} to loop-value-1
-            set {_bb} to block at location at {_cx} + {_dx}, {_cy} - 2, {_cz} + {_dz} in {_w}
-            set {_bb} to bedrock
-            set {_floor} to block at location at {_cx} + {_dx}, {_cy} - 1, {_cz} + {_dz} in {_w}
+            set {_floor} to block at location at {_cx} + {_dx}, {_yMin}, {_cz} + {_dz} in {_w}
             set {_r} to random integer between 1 and 100
             if {_r} <= 35:
                 set {_floor} to cracked polished blackstone bricks
@@ -11326,18 +11327,18 @@ function ensureVoidRuinRoomAt(loc: location):
                 set {_floor} to crying obsidian
             else:
                 set {_floor} to netherrack
-            set {_top} to block at location at {_cx} + {_dx}, {_cy} + 6, {_cz} + {_dz} in {_w}
+            set {_top} to block at location at {_cx} + {_dx}, {_yMax}, {_cz} + {_dz} in {_w}
             set {_top} to barrier
-            loop integers between 0 and 5:
-                set {_yy} to {_cy} + loop-value-1
+            loop integers between ({_yMin} + 1) and ({_yMax} - 1):
+                set {_yy} to loop-value-1
                 set {_wall} to false
-                if {_dx} is -50:
+                if {_dx} is -47:
                     set {_wall} to true
-                else if {_dx} is 49:
+                else if {_dx} is 47:
                     set {_wall} to true
-                else if {_dz} is -50:
+                else if {_dz} is -47:
                     set {_wall} to true
-                else if {_dz} is 49:
+                else if {_dz} is 47:
                     set {_wall} to true
                 set {_b} to block at location at {_cx} + {_dx}, {_yy}, {_cz} + {_dz} in {_w}
                 if {_wall} is true:
@@ -11437,7 +11438,7 @@ function ensureVoidRuinRoomAt(loc: location):
                         set {_rb} to blackstone
                     else:
                         set {_rb} to air
-        set block at location at {_rx}, {_cy} - 1, {_rz} in {_w} to chest
+        set block at location at {_rx}, {_yMin} + 1, {_rz} in {_w} to chest
     set {evo_void_room_center_x::%{_rid}%} to {_cx}
     set {evo_void_room_center_z::%{_rid}%} to {_cz}
     set {evo_void_room_world::%{_rid}%} to "%{_w}%"
@@ -11452,7 +11453,7 @@ function ensureVoidRuinRoomAt(loc: location):
             add 1 to {_tries}
             set {_rx} to random integer between -45 and 45
             set {_rz} to random integer between -45 and 45
-            set {_cb} to block at location at {_cx} + {_rx}, {_cy}, {_cz} + {_rz} in {_w}
+            set {_cb} to block at location at {_cx} + {_rx}, {_yMin} + 1, {_cz} + {_rz} in {_w}
             if {_cb} is air:
                 set {_cb} to chest
                 add location of {_cb} to {_chestLocs::*}
@@ -11485,13 +11486,13 @@ function ensureVoidRuinRoomAt(loc: location):
     loop 12 times:
         set {_gx} to {_cx} + random integer between -40 and 40
         set {_gz} to {_cz} + random integer between -40 and 40
-        set {_gl} to location at {_gx}, {_cy}, {_gz} in {_w}
+        set {_gl} to location at {_gx}, {_yMin} + 1, {_gz} in {_w}
         spawn a vindicator at {_gl}
         set {evo_void_guard::%uuid of last spawned entity%} to true
     loop 8 times:
         set {_gx2} to {_cx} + random integer between -40 and 40
         set {_gz2} to {_cz} + random integer between -40 and 40
-        set {_gl2} to location at {_gx2}, {_cy}, {_gz2} in {_w}
+        set {_gl2} to location at {_gx2}, {_yMin} + 1, {_gz2} in {_w}
         spawn a wither skeleton at {_gl2}
         set {evo_void_guard::%uuid of last spawned entity%} to true
     delete {evo_void_spawning_guards}
@@ -11512,13 +11513,13 @@ function isInAnyVoidRuinRoom(loc: location) :: boolean:
             continue
         if {_cz} is not set:
             continue
-        if abs({_lx} - {_cx}) > 50:
+        if abs({_lx} - {_cx}) > 47:
             continue
-        if abs({_lz} - {_cz}) > 50:
+        if abs({_lz} - {_cz}) > 47:
             continue
-        if {_ly} < 246:
+        if {_ly} < 203:
             continue
-        if {_ly} > 258:
+        if {_ly} > 297:
             continue
         return true
     return false
