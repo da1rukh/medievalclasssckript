@@ -4169,7 +4169,8 @@ function giveArtifactScaledExperience(p: player, amount: number):
         set {_xp} to 1
     if hasArtifact({_p}, "crownmind") is true:
         set {_xp} to {_xp} * 3
-    give {_xp} experience to {_p}
+    loop {_xp} times:
+        give 1 experience to {_p}
 
 function debugEtherPickaxeRecipe(inv: inventory, p: player):
     set {_voidN} to 0
@@ -5191,8 +5192,6 @@ on respawn:
 on death:
     if attacker is a player:
         set {_u} to attacker's uuid
-        if hasArtifact(attacker, "crownmind") is true:
-            set dropped experience to dropped experience * 3
 
         # Звезда Азуры: заряд от убийств
         if hasArtifact(attacker, "azura") is true:
