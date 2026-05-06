@@ -7973,106 +7973,140 @@ on enchant:
             stop
         if {_it} is enchanted with protection:
             set {_lv} to level of protection of {_it}
-            enchant {_it} with protection ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with protection {_lv2}
         if {_it} is enchanted with fire protection:
             set {_lv} to level of fire protection of {_it}
-            enchant {_it} with fire protection ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with fire protection {_lv2}
         if {_it} is enchanted with blast protection:
             set {_lv} to level of blast protection of {_it}
-            enchant {_it} with blast protection ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with blast protection {_lv2}
         if {_it} is enchanted with projectile protection:
             set {_lv} to level of projectile protection of {_it}
-            enchant {_it} with projectile protection ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with projectile protection {_lv2}
         if {_it} is enchanted with respiration:
             set {_lv} to level of respiration of {_it}
-            enchant {_it} with respiration ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with respiration {_lv2}
         if {_it} is enchanted with aqua affinity:
             set {_lv} to level of aqua affinity of {_it}
-            enchant {_it} with aqua affinity ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with aqua affinity {_lv2}
         if {_it} is enchanted with thorns:
             set {_lv} to level of thorns of {_it}
-            enchant {_it} with thorns ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with thorns {_lv2}
         if {_it} is enchanted with depth strider:
             set {_lv} to level of depth strider of {_it}
-            enchant {_it} with depth strider ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with depth strider {_lv2}
         if {_it} is enchanted with feather falling:
             set {_lv} to level of feather falling of {_it}
-            enchant {_it} with feather falling ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with feather falling {_lv2}
         if {_it} is enchanted with frost walker:
             set {_lv} to level of frost walker of {_it}
-            enchant {_it} with frost walker ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with frost walker {_lv2}
         if {_it} is enchanted with sharpness:
             set {_lv} to level of sharpness of {_it}
-            enchant {_it} with sharpness ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with sharpness {_lv2}
         if {_it} is enchanted with smite:
             set {_lv} to level of smite of {_it}
-            enchant {_it} with smite ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with smite {_lv2}
         if {_it} is enchanted with bane of arthropods:
             set {_lv} to level of bane of arthropods of {_it}
-            enchant {_it} with bane of arthropods ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with bane of arthropods {_lv2}
         if {_it} is enchanted with knockback:
             set {_lv} to level of knockback of {_it}
-            enchant {_it} with knockback ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with knockback {_lv2}
         if {_it} is enchanted with fire aspect:
             set {_lv} to level of fire aspect of {_it}
-            enchant {_it} with fire aspect ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with fire aspect {_lv2}
         if {_it} is enchanted with looting:
             set {_lv} to level of looting of {_it}
-            enchant {_it} with looting ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with looting {_lv2}
         if {_it} is enchanted with sweeping edge:
             set {_lv} to level of sweeping edge of {_it}
-            enchant {_it} with sweeping edge ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with sweeping edge {_lv2}
         if {_it} is enchanted with efficiency:
             set {_lv} to level of efficiency of {_it}
-            enchant {_it} with efficiency ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with efficiency {_lv2}
         if {_it} is enchanted with silk touch:
             set {_lv} to level of silk touch of {_it}
-            enchant {_it} with silk touch ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with silk touch {_lv2}
         if {_it} is enchanted with unbreaking:
             set {_lv} to level of unbreaking of {_it}
-            enchant {_it} with unbreaking ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with unbreaking {_lv2}
         if {_it} is enchanted with fortune:
             set {_lv} to level of fortune of {_it}
-            enchant {_it} with fortune ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with fortune {_lv2}
         if {_it} is enchanted with power:
             set {_lv} to level of power of {_it}
-            enchant {_it} with power ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with power {_lv2}
         if {_it} is enchanted with punch:
             set {_lv} to level of punch of {_it}
-            enchant {_it} with punch ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with punch {_lv2}
         if {_it} is enchanted with flame:
             set {_lv} to level of flame of {_it}
-            enchant {_it} with flame ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with flame {_lv2}
         if {_it} is enchanted with infinity:
             set {_lv} to level of infinity of {_it}
-            enchant {_it} with infinity ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with infinity {_lv2}
         if {_it} is enchanted with luck of the sea:
             set {_lv} to level of luck of the sea of {_it}
-            enchant {_it} with luck of the sea ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with luck of the sea {_lv2}
         if {_it} is enchanted with lure:
             set {_lv} to level of lure of {_it}
-            enchant {_it} with lure ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with lure {_lv2}
         if {_it} is enchanted with loyalty:
             set {_lv} to level of loyalty of {_it}
-            enchant {_it} with loyalty ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with loyalty {_lv2}
         if {_it} is enchanted with impaling:
             set {_lv} to level of impaling of {_it}
-            enchant {_it} with impaling ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with impaling {_lv2}
         if {_it} is enchanted with riptide:
             set {_lv} to level of riptide of {_it}
-            enchant {_it} with riptide ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with riptide {_lv2}
         if {_it} is enchanted with channeling:
             set {_lv} to level of channeling of {_it}
-            enchant {_it} with channeling ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with channeling {_lv2}
         if {_it} is enchanted with multishot:
             set {_lv} to level of multishot of {_it}
-            enchant {_it} with multishot ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with multishot {_lv2}
         if {_it} is enchanted with piercing:
             set {_lv} to level of piercing of {_it}
-            enchant {_it} with piercing ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with piercing {_lv2}
         if {_it} is enchanted with quick charge:
             set {_lv} to level of quick charge of {_it}
-            enchant {_it} with quick charge ({_lv} + 1)
+            set {_lv2} to {_lv} + 1
+            enchant {_it} with quick charge {_lv2}
 
 # Наковальня: классовые предметы (PrepareAnvil в Skript нельзя cancel — блокируем клики по слотам 1 и 2)
 on inventory click:
