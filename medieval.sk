@@ -4292,20 +4292,20 @@ function evoAdminItemById(id: text) :: item:
 
     # Базовые altar/ключевые предметы
     if {_id} is "void_key":
-        set {_k} to tripwire hook named "&5&lКлюч Пустоты"
-        set lore of {_k} to "&8Админ-выдача"
+        set {_k} to disc fragment 5 named "&5Ключ пустоты"
+        set lore of {_k} to "&7ПКМ по обсидиану разрушенного портала", "&7в Оверворлде — зал руин в Незер", "&7Выход: Ключ возврата (в сундуках арены)"
         return {_k}
     if {_id} is "key_void":
-        set {_k} to tripwire hook named "&5&lКлюч Пустоты"
-        set lore of {_k} to "&8Админ-выдача"
+        set {_k} to disc fragment 5 named "&5Ключ пустоты"
+        set lore of {_k} to "&7ПКМ по обсидиану разрушенного портала", "&7в Оверворлде — зал руин в Незер", "&7Выход: Ключ возврата (в сундуках арены)"
         return {_k}
     if {_id} is "return_key":
-        set {_k} to tripwire hook named "&b&lКлюч Возврата"
-        set lore of {_k} to "&8Админ-выдача"
+        set {_k} to echo shard named "&3Ключ возврата"
+        set lore of {_k} to "&7Только в зале руин (Незер)", "&7ПКМ по обсидиану — одноразовый выход", "&7в точку входа в Оверворлд"
         return {_k}
     if {_id} is "key_return":
-        set {_k} to tripwire hook named "&b&lКлюч Возврата"
-        set lore of {_k} to "&8Админ-выдача"
+        set {_k} to echo shard named "&3Ключ возврата"
+        set lore of {_k} to "&7Только в зале руин (Незер)", "&7ПКМ по обсидиану — одноразовый выход", "&7в точку входа в Оверворлд"
         return {_k}
     if {_id} is "altar_hopper":
         return awakeningHopperTokenItem()
@@ -6256,10 +6256,25 @@ on right click:
                 send action bar "&7Эфирный режим: &aВКЛ &8(мусор -> пыль)" to player
             play sound "ui.button.click" with volume 0.85 and pitch 1.2 at player for player
             stop
-    # ПКМ без Shift, алтарная кирка, клик по воздуху: шёлковое касание (целые блоки).
+    # ПКМ без Shift: шёлковое касание.
     if player is not sneaking:
         set {_tk} to player's tool
+        # Омни: переключение всегда по ПКМ (чтобы не зависеть от targeted block).
+        if isOmniPickaxe({_tk}) is true:
+            cancel event
+            set {_u} to uuid of player
+            if {altar_pick_silk_mode::%{_u}%} is true:
+                delete {altar_pick_silk_mode::%{_u}%}
+                send action bar "&7Шёлковое касание: &cВЫКЛ" to player
+            else:
+                set {altar_pick_silk_mode::%{_u}%} to true
+                send action bar "&7Шёлковое касание: &aВКЛ &8(целые блоки)" to player
+            play sound "ui.button.click" with volume 0.85 and pitch 1.15 at player for player
+            stop
+        # Для остальных алтарных кирок — только по воздуху, Эфирная исключена.
         if isAltarPickaxeTool({_tk}) is true:
+            if isEtherPickaxe({_tk}) is true:
+                stop
             if targeted block is not set:
                 cancel event
                 set {_u} to uuid of player
