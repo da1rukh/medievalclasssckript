@@ -4756,11 +4756,11 @@ function diaryRecipeEntryFromItem(it: item) :: text:
     set {_nm} to name of {_it}
     if {_nm} is not set:
         return ""
-    loop {ancient_scroll_recipes::*::name}:
-        set {_k} to loop-index
-        replace all "::name" in {_k} with ""
-        if {_nm} contains loop-value:
-            return {_k}
+    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens" and "cursedgift":
+        set {_n} to {ancient_scroll_recipes::%loop-value%::name}
+        if {_n} is set:
+            if {_nm} contains {_n}:
+                return loop-value
     return ""
 
 function openAdventurerJournalPage(p: player, page: number):
