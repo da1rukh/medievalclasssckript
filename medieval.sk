@@ -11314,6 +11314,94 @@ function ensureVoidRuinRoomAt(loc: location):
                 else:
                     set {_b} to air
     set block at location at {_cx}, {_cy}, {_cz} in {_w} to hopper
+    # Обелиск у точки спавна (рядом с центром)
+    set {_ox} to {_cx} + 6
+    set {_oz} to {_cz}
+    loop integers between 0 and 8:
+        set {_ob} to block at location at {_ox}, {_cy} + loop-value, {_oz} in {_w}
+        set {_ob} to obsidian
+    set block at location at {_ox}, {_cy} + 9, {_oz} in {_w} to crying obsidian
+    set block at location at {_ox} + 1, {_cy} + 7, {_oz} in {_w} to obsidian
+    set block at location at {_ox} - 1, {_cy} + 7, {_oz} in {_w} to obsidian
+    set block at location at {_ox}, {_cy} + 7, {_oz} + 1 in {_w} to obsidian
+    set block at location at {_ox}, {_cy} + 7, {_oz} - 1 in {_w} to obsidian
+    # Декор стен: пилястры/контрфорсы
+    loop integers between -44 and 44:
+        set {_s} to loop-value
+        if {_s} mod 8 is 0:
+            loop integers between 0 and 4:
+                set {_h} to {_cy} + loop-value
+                set block at location at {_cx} - 48, {_h}, {_cz} + {_s} in {_w} to obsidian
+                set block at location at {_cx} + 47, {_h}, {_cz} + {_s} in {_w} to obsidian
+                set block at location at {_cx} + {_s}, {_h}, {_cz} - 48 in {_w} to obsidian
+                set block at location at {_cx} + {_s}, {_h}, {_cz} + 47 in {_w} to obsidian
+    # Угловые башни
+    loop 4 times:
+        if loop-number is 1:
+            set {_tx} to {_cx} - 40
+            set {_tz} to {_cz} - 40
+        else if loop-number is 2:
+            set {_tx} to {_cx} - 40
+            set {_tz} to {_cz} + 39
+        else if loop-number is 3:
+            set {_tx} to {_cx} + 39
+            set {_tz} to {_cz} - 40
+        else:
+            set {_tx} to {_cx} + 39
+            set {_tz} to {_cz} + 39
+        loop integers between -2 and 2:
+            set {_dx2} to loop-value
+            loop integers between -2 and 2:
+                set {_dz2} to loop-value-1
+                loop integers between 0 and 5:
+                    set {_yy2} to {_cy} + loop-value-2
+                    set {_tb} to block at location at {_tx} + {_dx2}, {_yy2}, {_tz} + {_dz2} in {_w}
+                    if abs({_dx2}) is 2:
+                        set {_tb} to blackstone
+                    else if abs({_dz2}) is 2:
+                        set {_tb} to blackstone
+                    else:
+                        set {_tb} to air
+    # Коридоры крестом от центра
+    loop integers between -40 and 40:
+        set {_k} to loop-value
+        loop integers between -2 and 2:
+            set {_wz} to loop-value-1
+            set block at location at {_cx} + {_k}, {_cy} - 1, {_cz} + {_wz} in {_w} to polished blackstone bricks
+            set block at location at {_cx} + {_wz}, {_cy} - 1, {_cz} + {_k} in {_w} to polished blackstone bricks
+            loop integers between 0 and 3:
+                set {_hh} to {_cy} + loop-value-2
+                if abs({_wz}) is 2:
+                    set block at location at {_cx} + {_k}, {_hh}, {_cz} + {_wz} in {_w} to obsidian
+                    set block at location at {_cx} + {_wz}, {_hh}, {_cz} + {_k} in {_w} to obsidian
+                else:
+                    set block at location at {_cx} + {_k}, {_hh}, {_cz} + {_wz} in {_w} to air
+                    set block at location at {_cx} + {_wz}, {_hh}, {_cz} + {_k} in {_w} to air
+    # Несколько комнат-кубиков/коробок
+    loop 8 times:
+        set {_rx} to {_cx} + random integer between -35 and 35
+        set {_rz} to {_cz} + random integer between -35 and 35
+        loop integers between -3 and 3:
+            set {_dx3} to loop-value
+            loop integers between -3 and 3:
+                set {_dz3} to loop-value-1
+                loop integers between 0 and 4:
+                    set {_yy3} to {_cy} + loop-value-2
+                    set {_rb} to block at location at {_rx} + {_dx3}, {_yy3}, {_rz} + {_dz3} in {_w}
+                    set {_edge} to false
+                    if abs({_dx3}) is 3:
+                        set {_edge} to true
+                    else if abs({_dz3}) is 3:
+                        set {_edge} to true
+                    else if {_yy3} is {_cy} - 2:
+                        set {_edge} to true
+                    else if {_yy3} is {_cy} + 2:
+                        set {_edge} to true
+                    if {_edge} is true:
+                        set {_rb} to blackstone
+                    else:
+                        set {_rb} to air
+        set block at location at {_rx}, {_cy} - 1, {_rz} in {_w} to chest
     set {evo_void_room_center_x::%{_rid}%} to {_cx}
     set {evo_void_room_center_z::%{_rid}%} to {_cz}
     set {evo_void_room_world::%{_rid}%} to "%{_w}%"
