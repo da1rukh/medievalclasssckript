@@ -2594,6 +2594,37 @@ function artifactMenuItem(p: player, s: number) :: item:
         add "&7ЛКМ: извлечь в предмет" to lore of {_it}
     return {_it}
 
+function utilityMenuItem(p: player, s: number) :: item:
+    set {_it} to artifactFromSlot({_s})
+    if {_it} is air:
+        return air
+    set {_k} to artifactKeyFromSlot({_s})
+    set {_u} to uuid of {_p}
+    set {_owned} to {util_found::%{_u}%::%{_k}%} ? false
+    set {_on} to {util_enabled::%{_u}%::%{_k}%} ? false
+    set {_baseName} to name of {_it}
+    if {_owned} is false:
+        set name of {_it} to "&8[НЕ НАЙДЕН] %{_baseName}%"
+        set lore of {_it} to artifactDesc({_k})
+        add " " to lore of {_it}
+        add "&7Сначала найди этот utility-артефакт" to lore of {_it}
+        add "&8Статус: &cне найден" to lore of {_it}
+    else if {_on} is true:
+        set name of {_it} to "&a[ON] %{_baseName}%"
+        set lore of {_it} to artifactDesc({_k})
+        add " " to lore of {_it}
+        add "&7Статус: &aвключен (utility)" to lore of {_it}
+        add "&7ПКМ: выключить" to lore of {_it}
+        add "&7ЛКМ: извлечь в предмет" to lore of {_it}
+    else:
+        set name of {_it} to "&c[OFF] %{_baseName}%"
+        set lore of {_it} to artifactDesc({_k})
+        add " " to lore of {_it}
+        add "&7Статус: &cвыключен (utility)" to lore of {_it}
+        add "&7ПКМ: включить" to lore of {_it}
+        add "&7ЛКМ: извлечь в предмет" to lore of {_it}
+    return {_it}
+
 function isEvoDebug(p: player) :: boolean:
     if {evo_debug::%uuid of {_p}%} is true:
         return true
@@ -7956,7 +7987,7 @@ command /utilities:
             else:
                 set {_s} to artifactSlotFromKey({_key})
                 if {_s} >= 0:
-                    set {_art} to artifactMenuItem(player, {_s})
+                    set {_art} to utilityMenuItem(player, {_s})
                     if {_art} is not air:
                         set slot {_slot} of player's current inventory to {_art}
 
@@ -8002,7 +8033,7 @@ on inventory click:
             else:
                 set {_rs} to artifactSlotFromKey({_rkey})
                 if {_rs} >= 0:
-                    set {_rit} to artifactMenuItem(player, {_rs})
+                    set {_rit} to utilityMenuItem(player, {_rs})
                     if {_rit} is not air:
                         set slot {_rslot} of player's current inventory to {_rit}
 
