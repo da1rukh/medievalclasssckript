@@ -12717,20 +12717,29 @@ function ancientScrollItem(id: text) :: item:
     if {_n} is not set:
         return air
     set {_it} to paper named "&6Древний Свиток: %{_n}%"
-    enchant {_it} with unbreaking 1
-    set lore of {_it} to "&7Нажмите ПКМ, чтобы изучить рецепт."
+    set lore of {_it} to "&7Нажмите ПКМ, чтобы изучить рецепт." and "&8Только знание, без свойств предмета" and "&0EVOSCROLL:%{_id}%"
     return {_it}
 
 function ancientScrollIdFromItem(i: item) :: text:
-    set {_nm} to name of {_i}
-    if {_nm} is not set:
-        return ""
-    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens" and "cursedgift":
-        set {_n} to {ancient_scroll_recipes::%loop-value%::name}
-        if {_n} is set:
-            if {_nm} contains {_n}:
-                return loop-value
+    set {_ls::*} to lore of {_i}
+    loop {_ls::*}:
+        set {_lv} to "%loop-value%"
+        if {_lv} starts with "&0EVOSCROLL:":
+            replace all "&0EVOSCROLL:" in {_lv} with ""
+            return {_lv}
     return ""
+
+function ancientScrollDiaryEntry(id: text) :: text:
+    set {_n} to {ancient_scroll_recipes::%{_id}%::name}
+    if {_n} is not set:
+        return ""
+    set {_line} to ""
+    loop {ancient_scroll_recipes::%{_id}%::ing::*}:
+        if {_line} is "":
+            set {_line} to "%loop-value%"
+        else:
+            set {_line} to "%{_line}% + %loop-value%"
+    return "Рецепт %{_n}%: %{_line}%"
 
 function isRuinDimension(w: world) :: boolean:
     set {_wn} to "%{_w}%" in lower case
@@ -12749,10 +12758,11 @@ on right click:
         if {_sid} is not "":
             cancel event
             set {_name} to {ancient_scroll_recipes::%{_sid}%::name}
+            set {_entry} to ancientScrollDiaryEntry({_sid})
+            if {_entry} is not "":
+                addDiaryPage(player, {_entry})
             send title "&6Древний Свиток" with subtitle "&f%{_name}%" to player for 2 seconds
-            send "{@prefix} &6Рецепт артефакта: &f%{_name}%" to player
-            loop {ancient_scroll_recipes::%{_sid}%::ing::*}:
-                send "&8 • &f%loop-value%" to player
+            send "{@prefix} &aРецепт добавлен в Дневник приключенца: &f%{_name}%" to player
             execute console command "particle minecraft:spell %x-coordinate of player% %y-coordinate of player% %z-coordinate of player% 0.4 0.6 0.4 0.03 25 force"
             play sound "block.enchantment_table.use" with volume 1 and pitch 1 at player for player
             remove 1 of player's tool from player
