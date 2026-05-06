@@ -4447,6 +4447,37 @@ function hasArtifact(p: player, key: text) :: boolean:
             return true
     return false
 
+function artifactCoreCount(p: player) :: number:
+    set {_u} to uuid of {_p}
+    set {_n} to 0
+    loop "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump" and "crownmind":
+        if {art_found::%{_u}%::%loop-value%} is true:
+            add 1 to {_n}
+    return {_n}
+
+function artifactCoreKeyByIndex(p: player, idx: number) :: text:
+    set {_u} to uuid of {_p}
+    set {_n} to 0
+    loop "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump" and "crownmind":
+        if {art_found::%{_u}%::%loop-value%} is true:
+            add 1 to {_n}
+            if {_n} is {_idx}:
+                return loop-value
+    return ""
+
+function artifactCoreGuiIndexBySlot(s: number) :: number:
+    if {_s} is 11:
+        return 1
+    else if {_s} is 12:
+        return 2
+    else if {_s} is 13:
+        return 3
+    else if {_s} is 14:
+        return 4
+    else if {_s} is 15:
+        return 5
+    return 0
+
 function isLegendaryArtifact(k: text) :: boolean:
     if {_k} is "leg_warrior":
         return true
@@ -4674,6 +4705,11 @@ on right click:
             dbgEvo(player, "artifact use: already in core key=%{_key}%")
             send action bar "&eЭтот артефакт уже есть в ядре." to player
             stop
+        if isLegendaryArtifact({_key}) is not true:
+            if artifactCoreCount(player) >= 5:
+                send "{@prefix} &cВ ядре максимум 5 обычных артефактов." to player
+                play sound "entity.villager.no" with volume 0.8 and pitch 1 at player for player
+                stop
         remove 1 of player's tool from player
         set {art_found::%{_u}%::%{_key}%} to true
         set {art_enabled::%{_u}%::%{_key}%} to true
@@ -7260,43 +7296,36 @@ command /artifacts:
             set slot (loop-number - 1) of player's current inventory to gray stained glass pane named " "
 
         set slot 4 of player's current inventory to nether star named "&6&lАРТЕФАКТЫ: ЯДРО"
-        set lore of slot 4 of player's current inventory to "&7ПКМ: включить/выключить артефакт", "&7ЛКМ: извлечь в предмет", "&7Легендарные: отдельное меню &e/legendary", "&8Эффекты работают без предмета"
+        set lore of slot 4 of player's current inventory to "&75 слотов ядра (обычные артефакты)", "&7ПКМ: включить/выключить", "&7ЛКМ: извлечь в предмет", "&7Легендарные: &e/legendary"
 
-        loop 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25 and 26:
-            set {_art} to artifactMenuItem(player, loop-value)
-            if {_art} is not air:
-                set slot loop-value of player's current inventory to {_art}
+        loop 5 times:
+            set {_idx} to loop-number
+            set {_slot} to 10 + loop-number
+            set {_key} to artifactCoreKeyByIndex(player, {_idx})
+            if {_key} is "":
+                set slot {_slot} of player's current inventory to black stained glass pane named "&8Пустой слот ядра"
+            else:
+                set {_s} to artifactSlotFromKey({_key})
+                if {_s} >= 0:
+                    set {_art} to artifactMenuItem(player, {_s})
+                    if {_art} is not air:
+                        set slot {_slot} of player's current inventory to {_art}
 
 on inventory click:
     if name of event-inventory contains "Artifacts Core":
         cancel event
-        dbgEvo(player, "inv=%name of event-inventory% slot=%clicked slot% click=%click type%")
         set {_slot} to index of event-slot
-        if {_slot} is not set:
-            set {_slot} to clicked slot
-        if {_slot} is not set:
-            dbgEvo(player, "slot is not set -> stop")
-            stop
         if {_slot} is not between 0 and 26:
-            dbgEvo(player, "raw slot %{_slot}% not in top GUI -> stop")
             stop
-        set {_key} to artifactKeyFromSlot({_slot})
+        set {_i} to artifactCoreGuiIndexBySlot({_slot})
+        if {_i} is 0:
+            stop
+        set {_key} to artifactCoreKeyByIndex(player, {_i})
         if {_key} is "":
-            dbgEvo(player, "slot %{_slot}% has no artifact key -> stop")
             stop
-        dbgEvo(player, "slot=%{_slot}% key=%{_key}%")
         set {_u} to uuid of player
-        set {_owned} to {art_found::%{_u}%::%{_key}%} ? false
         set {_enabled_now} to {art_enabled::%{_u}%::%{_key}%} ? false
-        dbgEvo(player, "owned=%{_owned}% enabled=%{_enabled_now}%")
-        if {_owned} is false:
-            dbgEvo(player, "artifact not found in core: %{_key}%")
-            send "{@prefix} &cЭтот артефакт ещё не найден."
-            send "{@prefix} &7Попроси админа: &e/evo <ник> artifactgive <id>"
-            play sound "entity.villager.no" with volume 0.7 and pitch 1 at player for player
-            stop
         set {_click} to "%click type%"
-        dbgEvo(player, "click-type-text=%{_click}%")
         set {_isLeft} to false
         set {_isRight} to false
         if {_click} contains "left mouse button":
@@ -7304,48 +7333,40 @@ on inventory click:
         if {_click} contains "right mouse button":
             set {_isRight} to true
         if {_isLeft} is true:
-            dbgEvo(player, "LEFT click branch")
             if pullArtifactFromCore(player, {_key}) is true:
-                dbgEvo(player, "pulled from core: %{_key}% (found=false enabled=false)")
-                send "{@prefix} &eАртефакт извлечён в предмет. Можно передать/положить в сундук."
+                send "{@prefix} &eАртефакт извлечён в предмет."
                 play sound "item.bundle.remove_one" with volume 0.9 and pitch 1 at player for player
-            else:
-                dbgEvo(player, "pullArtifactFromCore failed for %{_key}%")
         else if {_isRight} is true:
-            dbgEvo(player, "RIGHT click branch")
-            if isLegendaryArtifact({_key}) is true:
-                set {_needClass} to legendaryClass({_key})
-                set {_pClass} to {class::%{_u}%} ? "None"
-                if {_pClass} is not {_needClass}:
-                    send "{@prefix} &cЭтот легендарный артефакт только для класса &f%{_needClass}%&c."
-                    play sound "entity.villager.no" with volume 0.8 and pitch 1 at player for player
-                    stop
             if {_enabled_now} is true:
                 set {art_enabled::%{_u}%::%{_key}%} to false
             else:
-                if isLegendaryArtifact({_key}) is true:
-                    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage" and "leg_necro":
-                        if loop-value is not {_key}:
-                            set {art_enabled::%{_u}%::%loop-value%} to false
                 set {art_enabled::%{_u}%::%{_key}%} to true
             set {_enabled_after} to {art_enabled::%{_u}%::%{_key}%} ? false
             if {_key} is "cloudjump":
                 if {_enabled_after} is false:
                     resetBalloonState(player)
-            dbgEvo(player, "toggled %{_key}% enabled=%{_enabled_after}%")
-            if {art_enabled::%{_u}%::%{_key}%} is true:
+            if {_enabled_after} is true:
                 send "{@prefix} &aЭффект артефакта включён."
                 play sound "entity.experience_orb.pickup" with volume 1 and pitch 1.2 at player for player
             else:
                 send "{@prefix} &cЭффект артефакта выключен."
                 play sound "block.note_block.bass" with volume 1 and pitch 0.8 at player for player
         else:
-            dbgEvo(player, "unsupported click type: %{_click}%")
-            send "{@prefix} &7Используй &fЛКМ &7или &fПКМ &7по артефакту."
             stop
-        set {_art} to artifactMenuItem(player, {_slot})
-        if {_art} is not air:
-            set slot {_slot} of player's current inventory to {_art}
+        # Перерисовываем 5 слотов после любого изменения.
+        wait 1 tick
+        loop 5 times:
+            set {_idx} to loop-number
+            set {_rslot} to 10 + loop-number
+            set {_rkey} to artifactCoreKeyByIndex(player, {_idx})
+            if {_rkey} is "":
+                set slot {_rslot} of player's current inventory to black stained glass pane named "&8Пустой слот ядра"
+            else:
+                set {_rs} to artifactSlotFromKey({_rkey})
+                if {_rs} >= 0:
+                    set {_rit} to artifactMenuItem(player, {_rs})
+                    if {_rit} is not air:
+                        set slot {_rslot} of player's current inventory to {_rit}
 
 command /legendary:
     trigger:
