@@ -7581,24 +7581,36 @@ command /evo [<offline player>] [<text>] [<text>]:
                 send "{@prefix} &eИспользование: /evo <player> artifactgive <id|all>"
                 send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind"
                 stop
+            if arg-1 is not online:
+                send "{@prefix} &cИгрок должен быть онлайн для выдачи предмета артефакта."
+                stop
+            set {_t} to arg-1
             set {_id} to arg-3 in lower case
             if {_id} is "all":
                 loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump" and "crownmind":
-                    set {art_found::%{_u}%::%loop-value%} to true
-                    set {art_enabled::%{_u}%::%loop-value%} to true
-                send "{@prefix} &aИгроку &e%arg-1% &aвыданы все артефакты."
-                if arg-1 is online:
-                    send "{@prefix} &aТебе выданы все артефакты. Открой &e/artifacts" to arg-1
+                    set {_s} to artifactSlotFromKey(loop-value)
+                    if {_s} >= 0:
+                        set {_it} to artifactFromSlot({_s})
+                        if {_it} is not air:
+                            give {_it} to {_t}
+                send "{@prefix} &aИгроку &e%arg-1% &aвыданы все артефакты предметами в инвентарь."
+                send "{@prefix} &aТебе выданы предметы артефактов. Поглощение: возьми в руку и нажми &eПКМ&a." to {_t}
                 stop
             if {_id} is not "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump" or "crownmind":
                 send "{@prefix} &cНеизвестный id артефакта."
                 send "&7ID: &fleg_warrior, leg_scout, leg_tank, leg_archer, leg_mage, leg_necro, hermes, windring, vampcharm, etherdash, mehrunes, starfury, icewalker, frostheart, ankhshield, azura, rottenapple, voidcompass, luckcoin, cloudjump, crownmind"
                 stop
-            set {art_found::%{_u}%::%{_id}%} to true
-            set {art_enabled::%{_u}%::%{_id}%} to true
-            send "{@prefix} &aАртефакт &e%{_id}% &aвыдан игроку &e%arg-1%&a."
-            if arg-1 is online:
-                send "{@prefix} &aТебе выдан артефакт: &e%{_id}%&a. Управление: &e/artifacts" to arg-1
+            set {_s} to artifactSlotFromKey({_id})
+            if {_s} < 0:
+                send "{@prefix} &cНе удалось определить слот артефакта (%{_id}%)."
+                stop
+            set {_it} to artifactFromSlot({_s})
+            if {_it} is air:
+                send "{@prefix} &cНе удалось создать предмет артефакта (%{_id}%)."
+                stop
+            give {_it} to {_t}
+            send "{@prefix} &aАртефакт &e%{_id}% &aвыдан игроку &e%arg-1% &aпредметом в инвентарь."
+            send "{@prefix} &aТебе выдан артефакт-предмет: &e%{_id}%&a. Поглощение: возьми в руку и нажми &eПКМ&a." to {_t}
 
         else if arg-2 is "artifactpull":
             if arg-3 is not set:
