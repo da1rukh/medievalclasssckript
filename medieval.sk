@@ -11277,13 +11277,13 @@ function ensureVoidRuinRoomAt(loc: location):
     loop integers between -3 and 3:
         set {_dx} to loop-value
         loop integers between -3 and 3:
-            set {_dz} to loop-value
+            set {_dz} to loop-value-1
             set {_floor} to block at location at {_cx} + {_dx}, {_cy} - 1, {_cz} + {_dz} in {_w}
             set {_ceil} to block at location at {_cx} + {_dx}, {_cy} + 4, {_cz} + {_dz} in {_w}
             set {_floor} to polished blackstone bricks
             set {_ceil} to polished blackstone bricks
             loop integers between 0 and 3:
-                set {_yy} to {_cy} + loop-value
+                set {_yy} to {_cy} + loop-value-1
                 set {_wall} to false
                 if {_dx} is -3:
                     set {_wall} to true
