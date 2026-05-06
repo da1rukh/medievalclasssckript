@@ -9628,8 +9628,12 @@ every 2 seconds:
         if hasUtilityCoreOrInventory(loop-player, "lootmagnet", "Магнит Добытчика") is true:
             loop all dropped items in radius 6 around loop-player:
                 teleport loop-entity-1 to loop-player
+
+every 4 seconds:
+    loop all players:
         if hasUtilityCoreOrInventory(loop-player, "nightlens", "Ночная Линза") is true:
-            apply night vision 1 without particles to loop-player for 4 seconds
+            remove night vision from loop-player
+            apply night vision 1 without particles to loop-player for 15 seconds
 
 # ---- Древние свитки ----
 function initAncientScrollRecipes():
