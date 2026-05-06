@@ -4173,6 +4173,8 @@ function giveArtifactScaledExperience(p: player, amount: number):
         give 1 experience to {_p}
 
 function debugEtherPickaxeRecipe(inv: inventory, p: player):
+    if isEvoDebug({_p}) is false:
+        stop
     set {_voidN} to 0
     set {_retN} to 0
     set {_pickN} to 0
@@ -4234,7 +4236,8 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
     # Для крафта важна рабочая связка (кнопка/верх/воронка/пьедестал), а не идеальная оболочка.
     if isAwakeningCraftHopperReady({_hb}) is false:
         if {_crafter} is set:
-            send "{@prefix} &8[debug] ready-check: FAIL (воронка/аметист/верх/кнопка)" to {_crafter}
+            if isEvoDebug({_crafter}) is true:
+                send "{@prefix} &8[debug] ready-check: FAIL (воронка/аметист/верх/кнопка)" to {_crafter}
         return false
     set {_inv} to inventory of {_hb}
     set {_outItem} to air
@@ -4254,8 +4257,9 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to crownHigherMindArtifactItem()
     else:
         if {_crafter} is set:
-            send "{@prefix} &8[debug] recipe-check: FAIL" to {_crafter}
-            debugEtherPickaxeRecipe({_inv}, {_crafter})
+            if isEvoDebug({_crafter}) is true:
+                send "{@prefix} &8[debug] recipe-check: FAIL" to {_crafter}
+                debugEtherPickaxeRecipe({_inv}, {_crafter})
         return false
     clearAltarCraftSlots({_inv})
     set {_out} to location of {_hb}
@@ -4397,9 +4401,10 @@ on right click on stone button:
         stop
     if tryCraftAwakeningAltarAt({_hb}, player) is false:
         send "{@prefix} &7Крафт не подтверждён: проверь 5 ингредиентов в слотах 0–4 воронки." to player
-        if isAwakeningCraftHopperReady({_hb}) is false:
-            send "{@prefix} &8[debug] не готово ядро: нужен аметист под воронкой, плачущий обсидиан сверху и кнопка на северной стороне." to player
-        debugEtherPickaxeRecipe(inventory of {_hb}, player)
+        if isEvoDebug(player) is true:
+            if isAwakeningCraftHopperReady({_hb}) is false:
+                send "{@prefix} &8[debug] не готово ядро: нужен аметист под воронкой, плачущий обсидиан сверху и кнопка на северной стороне." to player
+            debugEtherPickaxeRecipe(inventory of {_hb}, player)
         play sound "block.note_block.bass" with volume 0.8 and pitch 0.7 at player for player
     else:
         cancel event
