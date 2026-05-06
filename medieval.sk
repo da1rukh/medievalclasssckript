@@ -11328,7 +11328,12 @@ function ensureVoidRuinRoomAt(loc: location):
     # Декор стен: пилястры/контрфорсы
     loop integers between -44 and 44:
         set {_s} to loop-value
-        if {_s} mod 8 is 0:
+        set {_m8} to {_s}
+        while {_m8} >= 8:
+            remove 8 from {_m8}
+        while {_m8} <= -8:
+            add 8 to {_m8}
+        if {_m8} is 0:
             loop integers between 0 and 4:
                 set {_h} to {_cy} + loop-value
                 set block at location at {_cx} - 48, {_h}, {_cz} + {_s} in {_w} to obsidian
@@ -11350,7 +11355,7 @@ function ensureVoidRuinRoomAt(loc: location):
             set {_tx} to {_cx} + 39
             set {_tz} to {_cz} + 39
         loop integers between -2 and 2:
-            set {_dx2} to loop-value
+            set {_dx2} to loop-value-1
             loop integers between -2 and 2:
                 set {_dz2} to loop-value-1
                 loop integers between 0 and 5:
@@ -11382,7 +11387,7 @@ function ensureVoidRuinRoomAt(loc: location):
         set {_rx} to {_cx} + random integer between -35 and 35
         set {_rz} to {_cz} + random integer between -35 and 35
         loop integers between -3 and 3:
-            set {_dx3} to loop-value
+            set {_dx3} to loop-value-1
             loop integers between -3 and 3:
                 set {_dz3} to loop-value-1
                 loop integers between 0 and 4:
@@ -11416,7 +11421,7 @@ function ensureVoidRuinRoomAt(loc: location):
             clear {_inv}
             loop 27 times:
                 chance of 35%:
-                    set {_slot} to loop-number - 1
+                    set {_slot} to random integer between 0 and 26
                     set slot {_slot} of {_inv} to artifactRuinLootMaterialsOnly("boss")
             chance of 22%:
                 set slot random integer between 0 and 26 of {_inv} to ancientScrollItem(random element out of "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens" and "cursedgift")
