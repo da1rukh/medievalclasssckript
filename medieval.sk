@@ -11461,11 +11461,11 @@ on spawn of living entity:
 
 function ruinSkyWorld() :: world:
     loop all worlds:
-        if environment of loop-world is normal:
+        if environment of loop-world is nether:
             return loop-world
     loop all worlds:
         return loop-world
-    return world("world")
+    return world("world_nether")
 
 function prepareSkyRuinArena(center: location):
     set {_w} to world of {_center}
