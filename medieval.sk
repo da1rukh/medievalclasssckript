@@ -11584,7 +11584,10 @@ on right click on obsidian:
             cancel event
             set {evo_void_return::%uuid of player%} to location of player
             set {_r0} to voidRuinRoomLocation(player)
-            set {_room} to location at (floor(x-coordinate of {_r0})), (floor(y-coordinate of {_r0})), (floor(z-coordinate of {_r0})) in {_sw}
+            set {_rx} to floor(x-coordinate of {_r0})
+            set {_ry} to floor(y-coordinate of {_r0})
+            set {_rz} to floor(z-coordinate of {_r0})
+            set {_room} to location at {_rx}, {_ry}, {_rz} in {_sw}
             if isEvoDebug(player) is true:
                 send "{@prefix} &8[debug] void-key target: &f%x-coordinate of {_room}%,%y-coordinate of {_room}%,%z-coordinate of {_room}% &7in &f%world of {_room}%" to player
             preloadVoidRuinArea({_room})
