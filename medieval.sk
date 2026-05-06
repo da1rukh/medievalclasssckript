@@ -117,6 +117,10 @@ options:
     # Замена разрушенного портала при генерации: common_max 0 = никогда не заменять (руины только вручную / админ).
     artifact_ruin_portal_roll_legendary_max: 10
     artifact_ruin_portal_roll_common_max: 0
+    # Главный сундук башни: шанс что в центральном слоте свиток вместо артефакта (0–100).
+    artifact_ruin_boss_chest_scroll_percent: 78
+    # Обычные сундуки руины: при заполнении слота ресурсами — шанс подставить свиток (0–100).
+    artifact_ruin_side_chest_scroll_substitute_percent: 30
 
 # ==========================================
 # ИНИЦИАЛИЗАЦИЯ ИГРОКА
@@ -2663,6 +2667,13 @@ function artifactRuinCommonArtifactRandom() :: item:
     set {_pick} to random element out of {_pool::*}
     return artifactFromSlot({_pick})
 
+function artifactRuinRandomScrollItem() :: item:
+    set {_pick} to random element out of "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon" and "cursedgift"
+    set {_sc} to ancientScrollItem({_pick})
+    if {_sc} is air:
+        return ancientScrollItem("hermes")
+    return {_sc}
+
 # Только ресурсы; артефактов здесь нет. modest / boss_common — для обычных руин (слабее), boss / rich — для легендарных
 function artifactRuinLootMaterialsOnly(tier: text) :: item:
     if {_tier} is "modest":
@@ -2778,7 +2789,18 @@ function artifactRuinFillChest(loc: location, tier: text):
         set {_sl} to loop-number - 1
         set {_rn} to random integer between 1 and 100
         if {_rn} <= {_fp}:
-            set slot {_sl} of inventory of {_b} to artifactRuinLootMaterialsOnly({_tier})
+            set {_subp} to "{@artifact_ruin_side_chest_scroll_substitute_percent}" parsed as number
+            if {_subp} is not set:
+                set {_subp} to 30
+            if {_subp} < 0:
+                set {_subp} to 0
+            if {_subp} > 100:
+                set {_subp} to 100
+            set {_rsc} to random integer between 1 and 100
+            if {_rsc} <= {_subp}:
+                set slot {_sl} of inventory of {_b} to artifactRuinRandomScrollItem()
+            else:
+                set slot {_sl} of inventory of {_b} to artifactRuinLootMaterialsOnly({_tier})
 
 function artifactRuinFillChestBoss(loc: location, kind: text):
     if {_kind} is "legendary":
@@ -2786,10 +2808,21 @@ function artifactRuinFillChestBoss(loc: location, kind: text):
     else:
         artifactRuinFillChest({_loc}, "boss_common")
     set {_b} to block at {_loc}
-    if {_kind} is "legendary":
-        set slot 13 of inventory of {_b} to artifactRuinLegendaryRandomArtifact()
+    set {_bsp} to "{@artifact_ruin_boss_chest_scroll_percent}" parsed as number
+    if {_bsp} is not set:
+        set {_bsp} to 78
+    if {_bsp} < 0:
+        set {_bsp} to 0
+    if {_bsp} > 100:
+        set {_bsp} to 100
+    set {_rb} to random integer between 1 and 100
+    if {_rb} <= {_bsp}:
+        set slot 13 of inventory of {_b} to artifactRuinRandomScrollItem()
     else:
-        set slot 13 of inventory of {_b} to artifactRuinCommonArtifactRandom()
+        if {_kind} is "legendary":
+            set slot 13 of inventory of {_b} to artifactRuinLegendaryRandomArtifact()
+        else:
+            set slot 13 of inventory of {_b} to artifactRuinCommonArtifactRandom()
 
 function artifactRuinRandomKind() :: text:
     set {_lp} to "{@artifact_ruin_legendary_chance_percent}" parsed as number
