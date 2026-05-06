@@ -4721,6 +4721,66 @@ function giveArtifactScaledExperience(p: player, amount: number):
     loop {_xp} times:
         give 1 experience to {_p}
 
+function diaryRecipeTextByItem(it: item) :: text:
+    if {_it} is air:
+        return ""
+    set {_nm} to name of {_it}
+    if {_nm} is not set:
+        set {_nm} to "%type of {_it}%"
+    set {_nmLow} to lowercase "%{_nm}%"
+    if {_nmLow} contains "эфирная кирка":
+        return "Эфирная кирка: Ключ Пустоты + Ключ Возврата + Алмазная кирка + Алмазный блок + Аметистовый осколок"
+    if {_nmLow} contains "пламенная кирка":
+        return "Пламенная кирка: Эфирная кирка + Золотой блок + Огненный стержень + Ключ Пустоты + Ключ Возврата"
+    if {_nmLow} contains "жильная кирка":
+        return "Жильная кирка: Эфирная кирка + Изумрудный блок + Слизь + Ключ Пустоты + Ключ Возврата"
+    if {_nmLow} contains "кирка шахтёра":
+        return "Кирка Шахтёра: Эфирная кирка + Алмазный блок + Лазуритовый блок + Ключ Пустоты + Ключ Возврата"
+    if {_nmLow} contains "кирка бездны":
+        return "Кирка Бездны: Эфирная кирка + Обсидиан + Звезда Нижнего мира + Ключ Пустоты + Ключ Возврата"
+    if {_nmLow} contains "омни-кирка":
+        return "Омни-кирка: Пламенная + Жильная + Кирка Шахтёра + Кирка Бездны + Эфирная кирка"
+    if {_nmLow} contains "голова игрока":
+        return "Голова игрока: Дёрн + Золотое яблоко + Алмаз + Нерак + Камень Энда"
+    return "%{_nm}%: рецепт изучен на Алтаре Создания"
+
+function addDiaryPage(p: player, txt: text):
+    set {_t} to "%{_txt}%"
+    if {_t} is "":
+        stop
+    set {_u} to uuid of {_p}
+    loop {adv_diary::%{_u}%::*}:
+        if "%loop-value%" is {_t}:
+            stop
+    add {_t} to {adv_diary::%{_u}%::*}
+
+function openAdventurerJournal(p: player):
+    send "&6&lДневник приключенца" to {_p}
+    if size of {adv_diary::%uuid of {_p}%::*} <= 0:
+        send "&7Пока пусто." to {_p}
+        stop
+    set {_idx} to 0
+    loop {adv_diary::%uuid of {_p}%::*}:
+        if "%loop-value%" is not "":
+            add 1 to {_idx}
+            send "&8%{_idx}%. &f%loop-value%" to {_p}
+
+command /diary:
+    trigger:
+        openAdventurerJournal(player)
+
+on death of player:
+    set {_u} to uuid of victim
+    delete {_pages::*}
+    loop {adv_diary::%{_u}%::*}:
+        if "%loop-value%" is not "":
+            add "%loop-value%" to {_pages::*}
+    if size of {_pages::*} > 0:
+        set {_pick} to random element out of {_pages::*}
+        set {_page} to paper named "&6Страница дневника приключенца"
+        set lore of {_page} to "&7%{_pick}%" and "&8Выпала после смерти"
+        drop {_page} at location of victim
+
 function debugEtherPickaxeRecipe(inv: inventory, p: player):
     if isEvoDebug({_p}) is false:
         stop
@@ -4880,6 +4940,10 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         drop {_outItem} at {_out}
     play sound "block.enchantment_table.use" with volume 1 and pitch 0.8 at {_out} for all players
     if {_crafter} is set:
+        set {_j} to diaryRecipeTextByItem({_outItem})
+        if {_j} is not "":
+            addDiaryPage({_crafter}, {_j})
+            send action bar "&6+Запись в Дневник приключенца" to {_crafter}
         send "{@prefix} &dКрафт подтверждён." to {_crafter}
     return true
 
