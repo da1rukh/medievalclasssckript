@@ -11457,10 +11457,22 @@ on right click on obsidian:
             cancel event
             set {evo_void_return::%uuid of player%} to location of player
             set {_room} to voidRuinRoomLocation(player)
+            if isEvoDebug(player) is true:
+                send "{@prefix} &8[debug] void-key target: &f%x-coordinate of {_room}%,%y-coordinate of {_room}%,%z-coordinate of {_room}% &7in &f%world of {_room}%" to player
             preloadVoidRuinArea({_room})
+            if isEvoDebug(player) is true:
+                send "{@prefix} &8[debug] void-key preload: &aOK" to player
             ensureVoidRuinRoomAt({_room})
+            if isEvoDebug(player) is true:
+                set {_rcx} to floor(x-coordinate of {_room})
+                set {_rcz} to floor(z-coordinate of {_room})
+                set {_rid} to "%world of {_room}%:%{_rcx}%:%{_rcz}%"
+                set {_built} to {evo_void_room_built::%{_rid}%} ? false
+                send "{@prefix} &8[debug] void-key build flag: &f%{_built}% &8(%{_rid}%)" to player
             remove 1 of player's tool from player
             teleport player to {_room}
+            if isEvoDebug(player) is true:
+                send "{@prefix} &8[debug] void-key teleport: &aDONE" to player
             set {_rk} to evoAdminItemById("return_key")
             if {_rk} is not air:
                 giveOrDrop({_rk}, player, location of player)
