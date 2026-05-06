@@ -11251,6 +11251,55 @@ function ruinNetherWorld() :: world:
         return loop-world
     return world("world")
 
+function voidRuinRoomLocation(p: player) :: location:
+    set {_nw} to ruinNetherWorld()
+    set {_u} to uuid of {_p}
+    set {_bx} to {evo_void_room_x::%{_u}%}
+    set {_bz} to {evo_void_room_z::%{_u}%}
+    if {_bx} is not set:
+        set {_bx} to random integer between 20000 and 28000
+        chance of 50%:
+            set {_bx} to {_bx} * -1
+        set {evo_void_room_x::%{_u}%} to {_bx}
+    if {_bz} is not set:
+        set {_bz} to random integer between 20000 and 28000
+        chance of 50%:
+            set {_bz} to {_bz} * -1
+        set {evo_void_room_z::%{_u}%} to {_bz}
+    set {_y} to 250
+    return location at {_bx}, {_y}, {_bz} in {_nw}
+
+function ensureVoidRuinRoomAt(loc: location):
+    set {_w} to world of {_loc}
+    set {_cx} to floor(x-coordinate of {_loc})
+    set {_cy} to floor(y-coordinate of {_loc})
+    set {_cz} to floor(z-coordinate of {_loc})
+    loop integers between -3 and 3:
+        set {_dx} to loop-value
+        loop integers between -3 and 3:
+            set {_dz} to loop-value
+            set {_floor} to block at location at {_cx} + {_dx}, {_cy} - 1, {_cz} + {_dz} in {_w}
+            set {_ceil} to block at location at {_cx} + {_dx}, {_cy} + 4, {_cz} + {_dz} in {_w}
+            set {_floor} to polished blackstone bricks
+            set {_ceil} to polished blackstone bricks
+            loop integers between 0 and 3:
+                set {_yy} to {_cy} + loop-value
+                set {_wall} to false
+                if {_dx} is -3:
+                    set {_wall} to true
+                else if {_dx} is 3:
+                    set {_wall} to true
+                else if {_dz} is -3:
+                    set {_wall} to true
+                else if {_dz} is 3:
+                    set {_wall} to true
+                set {_b} to block at location at {_cx} + {_dx}, {_yy}, {_cz} + {_dz} in {_w}
+                if {_wall} is true:
+                    set {_b} to obsidian
+                else:
+                    set {_b} to air
+    set block at location at {_cx}, {_cy}, {_cz} in {_w} to hopper
+
 on right click on obsidian:
     if player's tool is set:
         if altarAwakeningVoidKey(player's tool) is true:
@@ -11263,8 +11312,10 @@ on right click on obsidian:
                 stop
             cancel event
             set {evo_void_return::%uuid of player%} to location of player
+            set {_room} to voidRuinRoomLocation(player)
+            ensureVoidRuinRoomAt({_room})
             remove 1 of player's tool from player
-            teleport player to spawn point of {_nw}
+            teleport player to {_room}
             set {_rk} to evoAdminItemById("return_key")
             if {_rk} is not air:
                 giveOrDrop({_rk}, player, location of player)
