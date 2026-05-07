@@ -4974,42 +4974,61 @@ command /diary:
     trigger:
         openAdventurerJournal(player)
 
+function openLoreGuiPage(p: player, page: number):
+    set {_pg} to {_page}
+    if {_pg} < 1:
+        set {_pg} to 1
+    if {_pg} > 4:
+        set {_pg} to 4
+    set {evo_lore_page::%uuid of {_p}%} to {_pg}
+    open chest inventory with 3 rows named "Хроники Расколотой Пустоты" to {_p}
+    wait 1 tick
+    set slot 4 of current inventory of {_p} to written book named "&5&lМегалор Эпохи" with lore "&7Страница %{_pg}% из 4" and "&8Подсказки спрятаны в тексте"
+    if {_pg} is 1:
+        set slot 11 of current inventory of {_p} to paper named "&8I. &dАлтарь Создания" with lore "&7Когда небо над миром почернело, под камнем", "&7проснулся Шёпот. Он не убивает сразу —", "&7он учит, оставляя знаки тем, кто слушает.", " ", "&7Сундук помнит ритуал лучше, чем рука.", "&7Ключи, обсидиан и аметист должны лечь", "&7без лишнего груза — тогда камень сам", "&7соберёт основу, а сердце попросит хоппер.", " ", "&8Намёк: у ритуала всегда 5 ингредиентов", "&8там, где ждут 5 слотов."
+        set slot 15 of current inventory of {_p} to hopper named "&5Сердце Алтаря" with lore "&7Поставь в центр завершённой конструкции"
+    else if {_pg} is 2:
+        set slot 11 of current inventory of {_p} to paper named "&8II. &6Зов Руин" with lore "&7Руины не любят спешку и не слышат", "&7случайный клик. Только тот, кто пригнулся", "&7и отметил блок, может разбудить их.", " ", "&8Намёк: Зов отвечает в Оверворлде,", "&8на подходящей поверхности и подальше", "&8от мирового спавна."
+        set slot 15 of current inventory of {_p} to respawn anchor named "&6Зов Руин" with lore "&7Shift+ПКМ по блоку — возвести руину"
+    else if {_pg} is 3:
+        set slot 11 of current inventory of {_p} to paper named "&8III. &5Ключи Башни и Памяти" with lore "&7Ключ Пустоты открывает сердце башни.", "&7Ключ Возврата слышит только последнюю смерть", "&7и сгорает вместе с пройденным путём.", " ", "&8Намёк: держи Возврат отдельно,", "&8чтобы не сжечь его не в тот момент."
+        set slot 14 of current inventory of {_p} to evoAdminItemById("void_key")
+        set slot 16 of current inventory of {_p} to evoAdminItemById("return_key")
+    else:
+        set slot 11 of current inventory of {_p} to paper named "&8IV. &eСвитки, Дневник, Ядра" with lore "&7Свитки — это не сила, а знание.", "&7Дневник хранит рецепты, но смерть", "&7вырывает случайную страницу.", " ", "&7Обычное ядро любит порядок,", "&7Utility-ядро любит полезность.", " ", "&8Намёк: проверяй, что включено в ядрах,", "&8и подбирай потерянные страницы после боя."
+        set slot 15 of current inventory of {_p} to written book named "&5&lФинальная запись" with lore "&7Кто читает знаки — выживает.", "&7Кто игнорирует — кормит руины."
+    if {_pg} > 1:
+        set slot 18 of current inventory of {_p} to arrow named "&eНазад"
+    if {_pg} < 4:
+        set slot 26 of current inventory of {_p} to arrow named "&eВперёд"
+
+function openLoreGui(p: player):
+    openLoreGuiPage({_p}, 1)
+
 command /lore:
     trigger:
-        send "&8&m-----------------------------------------------------" to player
-        send "&5&lХроники Расколотой Пустоты" to player
-        send "&7Когда небо над миром почернело, под камнем проснулся Шёпот." to player
-        send "&7Шёпот не убивает сразу — он &fучит&7, оставляя знаки для тех, кто слушает." to player
-        send " " to player
-        send "&8I. &dАлтарь Создания" to player
-        send "&7Старые мастера говорили: &fсундук помнит ритуал&7 лучше, чем рука." to player
-        send "&7Ключи, обсидиан и аметист должны лечь без лишнего груза —" to player
-        send "&7тогда камень сам соберёт основу, а сердце алтаря попросит свой хоппер." to player
-        send "&8Подсказка: у настоящего ритуала всегда &f5 ингредиентов&8 там, где ждут 5 слотов." to player
-        send " " to player
-        send "&8II. &6Зов Руин" to player
-        send "&7Руины не любят спешку и не слышат случайный клик." to player
-        send "&7Только тот, кто &fпригнулся и отметил блок&7, может разбудить их в Оверворлде." to player
-        send "&8Подсказка: чем дальше от спавна и ровнее земля, тем охотнее откликается Зов." to player
-        send " " to player
-        send "&8III. &5Ключи Башни и Памяти" to player
-        send "&7Ключ Пустоты открывает сердце башни, но не прощает жадности." to player
-        send "&7Ключ Возврата слышит только последнюю смерть и сгорает вместе с путём." to player
-        send "&8Подсказка: носи Возврат отдельно, чтобы не перепутать момент." to player
-        send " " to player
-        send "&8IV. &eДревние Свитки и Дневник" to player
-        send "&7Свитки — это не сила, а знание. Они исчезают, когда ты понял их смысл." to player
-        send "&7Дневник приключенца хранит рецепты, но смерть вырывает случайную страницу." to player
-        send "&8Подсказка: то, что теряется в бою, можно вернуть как свиток, если успеешь поднять." to player
-        send " " to player
-        send "&8V. &bЯдра Артефактов" to player
-        send "&7Обычное ядро любит порядок, а Utility-ядро любит полезность." to player
-        send "&7Некоторые реликвии работают даже в инвентаре, но ядро делает их послушнее." to player
-        send "&8Подсказка: проверяй, что включено, прежде чем винить магию." to player
-        send " " to player
-        send "&5&lФинальная запись:" to player
-        send "&7Кто читает знаки — выживает. Кто игнорирует — кормит руины." to player
-        send "&8&m-----------------------------------------------------" to player
+        openLoreGui(player)
+
+on inventory click:
+    if event-inventory is not set:
+        stop
+    if name of event-inventory is not "Хроники Расколотой Пустоты":
+        stop
+    cancel event
+    set {_pg} to {evo_lore_page::%uuid of player%}
+    if {_pg} is not set:
+        set {_pg} to 1
+    if clicked slot is 18:
+        openLoreGuiPage(player, {_pg} - 1)
+        stop
+    if clicked slot is 26:
+        openLoreGuiPage(player, {_pg} + 1)
+        stop
+
+on inventory close:
+    if event-inventory is set:
+        if name of event-inventory is "Хроники Расколотой Пустоты":
+            delete {evo_lore_page::%uuid of player%}
 
 on inventory click:
     if event-inventory is not set:
