@@ -11501,14 +11501,34 @@ function isRuinedPortalChestLike(b: block) :: boolean:
     if environment of {_w} is not normal:
         return false
     set {_loc} to location of {_b}
+    set {_obs} to 0
+    set {_cry} to 0
+    set {_nether} to 0
+    set {_magma} to 0
+    set {_gold} to 0
     loop blocks in radius 4 around {_loc}:
         if loop-block is obsidian:
-            return true
-        if loop-block is crying obsidian:
-            return true
-        if loop-block is netherrack:
-            return true
-    return false
+            add 1 to {_obs}
+        else if loop-block is crying obsidian:
+            add 1 to {_cry}
+        else if loop-block is netherrack:
+            add 1 to {_nether}
+        else if loop-block is magma block:
+            add 1 to {_magma}
+        else if loop-block is gold block:
+            add 1 to {_gold}
+    # Защита от абуза: обычный сундук рядом с 1 обсидианом не считается "порталом".
+    # Нужна более полная сигнатура руин-портала.
+    set {_portalStone} to {_obs} + {_cry}
+    if {_portalStone} < 6:
+        return false
+    if {_nether} < 4:
+        return false
+    if {_magma} < 1:
+        return false
+    if {_gold} < 1:
+        return false
+    return true
 
 on right click on chest:
     set {_ck} to evoBlockLocKey(event-block)
