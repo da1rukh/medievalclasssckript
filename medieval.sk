@@ -3676,7 +3676,7 @@ function artifactRuinTrySpawnChunk(wcx: number, wcz: number, w: world):
 
 function artifactRuinSummonObeliskItem() :: item:
     set {_i} to respawn anchor named "&6&lЗов Руин"
-    set lore of {_i} to "&7Сундук: &fпервые 5 слотов &7(верхний ряд):", "&7чернокамень, обсидиан, аметист, железо, уголь", "&7— открой сундук, когда всё положил.", "&7Shift+ПКМ по блоку в Оверворлде — руина.", "&0EVORUINSUMMON"
+    set lore of {_i} to "&7Сундук: &fпервые 5 слотов &7(верхний ряд):", "&7плачущий обсидиан, обсидиан, аметистовый блок,", "&7эндер-жемчуг, незеритовый лом", "&7— открой сундук, когда всё положил.", "&7Shift+ПКМ по блоку в Оверворлде — руина.", "&0EVORUINSUMMON"
     return {_i}
 
 function isArtifactRuinSummonItem(i: item) :: boolean:
@@ -3882,7 +3882,7 @@ function tryBuildAwakeningAltarAtChestBlock(cb: block, opener: player):
         set {_chestOk} to true
     if {_chestOk} is true:
         set {_cinv} to inventory of {_cb}
-        if isArtifactRecipeByFive({_cinv}, blackstone, obsidian, amethyst shard, iron ingot, coal) is true:
+        if isArtifactRecipeByFive({_cinv}, crying obsidian, obsidian, amethyst block, ender pearl, netherite scrap) is true:
             loop 5 times:
                 set slot (loop-number - 1) of {_cinv} to air
             set {_gift} to artifactRuinSummonObeliskItem()
@@ -3908,7 +3908,7 @@ function tryBuildAwakeningAltarAtChestBlock(cb: block):
         set {_chestOk} to true
     if {_chestOk} is true:
         set {_cinv} to inventory of {_cb}
-        if isArtifactRecipeByFive({_cinv}, blackstone, obsidian, amethyst shard, iron ingot, coal) is true:
+        if isArtifactRecipeByFive({_cinv}, crying obsidian, obsidian, amethyst block, ender pearl, netherite scrap) is true:
             loop 5 times:
                 set slot (loop-number - 1) of {_cinv} to air
             set {_gift} to artifactRuinSummonObeliskItem()
@@ -13248,7 +13248,7 @@ function initAncientScrollRecipes():
     set {ancient_scroll_recipes::nightlens::ing::*} to "Стекло", "Светокаменная пыль", "Аметистовый осколок", "Мембрана фантома", "Паучий глаз"
     set {ancient_scroll_recipes::ruin_summon::name} to "Зов Руин"
     set {ancient_scroll_recipes::ruin_summon::tier} to "medium"
-    set {ancient_scroll_recipes::ruin_summon::ing::*} to "Чернокамень", "Обсидиан", "Аметистовый осколок", "Железный слиток", "Уголь (слоты сундука 0–4)"
+    set {ancient_scroll_recipes::ruin_summon::ing::*} to "Плачущий обсидиан", "Обсидиан", "Аметистовый блок", "Эндер-жемчуг", "Незеритовый лом (слоты сундука 0–4)"
     set {ancient_scroll_recipes::awakening_altar::name} to "Сундук — Алтарь Создания"
     set {ancient_scroll_recipes::awakening_altar::tier} to "medium"
     set {ancient_scroll_recipes::awakening_altar::ing::*} to "Ключ пустоты — 5 шт. (в сумме)", "Плачущий обсидиан — 3 шт.", "Обсидиан — 3 шт.", "Аметистовый осколок — 3 шт.", "Только это в сундуке — открыть"
