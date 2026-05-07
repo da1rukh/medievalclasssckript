@@ -2887,6 +2887,22 @@ function artifactRuinSpawnGuards(cx: number, cz: number, w: world, kind: text):
                 spawn an evoker at location at {_gx}, {_gsy} + 1, {_gz} in {_w}
                 set name of last spawned entity to "&5&lКапитан стражи"
 
+function isRuinGuardianEntity(e: entity) :: boolean:
+    if {_e} is not set:
+        return false
+    set {_n} to name of {_e}
+    if {_n} is not set:
+        return false
+    if {_n} contains "Страж реликвии":
+        return true
+    if {_n} contains "Хранитель эха":
+        return true
+    if {_n} contains "Страж руин":
+        return true
+    if {_n} contains "Капитан стражи":
+        return true
+    return false
+
 # Одна палитра на всю руину: ковры одного цвета, «граффити» — только родственные оттенки
 function artifactRuinCarpetForTheme(t: number) :: item:
     if {_t} is 1:
@@ -6303,6 +6319,10 @@ on respawn:
                 send title "&8&lКОМПАС ПУСТОТЫ" with subtitle "&7Возврат к месту гибели" to player for 2 seconds
 
 on death:
+    if isRuinGuardianEntity(victim) is true:
+        # Стражи руин не должны дропать ресурсы вообще.
+        clear drops
+        set dropped experience to 0
     if attacker is a player:
         set {_u} to attacker's uuid
 
@@ -6314,17 +6334,18 @@ on death:
 
         # Монета удачи: шанс бонусного ресурса
         if hasArtifact(attacker, "luckcoin") is true:
-            chance of 25%:
-                set {_roll} to random integer between 1 and 4
-                if {_roll} is 1:
-                    drop 2 emerald at location of victim
-                else if {_roll} is 2:
-                    drop 3 gold ingot at location of victim
-                else if {_roll} is 3:
-                    drop 1 diamond at location of victim
-                else:
-                    drop 4 iron ingot at location of victim
-                send action bar "&6&lМОНЕТА УДАЧИ! &7Бонусный лут выпал" to attacker
+            if isRuinGuardianEntity(victim) is false:
+                chance of 25%:
+                    set {_roll} to random integer between 1 and 4
+                    if {_roll} is 1:
+                        drop 2 emerald at location of victim
+                    else if {_roll} is 2:
+                        drop 3 gold ingot at location of victim
+                    else if {_roll} is 3:
+                        drop 1 diamond at location of victim
+                    else:
+                        drop 4 iron ingot at location of victim
+                    send action bar "&6&lМОНЕТА УДАЧИ! &7Бонусный лут выпал" to attacker
 
 on pickup:
     if event-item is set:
