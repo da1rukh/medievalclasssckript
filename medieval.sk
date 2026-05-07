@@ -2816,18 +2816,9 @@ function artifactRuinFillChest(loc: location, tier: text):
             else if {_rkey} <= {_keyhi}:
                 set slot {_sl} of inventory of {_b} to evoAdminItemById("void_key")
             else:
-                set {_subp} to "{@artifact_ruin_side_chest_scroll_substitute_percent}" parsed as number
-                if {_subp} is not set:
-                    set {_subp} to 30
-                if {_subp} < 0:
-                    set {_subp} to 0
-                if {_subp} > 100:
-                    set {_subp} to 100
-                set {_rsc} to random integer between 1 and 100
-                if {_rsc} <= {_subp}:
-                    set slot {_sl} of inventory of {_b} to artifactRuinRandomScrollItem()
-                else:
-                    set slot {_sl} of inventory of {_b} to artifactRuinLootMaterialsOnly({_tier})
+                # В обычных сундуках руины больше не спавним свитки:
+                # единственный "особый" дроп (свиток ИЛИ артефакт) — только в сундуке башни.
+                set slot {_sl} of inventory of {_b} to artifactRuinLootMaterialsOnly({_tier})
 
 function artifactRuinFillChestBoss(loc: location, kind: text):
     if {_kind} is "legendary":
