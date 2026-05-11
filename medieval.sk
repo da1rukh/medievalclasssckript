@@ -11533,6 +11533,56 @@ function isRuinedPortalChestLike(b: block) :: boolean:
         return false
     return true
 
+# Ключ пустоты: не чаще одного в радиусе 2 чанков; не с сундуков, поставленных игроком.
+function evoTryGiveVoidKeyFromRuinedPortal(p: player, cb: block) :: boolean:
+    if isRuinedPortalChestLike({_cb}) is false:
+        return false
+    set {_bk} to evoBlockLocKey({_cb})
+    if {evo_chest_player_placed::%{_bk}%} is true:
+        send action bar "&cКлюч пустоты нельзя получить с установленного сундука." to {_p}
+        return false
+    if {evo_voidkey_taken::%{_bk}%} is true:
+        return false
+    set {_loc} to location of {_cb}
+    set {_w} to world of {_cb}
+    set {_wn} to "%{_w}%"
+    set {_x} to floor(x-coordinate of {_loc})
+    set {_z} to floor(z-coordinate of {_loc})
+    set {_ccx} to floor({_x} / 16)
+    set {_ccz} to floor({_z} / 16)
+    if {evo_voidkey_chunk_used::%{_wn}%::%{_ccx}%::%{_ccz}%} is true:
+        send action bar "&cВ радиусе 2 чанков уже забирали ключ пустоты." to {_p}
+        return false
+    set {_k} to evoAdminItemById("void_key")
+    if {_k} is air:
+        return false
+    set {evo_voidkey_taken::%{_bk}%} to true
+    set {_dx} to -2
+    while {_dx} <= 2:
+        set {_dz} to -2
+        while {_dz} <= 2:
+            set {_tx} to {_ccx} + {_dx}
+            set {_tz} to {_ccz} + {_dz}
+            set {evo_voidkey_chunk_used::%{_wn}%::%{_tx}%::%{_tz}%} to true
+            add 1 to {_dz}
+        add 1 to {_dx}
+    giveOrDrop({_k}, {_p}, location of {_cb})
+    send "{@prefix} &5Вы нашли Ключ пустоты в руинах портала." to {_p}
+    play sound "entity.experience_orb.pickup" with volume 0.9 and pitch 1 at {_p} for {_p}
+    return true
+
+on place of chest:
+    set {evo_chest_player_placed::%evoBlockLocKey(event-block)%} to true
+
+on place of trapped chest:
+    set {evo_chest_player_placed::%evoBlockLocKey(event-block)%} to true
+
+on break of chest:
+    delete {evo_chest_player_placed::%evoBlockLocKey(event-block)%}
+
+on break of trapped chest:
+    delete {evo_chest_player_placed::%evoBlockLocKey(event-block)%}
+
 on right click on chest:
     set {_ck} to evoBlockLocKey(event-block)
     if {evo_ruin_tower_locked::%{_ck}%} is true:
@@ -11550,32 +11600,12 @@ on right click on chest:
         set {_tinv} to inventory of event-block
         open {_tinv} to player
         stop
-    if isRuinedPortalChestLike(event-block) is false:
-        stop
-    set {_id} to "%world of event-block%:%x-coordinate of event-block%:%y-coordinate of event-block%:%z-coordinate of event-block%"
-    if {evo_voidkey_taken::%{_id}%} is true:
-        stop
-    set {_k} to evoAdminItemById("void_key")
-    if {_k} is air:
-        stop
-    set {evo_voidkey_taken::%{_id}%} to true
-    giveOrDrop({_k}, player, location of event-block)
-    send "{@prefix} &5Вы нашли Ключ пустоты в руинах портала." to player
-    play sound "entity.experience_orb.pickup" with volume 0.9 and pitch 1 at player for player
+    evoTryGiveVoidKeyFromRuinedPortal(player, event-block)
+    stop
 
 on right click on trapped chest:
-    if isRuinedPortalChestLike(event-block) is false:
-        stop
-    set {_id} to "%world of event-block%:%x-coordinate of event-block%:%y-coordinate of event-block%:%z-coordinate of event-block%"
-    if {evo_voidkey_taken::%{_id}%} is true:
-        stop
-    set {_k} to evoAdminItemById("void_key")
-    if {_k} is air:
-        stop
-    set {evo_voidkey_taken::%{_id}%} to true
-    giveOrDrop({_k}, player, location of event-block)
-    send "{@prefix} &5Вы нашли Ключ пустоты в руинах портала." to player
-    play sound "entity.experience_orb.pickup" with volume 0.9 and pitch 1 at player for player
+    evoTryGiveVoidKeyFromRuinedPortal(player, event-block)
+    stop
 
 function evoRuinFirstNormalWorld() :: world:
     loop all worlds:
