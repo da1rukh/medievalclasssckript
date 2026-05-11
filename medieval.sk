@@ -6325,7 +6325,12 @@ on death:
     if isRuinGuardianEntity(victim) is true:
         # Стражи руин не должны дропать ресурсы вообще.
         clear drops
-        set dropped experience to 0
+        # dropped experience нельзя менять в общем on death — убираем орбы после тика.
+        wait 1 tick
+        set {_dloc} to location of victim
+        loop all entities in radius 3 around {_dloc}:
+            if loop-entity is experience orb:
+                kill loop-entity
     if attacker is a player:
         set {_u} to attacker's uuid
 
