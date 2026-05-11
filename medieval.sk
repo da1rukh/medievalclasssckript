@@ -14,7 +14,7 @@
   #   - Class kits: giveClassKit(p) выдаёт тематические "неразрушимые" предметы
   #     (перо/щит/лук/посох/жезл — кроме Воина, у него всё пассивно)
   #   - Дуо-система (/duo, /duotpa)
-  #   - Руины (Оверворлд): сундук слоты 0–4 — чернокамень, обсидиан, аметист, железо, уголь → «Зов Руин»; Shift+ПКМ — постройка; /evoruinspawn
+  #   - Руины (Оверворлд): «Зов Руин» — сундук слоты 0–4: плачущий обсидиан, обсидиан, аметистовый блок, эндер-жемчуг, незеритовый лом; Shift+ПКМ — постройка; /evoruinspawn
   #   - GUI меню: /stats (chest GUI 54 слота), /class, /perk, /wstats
   #   - Команды: /hat /trail /sponsor /sponsorkit /workbench
   #
@@ -4945,7 +4945,10 @@ function openAdventurerJournalPage(p: player, page: number):
                 set {_i3} to {ancient_scroll_recipes::%{_rid}%::ing::3}
                 set {_i4} to {ancient_scroll_recipes::%{_rid}%::ing::4}
                 set {_i5} to {ancient_scroll_recipes::%{_rid}%::ing::5}
-                set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &f%{_rn}%" and "&8 • &f%{_i1}%" and "&8 • &f%{_i2}%" and "&8 • &f%{_i3}%" and "&8 • &f%{_i4}%" and "&8 • &f%{_i5}%"
+                if {_rid} is "ruin_summon":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &f%{_rn}%" and "&8 • &f%{_i1}%" and "&8 • &f%{_i2}%" and "&8 • &f%{_i3}%" and "&8 • &f%{_i4}%" and "&8 • &f%{_i5}%" and "&7Сундук: только эти 5 предметов, слоты 0–4" and "&7— затем открыть сундук (Оверворлд)."
+                else:
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &f%{_rn}%" and "&8 • &f%{_i1}%" and "&8 • &f%{_i2}%" and "&8 • &f%{_i3}%" and "&8 • &f%{_i4}%" and "&8 • &f%{_i5}%"
             else if {_txt} starts with "recipe_local::":
                 set {_rid} to {_txt}
                 replace all "recipe_local::" in {_rid} with ""
@@ -4995,8 +4998,8 @@ function openLoreGuiPage(p: player, page: number):
         set slot 11 of current inventory of {_p} to paper named "&8I. &dАлтарь Создания" with lore "&7Когда небо над миром почернело, под камнем", "&7проснулся Шёпот. Он не убивает сразу —", "&7он учит, оставляя знаки тем, кто слушает.", " ", "&7Сундук помнит ритуал лучше, чем рука.", "&7Ключи, обсидиан и аметист должны лечь", "&7без лишнего груза — тогда камень сам", "&7соберёт основу, а сердце попросит хоппер.", " ", "&8Намёк: у ритуала всегда 5 ингредиентов", "&8там, где ждут 5 слотов."
         set slot 15 of current inventory of {_p} to hopper named "&5Сердце Алтаря" with lore "&7Поставь в центр завершённой конструкции"
     else if {_pg} is 2:
-        set slot 11 of current inventory of {_p} to paper named "&8II. &6Зов Руин" with lore "&7Руины не любят спешку и не слышат", "&7случайный клик. Только тот, кто пригнулся", "&7и отметил блок, может разбудить их.", " ", "&8Намёк: Зов отвечает в Оверворлде,", "&8на подходящей поверхности и подальше", "&8от мирового спавна."
-        set slot 15 of current inventory of {_p} to respawn anchor named "&6Зов Руин" with lore "&7Shift+ПКМ по блоку — возвести руину"
+        set slot 11 of current inventory of {_p} to paper named "&8II. &6Зов Руин" with lore "&7Руины не любят спешку и не слышат", "&7случайный клик. Только тот, кто пригнулся", "&7и отметил блок, может разбудить их.", " ", "&7Сундук (слоты 0–4): плачущий обсидиан,", "&7обсидиан, аметистовый блок, эндер-жемчуг,", "&7незеритовый лом — только это, затем открыть.", " ", "&8Намёк: Зов отвечает в Оверворлде,", "&8на подходящей поверхности и подальше", "&8от мирового спавна."
+        set slot 15 of current inventory of {_p} to respawn anchor named "&6Зов Руин" with lore "&7Shift+ПКМ по блоку — возвести руину", "&7Крафт: 5 слотов сундука, см. слева"
     else if {_pg} is 3:
         set slot 11 of current inventory of {_p} to paper named "&8III. &5Ключи Башни и Памяти" with lore "&7Ключ Пустоты открывает сердце башни.", "&7Ключ Возврата слышит только последнюю смерть", "&7и сгорает вместе с пройденным путём.", " ", "&8Намёк: держи Возврат отдельно,", "&8чтобы не сжечь его не в тот момент."
         set slot 14 of current inventory of {_p} to evoAdminItemById("void_key")
@@ -13248,7 +13251,7 @@ function initAncientScrollRecipes():
     set {ancient_scroll_recipes::nightlens::ing::*} to "Стекло", "Светокаменная пыль", "Аметистовый осколок", "Мембрана фантома", "Паучий глаз"
     set {ancient_scroll_recipes::ruin_summon::name} to "Зов Руин"
     set {ancient_scroll_recipes::ruin_summon::tier} to "medium"
-    set {ancient_scroll_recipes::ruin_summon::ing::*} to "Плачущий обсидиан", "Обсидиан", "Аметистовый блок", "Эндер-жемчуг", "Незеритовый лом (слоты сундука 0–4)"
+    set {ancient_scroll_recipes::ruin_summon::ing::*} to "Плачущий обсидиан", "Обсидиан", "Аметистовый блок", "Эндер-жемчуг", "Незеритовый лом"
     set {ancient_scroll_recipes::awakening_altar::name} to "Сундук — Алтарь Создания"
     set {ancient_scroll_recipes::awakening_altar::tier} to "medium"
     set {ancient_scroll_recipes::awakening_altar::ing::*} to "Ключ пустоты — 5 шт. (в сумме)", "Плачущий обсидиан — 3 шт.", "Обсидиан — 3 шт.", "Аметистовый осколок — 3 шт.", "Только это в сундуке — открыть"
