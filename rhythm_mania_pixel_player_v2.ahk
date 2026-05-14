@@ -512,9 +512,11 @@ ChooseColorW(initialRgb, hwndOwner := 0) {
     NumPut("Ptr", 0, cc, A_PtrSize = 8 ? 48 : 24)
     NumPut("Ptr", 0, cc, A_PtrSize = 8 ? 56 : 28)
     NumPut("Ptr", 0, cc, A_PtrSize = 8 ? 64 : 32)
-    if !DllCall("comdlg32\ChooseColorW", "ptr", cc, "Int")
-        return ""
-    return BgrToRGB(NumGet(cc, A_PtrSize = 8 ? 24 : 12, "UInt"))
+    ; Явная проверка успеха — иначе #Warn Unreachable считает, что второй return недостижим.
+    ok := DllCall("comdlg32\ChooseColorW", "ptr", cc.Ptr, "Int")
+    if ok
+        return BgrToRGB(NumGet(cc, A_PtrSize = 8 ? 24 : 12, "UInt") & 0xFFFFFF)
+    return ""
 }
 
 class RhythmLane {
