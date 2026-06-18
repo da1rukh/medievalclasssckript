@@ -66,8 +66,10 @@
   # 3. ЗАПРЕЩЕНО навсегда давать ПАССИВНУЮ РЕГЕНЕРАЦИЮ в периодическом тике.
   #    Регенерация только как кратковременный триггер: на килл, на перк, на способность.
   # 4. ЗАПРЕЩЕНО давать ПЛАВНОЕ ПАДЕНИЕ (slow falling) с алтарной брони и в periodic tick.
-  # 5. Безопасные periodic-эффекты: Speed, Luck, Jump Boost, Fire Res, Resistance,
-  #    Strength, Haste, Saturation — for 20 ticks при every 1 second.
+  # 5. Безопасные periodic-эффекты алтарной брони: Speed, Luck, Jump Boost —
+  #    every 4 seconds → refreshAltarPassive*() = remove + apply 15 seconds
+  #    (как Night Vision). НЕ every 1 second + 20 ticks — иначе накапливается.
+  #    Strength, Haste, Saturation (классы) — for 100 ticks при every 5 seconds.
   # 6. Night Vision (алтарный шлем, Ночная Линза): every 4 seconds →
   #    refreshPassiveNightVision() = remove + apply 15 seconds (без мигания).
   #
@@ -5318,10 +5320,20 @@ function refreshPassiveNightVision(p: player):
     remove night vision from {_p}
     apply night vision 1 without particles to {_p} for 15 seconds
 
+function refreshAltarPassiveSpeed(p: player):
+    remove speed from {_p}
+    apply speed 1 without particles to {_p} for 15 seconds
+
+function refreshAltarPassiveJump(p: player):
+    remove jump boost from {_p}
+    apply jump boost 1 without particles to {_p} for 15 seconds
+
+function refreshAltarPassiveLuck(p: player):
+    remove luck from {_p}
+    apply luck 1 without particles to {_p} for 15 seconds
+
 function applyAltarArmorPassiveEffects(p: player):
     set {_helm} to helmet of {_p}
-    set {_boots} to boots of {_p}
-    set {_legs} to leggings of {_p}
     syncPlayerMaxHealth({_p})
     if isEtherHelmet({_helm}) is true:
         set {_maxHp} to max health of {_p}
@@ -5331,18 +5343,6 @@ function applyAltarArmorPassiveEffects(p: player):
         set {_maxHp} to max health of {_p}
         if health of {_p} <= ({_maxHp} * 0.8):
             remove night vision from {_p}
-    if isFortuneBoots({_boots}) is true:
-        apply luck 1 without particles to {_p} for 20 ticks
-    else if isOmniBoots({_boots}) is true:
-        apply luck 1 without particles to {_p} for 20 ticks
-    if isVeinBoots({_boots}) is true:
-        apply jump boost 1 without particles to {_p} for 20 ticks
-    else if isOmniBoots({_boots}) is true:
-        apply jump boost 1 without particles to {_p} for 20 ticks
-    if isEtherLeggings({_legs}) is true:
-        apply speed 1 without particles to {_p} for 20 ticks
-    else if isOmniLeggings({_legs}) is true:
-        apply speed 1 without particles to {_p} for 20 ticks
 
 function altarArmorFortuneXpBonus(p: player) :: number:
     set {_bonus} to 0
@@ -15046,6 +15046,19 @@ every 4 seconds:
             set {_altarMaxHp} to max health of loop-player
             if health of loop-player > ({_altarMaxHp} * 0.8):
                 refreshPassiveNightVision(loop-player)
+        set {_altarLegs} to leggings of loop-player
+        if isEtherLeggings({_altarLegs}) is true:
+            refreshAltarPassiveSpeed(loop-player)
+        else if isOmniLeggings({_altarLegs}) is true:
+            refreshAltarPassiveSpeed(loop-player)
+        set {_altarBoots} to boots of loop-player
+        if isVeinBoots({_altarBoots}) is true:
+            refreshAltarPassiveJump(loop-player)
+        else if isOmniBoots({_altarBoots}) is true:
+            refreshAltarPassiveJump(loop-player)
+            refreshAltarPassiveLuck(loop-player)
+        else if isFortuneBoots({_altarBoots}) is true:
+            refreshAltarPassiveLuck(loop-player)
 
 # ---- Древние свитки ----
 function initAncientScrollRecipes():
