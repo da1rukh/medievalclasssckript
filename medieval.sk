@@ -2876,7 +2876,8 @@ function artifactRuinScrollPoolIds() :: texts:
     delete {_ids::*}
     loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon" and "cursedgift":
         add loop-value to {_ids::*}
-    loop altarLocalRecipeIds():
+    set {_altarIds::*} to altarLocalRecipeIds()
+    loop {_altarIds::*}:
         add loop-value to {_ids::*}
     return {_ids::*}
 
@@ -6329,6 +6330,12 @@ function evoAdminItemById(id: text) :: item:
     if {_id} is "nightlens":
         return nightLensItem()
 
+    # Страницы дневника (алтарные рецепты)
+    if {_id} starts with "diary_":
+        set {_did} to {_id}
+        replace all "diary_" in {_did} with ""
+        return diaryPageItemForLocalRecipe({_did})
+
     # Древние свитки (для любого артефакта)
     if {_id} starts with "scroll_":
         set {_sid} to {_id}
@@ -6402,8 +6409,11 @@ function evoAdminItemIdList() :: texts:
     loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon", "awakening_altar" and "cursedgift":
         set {_sid} to "scroll_%loop-value%"
         add {_sid} to {_ids::*}
-    loop altarLocalRecipeIds():
+    # Свитки и страницы дневника — алтарные кирки, мечи, броня
+    set {_altarIds::*} to altarLocalRecipeIds()
+    loop {_altarIds::*}:
         add "scroll_%loop-value%" to {_ids::*}
+        add "diary_%loop-value%" to {_ids::*}
     return {_ids::*}
 
 function isArtifactRecipeByFive(inv: inventory, i1: item, i2: item, i3: item, i4: item, i5: item) :: boolean:
@@ -6576,7 +6586,8 @@ function diaryRecipeEntryFromItem(it: item) :: text:
         if {_n} is set:
             if {_nm} contains {_n}:
                 return loop-value
-    loop altarLocalRecipeIds():
+    set {_altarIds::*} to altarLocalRecipeIds()
+    loop {_altarIds::*}:
         set {_n} to {ancient_scroll_recipes::%loop-value%::name}
         if {_n} is set:
             if {_nm} contains {_n}:
@@ -15199,7 +15210,8 @@ function initAncientScrollRecipes():
     initAltarGearAncientScrollRecipes()
 
 function initAltarGearAncientScrollRecipes():
-    loop altarLocalRecipeIds():
+    set {_altarIds::*} to altarLocalRecipeIds()
+    loop {_altarIds::*}:
         set {_id} to loop-value
         set {_r} to {_id} in lower case
         set {_tier} to "medium"
