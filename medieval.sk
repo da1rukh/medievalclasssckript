@@ -59,17 +59,15 @@
   # Не путать с уроном: `damage`, effectiveDamage, числа в lore «урона» — шкала урона MC/Skript.
   #
   # === КРИТИЧЕСКОЕ ПРАВИЛО ПАССИВНЫХ ЭФФЕКТОВ (every 1 second) ===
-  # 1. ДЛИТЕЛЬНОСТЬ ВСЕХ ПЕРИОДИЧЕСКИ ПРИМЕНЯЕМЫХ ЭФФЕКТОВ = ТИК + 0.1 СЕКУНДЫ.
-  #    Тик every 1 second → длительность = 1.1 seconds. ВСЕГДА. Без исключений.
-  #    Если поставить большую длительность — Bukkit/Skript стэкнет повторные
-  #    apply-вызовы и эффект "залипнет" навсегда.
-  # 2. ЗАПРЕЩЕНО навсегда давать ПАССИВНУЮ РЕГЕНЕРАЦИЮ в любом периодическом тике.
+  # 1. Частота тика = длительность эффекта. Тик every 1 second → ровно for 20 ticks
+  #    (1 секунда). НЕ 1.1с, НЕ 3с и т.д. — иначе Bukkit/Skript накапливает слои
+  #    и эффект «залипает» на тысячи секунд.
+  # 2. Бонус max health — исключение: задаётся через set max health, не через зелье.
+  # 3. ЗАПРЕЩЕНО навсегда давать ПАССИВНУЮ РЕГЕНЕРАЦИЮ в периодическом тике.
   #    Регенерация только как кратковременный триггер: на килл, на перк, на способность.
-  # 3. ЗАПРЕЩЕНО навсегда давать ПЛАВНОЕ ПАДЕНИЕ в любом периодическом тике.
-  #    Slow falling только как триггер от способности с явным CD и фикс. длительностью.
-  # 4. Если класс "должен" давать регенерацию или slow falling — замени на
-  #    Saturation, Speed, Resistance, Strength, Haste, Night Vision, Fire Res,
-  #    или +max health (запас ❤). Эти эффекты безопасны для применения с длительностью 1.1с.
+  # 4. ЗАПРЕЩЕНО давать ПЛАВНОЕ ПАДЕНИЕ (slow falling) с алтарной брони и в periodic tick.
+  # 5. Безопасные periodic-эффекты: Speed, Luck, Jump Boost, Night Vision, Fire Res,
+  #    Resistance, Strength, Haste, Saturation — только for 20 ticks при every 1 second.
   #
   # === ПРАВИЛА СИНТАКСИСА SKRIPT (на чём мы уже спотыкались) ===
   # 1. ОДНОСТРОЧНЫЙ if X: return (a, b)  →  ПАРСЕР ЛОМАЕТСЯ.
@@ -4429,7 +4427,7 @@ function altarEtherLeggingsItem() :: item:
 function altarEtherBootsItem() :: item:
     set {_a} to diamond boots
     set name of {_a} to "&dЭфирные Сапоги"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_САПОГ", "&8ЭФИР_БРОНЯ", "&7Медленное падение", "&7Мягкая посадка с высоты", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_САПОГ", "&8ЭФИР_БРОНЯ", "&7+1 ❤ макс. HP", "&7Устойчивая стойка", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4478,7 +4476,7 @@ function altarVeinHelmetItem() :: item:
 function altarVeinChestplateItem() :: item:
     set {_a} to diamond chestplate
     set name of {_a} to "&aКираса Плети"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЖИЛА_НАГРУД", "&8ЖИЛА_БРОНЯ", "&7Regen I после удара", "&7КД 5с", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЖИЛА_НАГРУД", "&8ЖИЛА_БРОНЯ", "&7+2 ❤ макс. HP", "&7Regen I после удара", "&7КД 5с", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4502,7 +4500,7 @@ function altarVeinBootsItem() :: item:
 function altarFortuneHelmetItem() :: item:
     set {_a} to diamond helmet
     set name of {_a} to "&eВенец Миража"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_ШЛЕМ", "&8УДАЧА_БРОНЯ", "&7+8%% опыта за убийства", "&7Ясность цели", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_ШЛЕМ", "&8УДАЧА_БРОНЯ", "&7+1 ❤ макс. HP", "&7+8%% опыта за убийства", "&7Ясность цели", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4542,7 +4540,7 @@ function altarVoidHelmetItem() :: item:
 function altarVoidChestplateItem() :: item:
     set {_a} to diamond chestplate
     set name of {_a} to "&5Грудь Истощения"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_НАГРУД", "&8ПУСТОТА_БРОНЯ", "&7Resistance I ниже 30%% HP", "&7Пустота держит удар", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_НАГРУД", "&8ПУСТОТА_БРОНЯ", "&7+1 ❤ макс. HP", "&7Resistance I ниже 30%% HP", "&7Пустота держит удар", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4566,7 +4564,7 @@ function altarVoidBootsItem() :: item:
 function altarOmniHelmetItem() :: item:
     set {_a} to netherite helmet
     set name of {_a} to "&6&lОмни-Венец Алтаря"
-    set lore of {_a} to "&8✦ Финальное слияние", "&8АЛТАР_ОМНИ_ШЛЕМ", "&8ОМНИ_БРОНЯ", "&7Все эффекты алтарных шлемов", "&7Protection V + все бонусы слота", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Финальное слияние", "&8АЛТАР_ОМНИ_ШЛЕМ", "&8ОМНИ_БРОНЯ", "&7+1 ❤ макс. HP", "&7Все эффекты алтарных шлемов", "&7Protection V + все бонусы слота", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 5
     return {_a}
@@ -4574,7 +4572,7 @@ function altarOmniHelmetItem() :: item:
 function altarOmniChestplateItem() :: item:
     set {_a} to netherite chestplate
     set name of {_a} to "&6&lОмни-Мантия Алтаря"
-    set lore of {_a} to "&8✦ Финальное слияние", "&8АЛТАР_ОМНИ_НАГРУД", "&8ОМНИ_БРОНЯ", "&7Все эффекты алтарных нагрудников", "&7Protection V + все бонусы слота", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Финальное слияние", "&8АЛТАР_ОМНИ_НАГРУД", "&8ОМНИ_БРОНЯ", "&7+3 ❤ макс. HP", "&7Все эффекты алтарных нагрудников", "&7Protection V + все бонусы слота", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 5
     enchant {_a} with thorns 2
@@ -4591,7 +4589,7 @@ function altarOmniLeggingsItem() :: item:
 function altarOmniBootsItem() :: item:
     set {_a} to netherite boots
     set name of {_a} to "&6&lОмни-Сапоги Алтаря"
-    set lore of {_a} to "&8✦ Финальное слияние", "&8АЛТАР_ОМНИ_САПОГ", "&8ОМНИ_БРОНЯ", "&7Все эффекты алтарных сапог", "&7Protection V + все бонусы слота", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Финальное слияние", "&8АЛТАР_ОМНИ_САПОГ", "&8ОМНИ_БРОНЯ", "&7+1 ❤ макс. HP", "&7Все эффекты алтарных сапог", "&7Protection V + все бонусы слота", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 5
     return {_a}
@@ -5276,34 +5274,68 @@ function applyAltarArmorHitEffects(pl: player, atk: entity):
     applyAltarArmorPieceEffects({_pl}, leggings of {_pl}, {_atk})
     applyAltarArmorPieceEffects({_pl}, boots of {_pl}, {_atk})
 
+function playerClassBaseMaxHp(p: player) :: number:
+    if classOf({_p}) is "Tank":
+        if levelOf({_p}) >= 25:
+            return 20
+    return 10
+
+function altarArmorMaxHpBonus(p: player) :: number:
+    set {_bonus} to 0
+    set {_helm} to helmet of {_p}
+    set {_chest} to chestplate of {_p}
+    set {_boots} to boots of {_p}
+    if isOmniHelmet({_helm}) is true:
+        add 1 to {_bonus}
+    else if isFortuneHelmet({_helm}) is true:
+        add 1 to {_bonus}
+    if isOmniChestplate({_chest}) is true:
+        add 3 to {_bonus}
+    else if isVeinChestplate({_chest}) is true:
+        add 2 to {_bonus}
+    else if isVoidChestplate({_chest}) is true:
+        add 1 to {_bonus}
+    if isOmniBoots({_boots}) is true:
+        add 1 to {_bonus}
+    else if isEtherBoots({_boots}) is true:
+        add 1 to {_bonus}
+    return {_bonus}
+
+function syncPlayerMaxHealth(p: player):
+    set {_u} to uuid of {_p}
+    if {ghost::%{_u}%} is true:
+        stop
+    set {_target} to playerClassBaseMaxHp({_p}) + altarArmorMaxHpBonus({_p})
+    remove health boost from {_p}
+    set max health of {_p} to {_target}
+    if health of {_p} > {_target}:
+        set health of {_p} to {_target}
+
 function applyAltarArmorPassiveEffects(p: player):
     set {_helm} to helmet of {_p}
     set {_boots} to boots of {_p}
     set {_legs} to leggings of {_p}
+    syncPlayerMaxHealth({_p})
     if isEtherHelmet({_helm}) is true:
         set {_maxHp} to max health of {_p}
         if health of {_p} > ({_maxHp} * 0.8):
-            apply night vision 1 without particles to {_p} for 1.1 seconds
+            apply night vision 1 without particles to {_p} for 20 ticks
     else if isOmniHelmet({_helm}) is true:
         set {_maxHp} to max health of {_p}
         if health of {_p} > ({_maxHp} * 0.8):
-            apply night vision 1 without particles to {_p} for 1.1 seconds
+            apply night vision 1 without particles to {_p} for 20 ticks
     if isFortuneBoots({_boots}) is true:
-        apply luck 1 without particles to {_p} for 1.1 seconds
+        apply luck 1 without particles to {_p} for 20 ticks
     else if isOmniBoots({_boots}) is true:
-        apply luck 1 without particles to {_p} for 1.1 seconds
+        apply luck 1 without particles to {_p} for 20 ticks
     if isVeinBoots({_boots}) is true:
-        apply jump boost 1 without particles to {_p} for 1.1 seconds
+        apply jump boost 1 without particles to {_p} for 20 ticks
     else if isOmniBoots({_boots}) is true:
-        apply jump boost 1 without particles to {_p} for 1.1 seconds
-    if isEtherBoots({_boots}) is true:
-        apply slow falling 1 without particles to {_p} for 1.1 seconds
-    else if isOmniBoots({_boots}) is true:
-        apply slow falling 1 without particles to {_p} for 1.1 seconds
+        apply jump boost 1 without particles to {_p} for 20 ticks
     if isEtherLeggings({_legs}) is true:
-        apply speed 1 without particles to {_p} for 1.1 seconds
+        apply speed 1 without particles to {_p} for 20 ticks
     else if isOmniLeggings({_legs}) is true:
-        apply speed 1 without particles to {_p} for 1.1 seconds
+        apply speed 1 without particles to {_p} for 20 ticks
 
 function altarArmorFortuneXpBonus(p: player) :: number:
     set {_bonus} to 0
@@ -6754,6 +6786,8 @@ command /altar:
         send "{@prefix} &7Пустота: ключи + алм. предмет + обсидиан + эндер-жемчуг"
         send "{@prefix} &6Омни-слияние: &75 предметов &fодного слота &7(меч/шлем/...) разных тем."
         send "{@prefix} &7У каждой части брони своё имя и свой эффект — см. /diary после крафта."
+        send "{@prefix} &7Бонус ❤: жила-нагрудник +2, пустота-нагрудник +1, удача-шлем +1, эфир-сапоги +1; омни-слоты суммируют."
+        send "{@prefix} &7Пассивные зелья брони: тик 1с = длительность 1с (без накопления). Slow falling не даётся."
         send "{@prefix} &fГолова игрока: &aдёрн + &6золотое яблоко + &bалмаз + &cnetherrack + &fкамень энда."
         send "{@prefix} &6Корона Высшего Разума: &6Эфирный Разум + &dЗвезда Азуры + &eзолотой шлем + &fenchanted book + &aпузырёк опыта."
         send "{@prefix} &6Портативный Нагреватель: &7печка + blaze powder + медный блок + уголь + железный слиток"
@@ -8640,13 +8674,9 @@ every 5 seconds:
         # Страховка от "залипания" анти-кнокбека у не-танков
         if {_c} is not "Tank":
             set knockback resistance attribute of loop-player to 0
-            # Не танк: стандарт max health = 10 (10 ❤); сброс после танка / чужих значений
-            if {ghost::%{_u}%} is not true:
-                if max health of loop-player is not 10:
-                    remove health boost from loop-player
-                    set max health of loop-player to 10
-                    if health of loop-player > 10:
-                        set health of loop-player to 10
+
+        if {ghost::%{_u}%} is not true:
+            syncPlayerMaxHealth(loop-player)
 
         # ===== WARRIOR =====
         if {_c} is "Warrior":
@@ -8683,18 +8713,7 @@ every 5 seconds:
 
         # ===== TANK =====
         else if {_c} is "Tank":
-            # До L25: как у всех, 10 ❤; L25: 20 ❤ (см. шапку файла)
-            if {ghost::%{_u}%} is not true:
-                if {_l} >= 25:
-                    remove health boost from loop-player
-                    set max health of loop-player to 20
-                    if health of loop-player > 20:
-                        set health of loop-player to 20
-                else:
-                    remove health boost from loop-player
-                    set max health of loop-player to 10
-                    if health of loop-player > 10:
-                        set health of loop-player to 10
+            # max health: syncPlayerMaxHealth (база 10/20 ❤ + бонус алтарной брони)
             # L3 — Knockback Resistance 50%, L13 — 100%
             if {_l} >= 13:
                 set knockback resistance attribute of loop-player to 1
