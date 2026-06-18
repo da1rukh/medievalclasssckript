@@ -4711,23 +4711,9 @@ function isOmniBoots(i: item) :: boolean:
     return altarGearHasTag({_i}, "АЛТАР_ОМНИ_САПОГ")
 
 function isAltarArmorPiece(i: item) :: boolean:
-    if altarGearHasTag({_i}, "АЛТАР_") is not true:
-        return false
-    if {_i} is diamond helmet:
+    if altarGearHasTag({_i}, "_БРОНЯ") is true:
         return true
-    if {_i} is netherite helmet:
-        return true
-    if {_i} is diamond chestplate:
-        return true
-    if {_i} is netherite chestplate:
-        return true
-    if {_i} is diamond leggings:
-        return true
-    if {_i} is netherite leggings:
-        return true
-    if {_i} is diamond boots:
-        return true
-    if {_i} is netherite boots:
+    if altarGearHasTag({_i}, "АЛТАР_ОМНИ_") is true:
         return true
     return false
 
@@ -4831,13 +4817,13 @@ function isOmniSwordAltarRecipe(inv: inventory) :: boolean:
             add 1 to {_total}
             if isEtherSword({_it}) is true:
                 add 1 to {_e}
-            if isFlameSword({_it}) is true:
+            else if isFlameSword({_it}) is true:
                 add 1 to {_f}
-            if isVeinSword({_it}) is true:
+            else if isVeinSword({_it}) is true:
                 add 1 to {_v}
-            if isFortuneSword({_it}) is true:
+            else if isFortuneSword({_it}) is true:
                 add 1 to {_fo}
-            if isVoidSword({_it}) is true:
+            else if isVoidSword({_it}) is true:
                 add 1 to {_vo}
             else:
                 set {_bad} to true
@@ -4873,13 +4859,13 @@ function isOmniAltarHelmetRecipe(inv: inventory) :: boolean:
             add 1 to {_total}
             if isEtherHelmet({_it}) is true:
                 add 1 to {_e}
-            if isFlameHelmet({_it}) is true:
+            else if isFlameHelmet({_it}) is true:
                 add 1 to {_f}
-            if isVeinHelmet({_it}) is true:
+            else if isVeinHelmet({_it}) is true:
                 add 1 to {_v}
-            if isFortuneHelmet({_it}) is true:
+            else if isFortuneHelmet({_it}) is true:
                 add 1 to {_fo}
-            if isVoidHelmet({_it}) is true:
+            else if isVoidHelmet({_it}) is true:
                 add 1 to {_vo}
             else:
                 set {_bad} to true
@@ -4915,13 +4901,13 @@ function isOmniAltarChestplateRecipe(inv: inventory) :: boolean:
             add 1 to {_total}
             if isEtherChestplate({_it}) is true:
                 add 1 to {_e}
-            if isFlameChestplate({_it}) is true:
+            else if isFlameChestplate({_it}) is true:
                 add 1 to {_f}
-            if isVeinChestplate({_it}) is true:
+            else if isVeinChestplate({_it}) is true:
                 add 1 to {_v}
-            if isFortuneChestplate({_it}) is true:
+            else if isFortuneChestplate({_it}) is true:
                 add 1 to {_fo}
-            if isVoidChestplate({_it}) is true:
+            else if isVoidChestplate({_it}) is true:
                 add 1 to {_vo}
             else:
                 set {_bad} to true
@@ -4957,13 +4943,13 @@ function isOmniAltarLeggingsRecipe(inv: inventory) :: boolean:
             add 1 to {_total}
             if isEtherLeggings({_it}) is true:
                 add 1 to {_e}
-            if isFlameLeggings({_it}) is true:
+            else if isFlameLeggings({_it}) is true:
                 add 1 to {_f}
-            if isVeinLeggings({_it}) is true:
+            else if isVeinLeggings({_it}) is true:
                 add 1 to {_v}
-            if isFortuneLeggings({_it}) is true:
+            else if isFortuneLeggings({_it}) is true:
                 add 1 to {_fo}
-            if isVoidLeggings({_it}) is true:
+            else if isVoidLeggings({_it}) is true:
                 add 1 to {_vo}
             else:
                 set {_bad} to true
@@ -4999,13 +4985,13 @@ function isOmniAltarBootsRecipe(inv: inventory) :: boolean:
             add 1 to {_total}
             if isEtherBoots({_it}) is true:
                 add 1 to {_e}
-            if isFlameBoots({_it}) is true:
+            else if isFlameBoots({_it}) is true:
                 add 1 to {_f}
-            if isVeinBoots({_it}) is true:
+            else if isVeinBoots({_it}) is true:
                 add 1 to {_v}
-            if isFortuneBoots({_it}) is true:
+            else if isFortuneBoots({_it}) is true:
                 add 1 to {_fo}
-            if isVoidBoots({_it}) is true:
+            else if isVoidBoots({_it}) is true:
                 add 1 to {_vo}
             else:
                 set {_bad} to true
@@ -5032,13 +5018,22 @@ function syncAltarGearDurability(p: player):
     if isAltarSwordTool({_tk}) is true:
         set durability of {_tk} to 99999
         set {_p}'s tool to {_tk}
-    loop helmet, chestplate, leggings and boots of {_p}:
-        if isAltarArmorPiece(loop-value) is true:
-            set durability of loop-value to 99999
-    set helmet of {_p} to helmet of {_p}
-    set chestplate of {_p} to chestplate of {_p}
-    set leggings of {_p} to leggings of {_p}
-    set boots of {_p} to boots of {_p}
+    set {_helm} to helmet of {_p}
+    if isAltarArmorPiece({_helm}) is true:
+        set durability of {_helm} to 99999
+        set helmet of {_p} to {_helm}
+    set {_chest} to chestplate of {_p}
+    if isAltarArmorPiece({_chest}) is true:
+        set durability of {_chest} to 99999
+        set chestplate of {_p} to {_chest}
+    set {_legs} to leggings of {_p}
+    if isAltarArmorPiece({_legs}) is true:
+        set durability of {_legs} to 99999
+        set leggings of {_p} to {_legs}
+    set {_boots} to boots of {_p}
+    if isAltarArmorPiece({_boots}) is true:
+        set durability of {_boots} to 99999
+        set boots of {_p} to {_boots}
 
 function altarSwordIsUndead(v: living entity) :: boolean:
     if {_v} is a zombie:
@@ -5309,24 +5304,24 @@ function altarArmorFortuneXpBonus(p: player) :: number:
     set {_bonus} to 0
     if isFortuneHelmet(helmet of {_p}) is true:
         add 2 to {_bonus}
+    else if isOmniHelmet(helmet of {_p}) is true:
+        add 2 to {_bonus}
     if isFortuneChestplate(chestplate of {_p}) is true:
         add 3 to {_bonus}
-    if isOmniHelmet(helmet of {_p}) is true:
-        add 2 to {_bonus}
-    if isOmniChestplate(chestplate of {_p}) is true:
+    else if isOmniChestplate(chestplate of {_p}) is true:
         add 3 to {_bonus}
     return {_bonus}
 
 function applyAltarArmorOnKill(attacker: player):
     if isVoidBoots(boots of attacker) is true:
         apply speed 2 without particles to attacker for 2 seconds
-    if isOmniBoots(boots of attacker) is true:
+    else if isOmniBoots(boots of attacker) is true:
         apply speed 2 without particles to attacker for 2 seconds
     if isFortuneLeggings(leggings of attacker) is true:
         if random integer between 1 and 100 <= 10:
             set {_bonus} to gold nugget
             giveOrDrop({_bonus}, attacker, location of attacker)
-    if isOmniLeggings(leggings of attacker) is true:
+    else if isOmniLeggings(leggings of attacker) is true:
         if random integer between 1 and 100 <= 10:
             set {_bonus} to gold nugget
             giveOrDrop({_bonus}, attacker, location of attacker)
