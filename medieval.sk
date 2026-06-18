@@ -4346,6 +4346,484 @@ function isAltarPickaxeTool(i: item) :: boolean:
         return true
     return false
 
+# ===== Алтарные мечи и броня (как кирки: 5 типов + омни-слияние) =====
+
+function altarEtherSwordItem() :: item:
+    set {_s} to diamond sword
+    set name of {_s} to "&dЭфирный Меч"
+    set lore of {_s} to "&8✦ Алтарный меч", "&8ЭФИР_МЕЧ", "&7Вампиризм: &c+15% &7урона в лечение", "&7Стабильный урон по всем целям", "&8∞ Неразрушимый"
+    enchant {_s} with unbreaking 10
+    enchant {_s} with sharpness 4
+    return {_s}
+
+function altarFlameSwordItem() :: item:
+    set {_s} to diamond sword
+    set name of {_s} to "&cПламенный Меч"
+    set lore of {_s} to "&8✦ Алтарный меч", "&8ПЛАМЯ_МЕЧ", "&7Поджигает цель на &c3с", "&7+&c10% &7урона по живым целям", "&8∞ Неразрушимый"
+    enchant {_s} with unbreaking 10
+    enchant {_s} with sharpness 4
+    enchant {_s} with fire aspect 2
+    return {_s}
+
+function altarVeinSwordItem() :: item:
+    set {_s} to diamond sword
+    set name of {_s} to "&aЖильный Клинок"
+    set lore of {_s} to "&8✦ Алтарный меч", "&8ЖИЛА_МЕЧ", "&7Рассечение: &a25% &7урона соседним врагам", "&7Радиус &f2.5 &7блока от цели", "&8∞ Неразрушимый"
+    enchant {_s} with unbreaking 10
+    enchant {_s} with sharpness 4
+    return {_s}
+
+function altarFortuneSwordItem() :: item:
+    set {_s} to diamond sword
+    set name of {_s} to "&eМеч Удачи"
+    set lore of {_s} to "&8✦ Алтарный меч", "&8УДАЧА_МЕЧ", "&7Шанс &e20% &7доп. дропа с мобов", "&7Бонусный опыт за убийства", "&8∞ Неразрушимый"
+    enchant {_s} with unbreaking 10
+    enchant {_s} with sharpness 4
+    enchant {_s} with looting 2
+    return {_s}
+
+function altarVoidSwordItem() :: item:
+    set {_s} to diamond sword
+    set name of {_s} to "&5Меч Пустоты"
+    set lore of {_s} to "&8✦ Алтарный меч", "&8ПУСТОТА_МЕЧ", "&7Рывок скорости после убийства", "&7Шанс отбросить цель", "&8∞ Неразрушимый"
+    enchant {_s} with unbreaking 10
+    enchant {_s} with sharpness 4
+    enchant {_s} with knockback 1
+    return {_s}
+
+function altarOmniSwordItem() :: item:
+    set {_s} to netherite sword
+    set name of {_s} to "&6&lОмни-Меч Алтаря"
+    set lore of {_s} to "&8✦ Финальное слияние", "&8ОМНИ_МЕЧ", "&7Вампиризм + огонь + рассечение + удача + пустота", "&7Все эффекты алтарных клинков", "&8∞ Неразрушимый"
+    enchant {_s} with unbreaking 10
+    enchant {_s} with sharpness 6
+    enchant {_s} with fire aspect 2
+    enchant {_s} with looting 3
+    enchant {_s} with knockback 1
+    return {_s}
+
+function altarEtherChestplateItem() :: item:
+    set {_a} to diamond chestplate
+    set name of {_a} to "&dЭфирная Кираса"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8ЭФИР_БРОНЯ", "&7-&a5% &7получаемого урона", "&7Стабильная защита в бою", "&8∞ Неразрушимая"
+    enchant {_a} with unbreaking 10
+    enchant {_a} with protection 4
+    return {_a}
+
+function altarFlameChestplateItem() :: item:
+    set {_a} to diamond chestplate
+    set name of {_a} to "&cПламенная Кираса"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8ПЛАМЯ_БРОНЯ", "&7Иммунитет к огню", "&7Поджигает атакующих в ближнем бою", "&8∞ Неразрушимая"
+    enchant {_a} with unbreaking 10
+    enchant {_a} with protection 4
+    enchant {_a} with thorns 2
+    return {_a}
+
+function altarVeinChestplateItem() :: item:
+    set {_a} to diamond chestplate
+    set name of {_a} to "&aЖильная Кираса"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8ЖИЛА_БРОНЯ", "&7Регенерация после получения урона", "&7КД &f5с", "&8∞ Неразрушимая"
+    enchant {_a} with unbreaking 10
+    enchant {_a} with protection 4
+    return {_a}
+
+function altarFortuneChestplateItem() :: item:
+    set {_a} to diamond chestplate
+    set name of {_a} to "&eКираса Удачи"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8УДАЧА_БРОНЯ", "&7+&e15% &7опыта за убийства", "&7Шанс сохранить золотое яблоко при ударе", "&8∞ Неразрушимая"
+    enchant {_a} with unbreaking 10
+    enchant {_a} with protection 4
+    return {_a}
+
+function altarVoidChestplateItem() :: item:
+    set {_a} to diamond chestplate
+    set name of {_a} to "&5Кираса Пустоты"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8ПУСТОТА_БРОНЯ", "&7Ниже &c30% HP: &7Сопротивление I", "&7Краткий рывок скорости при получении урона", "&8∞ Неразрушимая"
+    enchant {_a} with unbreaking 10
+    enchant {_a} with protection 4
+    return {_a}
+
+function altarOmniChestplateItem() :: item:
+    set {_a} to netherite chestplate
+    set name of {_a} to "&6&lОмни-Кираса Алтаря"
+    set lore of {_a} to "&8✦ Финальное слияние", "&8ОМНИ_БРОНЯ", "&7Все эффекты алтарных кирас", "&7Максимальная защита + бонусы", "&8∞ Неразрушимая"
+    enchant {_a} with unbreaking 10
+    enchant {_a} with protection 5
+    enchant {_a} with thorns 2
+    return {_a}
+
+function altarGearHasTag(i: item, tag: text) :: boolean:
+    if {_i} is not diamond sword:
+        if {_i} is not netherite sword:
+            if {_i} is not diamond chestplate:
+                if {_i} is not netherite chestplate:
+                    return false
+    set {_l::*} to lore of {_i}
+    loop {_l::*}:
+        if loop-value contains {_tag}:
+            return true
+    return false
+
+function isEtherSword(i: item) :: boolean:
+    return altarGearHasTag({_i}, "ЭФИР_МЕЧ")
+
+function isFlameSword(i: item) :: boolean:
+    return altarGearHasTag({_i}, "ПЛАМЯ_МЕЧ")
+
+function isVeinSword(i: item) :: boolean:
+    return altarGearHasTag({_i}, "ЖИЛА_МЕЧ")
+
+function isFortuneSword(i: item) :: boolean:
+    return altarGearHasTag({_i}, "УДАЧА_МЕЧ")
+
+function isVoidSword(i: item) :: boolean:
+    return altarGearHasTag({_i}, "ПУСТОТА_МЕЧ")
+
+function isOmniSword(i: item) :: boolean:
+    return altarGearHasTag({_i}, "ОМНИ_МЕЧ")
+
+function isAltarSwordTool(i: item) :: boolean:
+    if isEtherSword({_i}) is true:
+        return true
+    if isFlameSword({_i}) is true:
+        return true
+    if isVeinSword({_i}) is true:
+        return true
+    if isFortuneSword({_i}) is true:
+        return true
+    if isVoidSword({_i}) is true:
+        return true
+    if isOmniSword({_i}) is true:
+        return true
+    return false
+
+function isEtherArmor(i: item) :: boolean:
+    return altarGearHasTag({_i}, "ЭФИР_БРОНЯ")
+
+function isFlameArmor(i: item) :: boolean:
+    return altarGearHasTag({_i}, "ПЛАМЯ_БРОНЯ")
+
+function isVeinArmor(i: item) :: boolean:
+    return altarGearHasTag({_i}, "ЖИЛА_БРОНЯ")
+
+function isFortuneArmor(i: item) :: boolean:
+    return altarGearHasTag({_i}, "УДАЧА_БРОНЯ")
+
+function isVoidArmor(i: item) :: boolean:
+    return altarGearHasTag({_i}, "ПУСТОТА_БРОНЯ")
+
+function isOmniArmor(i: item) :: boolean:
+    return altarGearHasTag({_i}, "ОМНИ_БРОНЯ")
+
+function isAltarArmorPiece(i: item) :: boolean:
+    if isEtherArmor({_i}) is true:
+        return true
+    if isFlameArmor({_i}) is true:
+        return true
+    if isVeinArmor({_i}) is true:
+        return true
+    if isFortuneArmor({_i}) is true:
+        return true
+    if isVoidArmor({_i}) is true:
+        return true
+    if isOmniArmor({_i}) is true:
+        return true
+    return false
+
+function playerAltarChestplate(p: player) :: item:
+    set {_cp} to chestplate of {_p}
+    if isAltarArmorPiece({_cp}) is true:
+        return {_cp}
+    return air
+
+function isAltarKeyToolRecipe(inv: inventory, tool: item, core: item, catalyst: item) :: boolean:
+    set {_voidN} to 0
+    set {_retN} to 0
+    set {_toolN} to 0
+    set {_coreN} to 0
+    set {_catN} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_it} to slot (loop-number - 1) of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if altarAwakeningVoidKey({_it}) is true:
+                add 1 to {_voidN}
+            else if altarAwakeningReturnKey({_it}) is true:
+                add 1 to {_retN}
+            else if {_it} is {_tool}:
+                add 1 to {_toolN}
+            else if {_it} is {_core}:
+                add 1 to {_coreN}
+            else if {_it} is {_catalyst}:
+                add 1 to {_catN}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_voidN} is not 1:
+        return false
+    if {_retN} is not 1:
+        return false
+    if {_toolN} is not 1:
+        return false
+    if {_coreN} is not 1:
+        return false
+    if {_catN} is not 1:
+        return false
+    return true
+
+function isEtherAltarToolRecipeExact(inv: inventory, tool: item) :: boolean:
+    set {_voidN} to 0
+    set {_retN} to 0
+    set {_toolN} to 0
+    set {_blockN} to 0
+    set {_amN} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_it} to slot (loop-number - 1) of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if altarAwakeningVoidKey({_it}) is true:
+                add 1 to {_voidN}
+            else if altarAwakeningReturnKey({_it}) is true:
+                add 1 to {_retN}
+            else if {_it} is {_tool}:
+                add 1 to {_toolN}
+            else if {_it} is diamond block:
+                add 1 to {_blockN}
+            else if {_it} is amethyst shard:
+                add 1 to {_amN}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_voidN} is not 1:
+        return false
+    if {_retN} is not 1:
+        return false
+    if {_toolN} is not 1:
+        return false
+    if {_blockN} is not 1:
+        return false
+    if {_amN} is not 1:
+        return false
+    return true
+
+function isOmniSwordAltarRecipe(inv: inventory) :: boolean:
+    set {_ether} to 0
+    set {_flame} to 0
+    set {_vein} to 0
+    set {_fortune} to 0
+    set {_voids} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_it} to slot (loop-number - 1) of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if isEtherSword({_it}) is true:
+                add 1 to {_ether}
+            else if isFlameSword({_it}) is true:
+                add 1 to {_flame}
+            else if isVeinSword({_it}) is true:
+                add 1 to {_vein}
+            else if isFortuneSword({_it}) is true:
+                add 1 to {_fortune}
+            else if isVoidSword({_it}) is true:
+                add 1 to {_voids}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_ether} is not 1:
+        return false
+    if {_flame} is not 1:
+        return false
+    if {_vein} is not 1:
+        return false
+    if {_fortune} is not 1:
+        return false
+    if {_voids} is not 1:
+        return false
+    return true
+
+function isOmniArmorAltarRecipe(inv: inventory) :: boolean:
+    set {_ether} to 0
+    set {_flame} to 0
+    set {_vein} to 0
+    set {_fortune} to 0
+    set {_voida} to 0
+    set {_total} to 0
+    set {_bad} to false
+    loop 5 times:
+        set {_it} to slot (loop-number - 1) of {_inv}
+        if {_it} is air:
+            set {_bad} to true
+        else:
+            add 1 to {_total}
+            if isEtherArmor({_it}) is true:
+                add 1 to {_ether}
+            else if isFlameArmor({_it}) is true:
+                add 1 to {_flame}
+            else if isVeinArmor({_it}) is true:
+                add 1 to {_vein}
+            else if isFortuneArmor({_it}) is true:
+                add 1 to {_fortune}
+            else if isVoidArmor({_it}) is true:
+                add 1 to {_voida}
+            else:
+                set {_bad} to true
+    if {_bad} is true:
+        return false
+    if {_total} is not 5:
+        return false
+    if {_ether} is not 1:
+        return false
+    if {_flame} is not 1:
+        return false
+    if {_vein} is not 1:
+        return false
+    if {_fortune} is not 1:
+        return false
+    if {_voida} is not 1:
+        return false
+    return true
+
+function syncAltarGearDurability(p: player):
+    set {_tk} to {_p}'s tool
+    if isAltarSwordTool({_tk}) is true:
+        set durability of {_tk} to 99999
+        set {_p}'s tool to {_tk}
+    set {_cp} to chestplate of {_p}
+    if isAltarArmorPiece({_cp}) is true:
+        set durability of {_cp} to 99999
+        set chestplate of {_p} to {_cp}
+
+function applyAltarSwordOnHit(attacker: player, victim: living entity, dmg: number):
+    set {_tk} to attacker's tool
+    set {_etherOn} to false
+    set {_flameOn} to false
+    set {_veinOn} to false
+    set {_fortuneOn} to false
+    set {_voidOn} to false
+    if isEtherSword({_tk}) is true:
+        set {_etherOn} to true
+    if isFlameSword({_tk}) is true:
+        set {_flameOn} to true
+    if isVeinSword({_tk}) is true:
+        set {_veinOn} to true
+    if isFortuneSword({_tk}) is true:
+        set {_fortuneOn} to true
+    if isVoidSword({_tk}) is true:
+        set {_voidOn} to true
+    if isOmniSword({_tk}) is true:
+        set {_etherOn} to true
+        set {_flameOn} to true
+        set {_veinOn} to true
+        set {_fortuneOn} to true
+        set {_voidOn} to true
+    if {_etherOn} is true:
+        heal attacker by {_dmg} * 0.15
+    if {_flameOn} is true:
+        if victim is not a player:
+            ignite victim for 3 seconds
+        else:
+            ignite victim for 2 seconds
+    if {_veinOn} is true:
+        set {_vloc} to location of victim
+        loop all living entities in radius 3 around {_vloc}:
+            if loop-entity is not attacker:
+                if loop-entity is not victim:
+                    if distance between loop-entity and victim <= 2.5:
+                        damage loop-entity by {_dmg} * 0.25
+    if {_voidOn} is true:
+        if random integer between 1 and 100 <= 15:
+            push victim away from attacker at speed 0.55
+
+function applyAltarSwordOnKill(attacker: player):
+    set {_tk} to attacker's tool
+    set {_fortuneOn} to false
+    set {_voidOn} to false
+    if isFortuneSword({_tk}) is true:
+        set {_fortuneOn} to true
+    if isVoidSword({_tk}) is true:
+        set {_voidOn} to true
+    if isOmniSword({_tk}) is true:
+        set {_fortuneOn} to true
+        set {_voidOn} to true
+    if {_fortuneOn} is true:
+        if random integer between 1 and 100 <= 20:
+            set {_bonus} to gold nugget
+            if random integer between 1 and 100 <= 35:
+                set {_bonus} to emerald
+            giveOrDrop({_bonus}, attacker, location of attacker)
+        giveArtifactScaledExperience(attacker, 2)
+    if {_voidOn} is true:
+        apply speed 2 without particles to attacker for 2 seconds
+
+function applyAltarArmorOnDamaged(victim: player, attacker: entity):
+    set {_cp} to playerAltarChestplate(victim)
+    if {_cp} is air:
+        stop
+    set {_etherOn} to false
+    set {_flameOn} to false
+    set {_veinOn} to false
+    set {_voidOn} to false
+    if isEtherArmor({_cp}) is true:
+        set {_etherOn} to true
+    if isFlameArmor({_cp}) is true:
+        set {_flameOn} to true
+    if isVeinArmor({_cp}) is true:
+        set {_veinOn} to true
+    if isVoidArmor({_cp}) is true:
+        set {_voidOn} to true
+    if isOmniArmor({_cp}) is true:
+        set {_etherOn} to true
+        set {_flameOn} to true
+        set {_veinOn} to true
+        set {_voidOn} to true
+    if {_etherOn} is true:
+        set damage to damage * 0.95
+    if {_flameOn} is true:
+        if damage cause is fire:
+            cancel event
+            stop
+        if damage cause is fire tick:
+            cancel event
+            stop
+        if attacker is a living entity:
+            if attacker is not victim:
+                if distance between attacker and victim <= 4:
+                    ignite attacker for 2 seconds
+    if {_veinOn} is true:
+        set {_vu} to uuid of victim
+        set {_now} to unix timestamp of now
+        set {_last} to {altar_armor_regen_cd::%{_vu}%} ? 0
+        if {_now} - {_last} >= 5:
+            set {altar_armor_regen_cd::%{_vu}%} to {_now}
+            apply regeneration 1 without particles to victim for 2 seconds
+    if {_voidOn} is true:
+        set {_maxHp} to max health of victim
+        if health of victim <= ({_maxHp} * 0.3):
+            apply resistance 1 without particles to victim for 3 seconds
+        if random integer between 1 and 100 <= 20:
+            apply speed 1 without particles to victim for 2 seconds
+
 function isEtherTrashBlock(b: block) :: boolean:
     if {_b} is stone:
         return true
@@ -4904,6 +5382,34 @@ function evoAdminItemById(id: text) :: item:
     if {_id} is "omni_pick":
         return altarOmniPickaxeItem()
 
+    # Мечи алтаря
+    if {_id} is "ether_sword":
+        return altarEtherSwordItem()
+    if {_id} is "flame_sword":
+        return altarFlameSwordItem()
+    if {_id} is "vein_sword":
+        return altarVeinSwordItem()
+    if {_id} is "fortune_sword":
+        return altarFortuneSwordItem()
+    if {_id} is "void_sword":
+        return altarVoidSwordItem()
+    if {_id} is "omni_sword":
+        return altarOmniSwordItem()
+
+    # Броня алтаря (нагрудник)
+    if {_id} is "ether_armor":
+        return altarEtherChestplateItem()
+    if {_id} is "flame_armor":
+        return altarFlameChestplateItem()
+    if {_id} is "vein_armor":
+        return altarVeinChestplateItem()
+    if {_id} is "fortune_armor":
+        return altarFortuneChestplateItem()
+    if {_id} is "void_armor":
+        return altarVoidChestplateItem()
+    if {_id} is "omni_armor":
+        return altarOmniChestplateItem()
+
     # Новые крафтабельные артефакты вне ядра
     if {_id} is "heater":
         return portableHeaterItem()
@@ -4951,6 +5457,20 @@ function evoAdminItemIdList() :: texts:
     add "fortune_pick" to {_ids::*}
     add "void_pick" to {_ids::*}
     add "omni_pick" to {_ids::*}
+    # Мечи алтаря
+    add "ether_sword" to {_ids::*}
+    add "flame_sword" to {_ids::*}
+    add "vein_sword" to {_ids::*}
+    add "fortune_sword" to {_ids::*}
+    add "void_sword" to {_ids::*}
+    add "omni_sword" to {_ids::*}
+    # Броня алтаря
+    add "ether_armor" to {_ids::*}
+    add "flame_armor" to {_ids::*}
+    add "vein_armor" to {_ids::*}
+    add "fortune_armor" to {_ids::*}
+    add "void_armor" to {_ids::*}
+    add "omni_armor" to {_ids::*}
     # Основные артефакты
     add "leg_warrior" to {_ids::*}
     add "leg_scout" to {_ids::*}
@@ -5061,6 +5581,30 @@ function diaryRecipeTextByItem(it: item) :: text:
         return "recipe_local::void_pick"
     if {_nmLow} contains "омни-кирка":
         return "recipe_local::omni_pick"
+    if {_nmLow} contains "эфирный меч":
+        return "recipe_local::ether_sword"
+    if {_nmLow} contains "пламенный меч":
+        return "recipe_local::flame_sword"
+    if {_nmLow} contains "жильный клинок":
+        return "recipe_local::vein_sword"
+    if {_nmLow} contains "меч удачи":
+        return "recipe_local::fortune_sword"
+    if {_nmLow} contains "меч пустоты":
+        return "recipe_local::void_sword"
+    if {_nmLow} contains "омни-меч":
+        return "recipe_local::omni_sword"
+    if {_nmLow} contains "эфирная кираса":
+        return "recipe_local::ether_armor"
+    if {_nmLow} contains "пламенная кираса":
+        return "recipe_local::flame_armor"
+    if {_nmLow} contains "жильная кираса":
+        return "recipe_local::vein_armor"
+    if {_nmLow} contains "кираса удачи":
+        return "recipe_local::fortune_armor"
+    if {_nmLow} contains "кираса пустоты":
+        return "recipe_local::void_armor"
+    if {_nmLow} contains "омни-кираса":
+        return "recipe_local::omni_armor"
     if {_nmLow} contains "голова игрока":
         return "recipe_local::player_head"
     return "%{_nm}%: рецепт изучен на Алтаре Создания"
@@ -5153,6 +5697,30 @@ function openAdventurerJournalPage(p: player, page: number):
                     set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fКирка Бездны" and "&8 • &fЭфирная кирка" and "&8 • &fОбсидиан" and "&8 • &fЭндер-жемчуг" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата"
                 else if {_rid} is "omni_pick":
                     set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fОмни-кирка" and "&8 • &fПламенная кирка" and "&8 • &fЖильная кирка" and "&8 • &fКирка Шахтёра" and "&8 • &fКирка Бездны" and "&8 • &fЭфирная кирка"
+                else if {_rid} is "ether_sword":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fЭфирный меч" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазный меч" and "&8 • &fАлмазный блок" and "&8 • &fАметистовый осколок"
+                else if {_rid} is "flame_sword":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fПламенный меч" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазный меч" and "&8 • &fЗолотой блок" and "&8 • &fОгненный стержень"
+                else if {_rid} is "vein_sword":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fЖильный клинок" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазный меч" and "&8 • &fИзумрудный блок" and "&8 • &fСлизь"
+                else if {_rid} is "fortune_sword":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fМеч Удачи" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазный меч" and "&8 • &fЗолотой блок" and "&8 • &fЛазурит"
+                else if {_rid} is "void_sword":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fМеч Пустоты" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазный меч" and "&8 • &fОбсидиан" and "&8 • &fЭндер-жемчуг"
+                else if {_rid} is "omni_sword":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fОмни-меч" and "&8 • &fЭфирный меч" and "&8 • &fПламенный меч" and "&8 • &fЖильный клинок" and "&8 • &fМеч Удачи" and "&8 • &fМеч Пустоты"
+                else if {_rid} is "ether_armor":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fЭфирная кираса" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазная кираса" and "&8 • &fАлмазный блок" and "&8 • &fАметистовый осколок"
+                else if {_rid} is "flame_armor":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fПламенная кираса" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазная кираса" and "&8 • &fЗолотой блок" and "&8 • &fОгненный стержень"
+                else if {_rid} is "vein_armor":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fЖильная кираса" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазная кираса" and "&8 • &fИзумрудный блок" and "&8 • &fСлизь"
+                else if {_rid} is "fortune_armor":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fКираса Удачи" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазная кираса" and "&8 • &fЗолотой блок" and "&8 • &fЛазурит"
+                else if {_rid} is "void_armor":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fКираса Пустоты" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазная кираса" and "&8 • &fОбсидиан" and "&8 • &fЭндер-жемчуг"
+                else if {_rid} is "omni_armor":
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fОмни-кираса" and "&8 • &fЭфирная кираса" and "&8 • &fПламенная кираса" and "&8 • &fЖильная кираса" and "&8 • &fКираса Удачи" and "&8 • &fКираса Пустоты"
                 else if {_rid} is "player_head":
                     set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fГолова игрока" and "&8 • &fДёрн" and "&8 • &fЗолотое яблоко" and "&8 • &fАлмаз" and "&8 • &fНезерак" and "&8 • &fКамень Энда"
                 else:
@@ -5344,6 +5912,30 @@ function tryCraftAwakeningAltarAt(hb: block, crafter: player) :: boolean:
         set {_outItem} to altarVoidPickaxeItem()
     else if isOmniPickaxeAltarRecipe({_inv}) is true:
         set {_outItem} to altarOmniPickaxeItem()
+    else if isEtherAltarToolRecipeExact({_inv}, diamond sword) is true:
+        set {_outItem} to altarEtherSwordItem()
+    else if isAltarKeyToolRecipe({_inv}, diamond sword, gold block, blaze rod) is true:
+        set {_outItem} to altarFlameSwordItem()
+    else if isAltarKeyToolRecipe({_inv}, diamond sword, emerald block, slime ball) is true:
+        set {_outItem} to altarVeinSwordItem()
+    else if isAltarKeyToolRecipe({_inv}, diamond sword, gold block, lapis lazuli) is true:
+        set {_outItem} to altarFortuneSwordItem()
+    else if isAltarKeyToolRecipe({_inv}, diamond sword, obsidian, ender pearl) is true:
+        set {_outItem} to altarVoidSwordItem()
+    else if isOmniSwordAltarRecipe({_inv}) is true:
+        set {_outItem} to altarOmniSwordItem()
+    else if isEtherAltarToolRecipeExact({_inv}, diamond chestplate) is true:
+        set {_outItem} to altarEtherChestplateItem()
+    else if isAltarKeyToolRecipe({_inv}, diamond chestplate, gold block, blaze rod) is true:
+        set {_outItem} to altarFlameChestplateItem()
+    else if isAltarKeyToolRecipe({_inv}, diamond chestplate, emerald block, slime ball) is true:
+        set {_outItem} to altarVeinChestplateItem()
+    else if isAltarKeyToolRecipe({_inv}, diamond chestplate, gold block, lapis lazuli) is true:
+        set {_outItem} to altarFortuneChestplateItem()
+    else if isAltarKeyToolRecipe({_inv}, diamond chestplate, obsidian, ender pearl) is true:
+        set {_outItem} to altarVoidChestplateItem()
+    else if isOmniArmorAltarRecipe({_inv}) is true:
+        set {_outItem} to altarOmniChestplateItem()
     else if isArtifactRecipeByFive({_inv}, netherite sword, blaze rod, redstone block, ender pearl, diamond block) is true:
         set {_outItem} to artifactFromSlot(0)
     else if isArtifactRecipeByFive({_inv}, netherite boots, phantom membrane, echo shard, diamond block, ender pearl) is true:
@@ -5593,7 +6185,21 @@ command /altar:
         send "{@prefix} &aЖильная: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &aизумрудный блок + &aslime ball"
         send "{@prefix} &eУдачи: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &eзолотой блок + &9лазурит"
         send "{@prefix} &5Пустоты: &5Ключ пустоты + &bКлюч возврата + &fалмазная кирка + &8обсидиан + &5эндер-жемчуг"
-        send "{@prefix} &6Омни-слияние: &7положи в 0–4 все 5 алтарных кирок (Эфирная, Пламенная, Жильная, Удачи, Пустоты)."
+        send "{@prefix} &6Омни-слияние кирок: &7положи в 0–4 все 5 алтарных кирок (Эфирная, Пламенная, Жильная, Удачи, Пустоты)."
+        send "{@prefix} &6Рецепты алтарных мечей (слоты 0–4, порядок любой):"
+        send "{@prefix} &dЭфирный: &5Ключ пустоты + &bКлюч возврата + &fалмазный меч + &bалмазный блок + &dаметистовый осколок"
+        send "{@prefix} &cПламенный: &5Ключ пустоты + &bКлюч возврата + &fалмазный меч + &6золотой блок + &6blaze rod"
+        send "{@prefix} &aЖильный: &5Ключ пустоты + &bКлюч возврата + &fалмазный меч + &aизумрудный блок + &aslime ball"
+        send "{@prefix} &eУдачи: &5Ключ пустоты + &bКлюч возврата + &fалмазный меч + &eзолотой блок + &9лазурит"
+        send "{@prefix} &5Пустоты: &5Ключ пустоты + &bКлюч возврата + &fалмазный меч + &8обсидиан + &5эндер-жемчуг"
+        send "{@prefix} &6Омни-слияние мечей: &7все 5 алтарных мечей в слотах 0–4."
+        send "{@prefix} &6Рецепты алтарной брони (нагрудник, слоты 0–4):"
+        send "{@prefix} &dЭфирная кираса: &5Ключ пустоты + &bКлюч возврата + &fалмазная кираса + &bалмазный блок + &dаметист"
+        send "{@prefix} &cПламенная: &5Ключ + &bКлюч + &fалм. кираса + &6золотой блок + &6blaze rod"
+        send "{@prefix} &aЖильная: &5Ключ + &bКлюч + &fалм. кираса + &aизумруд + &aslime"
+        send "{@prefix} &eУдачи: &5Ключ + &bКлюч + &fалм. кираса + &eзолотой блок + &9лазурит"
+        send "{@prefix} &5Пустоты: &5Ключ + &bКлюч + &fалм. кираса + &8обсидиан + &5эндер-жемчуг"
+        send "{@prefix} &6Омни-кираса: &7все 5 алтарных кирас в слотах 0–4."
         send "{@prefix} &fГолова игрока: &aдёрн + &6золотое яблоко + &bалмаз + &cnetherrack + &fкамень энда."
         send "{@prefix} &6Корона Высшего Разума: &6Эфирный Разум + &dЗвезда Азуры + &eзолотой шлем + &fenchanted book + &aпузырёк опыта."
         send "{@prefix} &6Портативный Нагреватель: &7печка + blaze powder + медный блок + уголь + железный слиток"
@@ -6195,6 +6801,23 @@ on damage:
             else if victim is a rabbit:
                 set damage to damage * 2
 
+    # Алтарные мечи: бонусы при ударе
+    if attacker is a player:
+        if isAltarSwordTool(attacker's tool) is true:
+            syncAltarGearDurability(attacker)
+            if isFlameSword(attacker's tool) is true:
+                set damage to damage * 1.1
+            else if isOmniSword(attacker's tool) is true:
+                set damage to damage * 1.1
+            if victim is a living entity:
+                if victim is not attacker:
+                    applyAltarSwordOnHit(attacker, victim, damage)
+
+    # Алтарная броня (нагрудник): защита и контратаки
+    if victim is a player:
+        syncAltarGearDurability(victim)
+        applyAltarArmorOnDamaged(victim, attacker)
+
     # Легендарка Warrior: Печать Пространственного Разреза
     # Тип оружия — как у бонуса L1 воина: isSword() (любой материал) + булава 1.21
     if attacker is a player:
@@ -6546,6 +7169,19 @@ on death:
                     else:
                         drop 4 iron ingot at location of victim
                     send action bar "&6&lМОНЕТА УДАЧИ! &7Бонусный лут выпал" to attacker
+
+        # Алтарный меч: бонусы за убийство
+        if isAltarSwordTool(attacker's tool) is true:
+            if victim is a living entity:
+                if victim is not a player:
+                    applyAltarSwordOnKill(attacker)
+
+        # Алтарная кираса удачи: доп. опыт за убийства
+        set {_altarCp} to playerAltarChestplate(attacker)
+        if isFortuneArmor({_altarCp}) is true:
+            giveArtifactScaledExperience(attacker, 2)
+        else if isOmniArmor({_altarCp}) is true:
+            giveArtifactScaledExperience(attacker, 2)
 
 on pickup:
     if event-item is set:
@@ -7342,6 +7978,11 @@ every 1 second:
         loop all items in loop-player's inventory:
             if isClassItem(loop-value-2) is true:
                 set durability of loop-value-2 to 99999
+            if isAltarSwordTool(loop-value-2) is true:
+                set durability of loop-value-2 to 99999
+            if isAltarArmorPiece(loop-value-2) is true:
+                set durability of loop-value-2 to 99999
+        syncAltarGearDurability(loop-player)
         set {_pu} to loop-player's uuid
         if noCooldownMode(loop-player) is true:
             # Во время "cooldown off" кулдауны очищаются, поэтому нужно постоянно сохранять
