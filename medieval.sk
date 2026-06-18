@@ -4351,7 +4351,7 @@ function isAltarPickaxeTool(i: item) :: boolean:
 function altarEtherSwordItem() :: item:
     set {_s} to diamond sword
     set name of {_s} to "&dПульс Эфира"
-    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ЭФИР", "&7Вампиризм: 20% урона в лечение", "&7Замедляет цель на 1с", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ЭФИР", "&7Вампиризм: 20%% урона в лечение", "&7Замедляет цель на 1с", "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 4
     return {_s}
@@ -4359,7 +4359,7 @@ function altarEtherSwordItem() :: item:
 function altarFlameSwordItem() :: item:
     set {_s} to diamond sword
     set name of {_s} to "&cЗаря Разлома"
-    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ПЛАМЯ", "&7Поджигает на 4с", "&7+15% урона по нежити", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ПЛАМЯ", "&7Поджигает на 4с", "&7+15%% урона по нежити", "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 4
     enchant {_s} with fire aspect 2
@@ -4368,7 +4368,7 @@ function altarFlameSwordItem() :: item:
 function altarVeinSwordItem() :: item:
     set {_s} to diamond sword
     set name of {_s} to "&aСечение Жилы"
-    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ЖИЛА", "&7Рассечение: 35% урона в радиусе 3", "&7Бьёт соседних врагов", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ЖИЛА", "&7Рассечение: 35%% урона в радиусе 3", "&7Бьёт соседних врагов", "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 4
     return {_s}
@@ -4376,7 +4376,7 @@ function altarVeinSwordItem() :: item:
 function altarFortuneSwordItem() :: item:
     set {_s} to diamond sword
     set name of {_s} to "&eКлинок Созвездия"
-    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_УДАЧА", "&7+1 опыт за удар по мобу", "&720% бонусный дроп при убийстве", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_УДАЧА", "&7+1 опыт за удар по мобу", "&720%% бонусный дроп при убийстве", "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 4
     enchant {_s} with looting 2
@@ -4385,7 +4385,7 @@ function altarFortuneSwordItem() :: item:
 function altarVoidSwordItem() :: item:
     set {_s} to diamond sword
     set name of {_s} to "&5Разрез Бездны"
-    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ПУСТОТА", "&725% отброс цели", "&7Weakness I на 2с", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ПУСТОТА", "&725%% отброс цели", "&7Weakness I на 2с", "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 4
     enchant {_s} with knockback 1
@@ -4405,7 +4405,7 @@ function altarOmniSwordItem() :: item:
 function altarEtherHelmetItem() :: item:
     set {_a} to diamond helmet
     set name of {_a} to "&dЭфирный Венец"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_ШЛЕМ", "&8ЭФИР_БРОНЯ", "&7Ночное зрение при HP > 80%", "&7-3% получаемого урона", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_ШЛЕМ", "&8ЭФИР_БРОНЯ", "&7Ночное зрение при HP выше 80%%", "&7-3%% получаемого урона", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4413,7 +4413,7 @@ function altarEtherHelmetItem() :: item:
 function altarEtherChestplateItem() :: item:
     set {_a} to diamond chestplate
     set name of {_a} to "&dЭфирная Мантия"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_НАГРУД", "&8ЭФИР_БРОНЯ", "&7-5% получаемого урона", "&7Стабилизирует урон в бою", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_НАГРУД", "&8ЭФИР_БРОНЯ", "&7-5%% получаемого урона", "&7Стабилизирует урон в бою", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4421,7 +4421,7 @@ function altarEtherChestplateItem() :: item:
 function altarEtherLeggingsItem() :: item:
     set {_a} to diamond leggings
     set name of {_a} to "&dЭфирные Поножи"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_ПОНОЖ", "&8ЭФИР_БРОНЯ", "&7+10% скорости бега", "&7Лёгкие, не стесняют движений", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_ПОНОЖ", "&8ЭФИР_БРОНЯ", "&7+10%% скорости бега", "&7Лёгкие, не стесняют движений", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4454,7 +4454,7 @@ function altarFlameChestplateItem() :: item:
 function altarFlameLeggingsItem() :: item:
     set {_a} to diamond leggings
     set name of {_a} to "&cПоножи Раскала"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПЛАМЯ_ПОНОЖ", "&8ПЛАМЯ_БРОНЯ", "&7-50% урона от огня", "&7Искры при беге", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПЛАМЯ_ПОНОЖ", "&8ПЛАМЯ_БРОНЯ", "&7-50%% урона от огня", "&7Искры при беге", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4470,7 +4470,7 @@ function altarFlameBootsItem() :: item:
 function altarVeinHelmetItem() :: item:
     set {_a} to diamond helmet
     set name of {_a} to "&aШлем Корней"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЖИЛА_ШЛЕМ", "&8ЖИЛА_БРОНЯ", "&7Regen I при HP < 50%", "&7КД 8с", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЖИЛА_ШЛЕМ", "&8ЖИЛА_БРОНЯ", "&7Regen I при HP ниже 50%%", "&7КД 8с", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4486,7 +4486,7 @@ function altarVeinChestplateItem() :: item:
 function altarVeinLeggingsItem() :: item:
     set {_a} to diamond leggings
     set name of {_a} to "&aПоножи Узора"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЖИЛА_ПОНОЖ", "&8ЖИЛА_БРОНЯ", "&710% замедлить атакующего", "&7Корни сдерживают врага", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЖИЛА_ПОНОЖ", "&8ЖИЛА_БРОНЯ", "&710%% замедлить атакующего", "&7Корни сдерживают врага", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4502,7 +4502,7 @@ function altarVeinBootsItem() :: item:
 function altarFortuneHelmetItem() :: item:
     set {_a} to diamond helmet
     set name of {_a} to "&eВенец Миража"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_ШЛЕМ", "&8УДАЧА_БРОНЯ", "&7+8% опыта за убийства", "&7Ясность цели", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_ШЛЕМ", "&8УДАЧА_БРОНЯ", "&7+8%% опыта за убийства", "&7Ясность цели", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4510,7 +4510,7 @@ function altarFortuneHelmetItem() :: item:
 function altarFortuneChestplateItem() :: item:
     set {_a} to diamond chestplate
     set name of {_a} to "&eНагрудник Охотника"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_НАГРУД", "&8УДАЧА_БРОНЯ", "&7+12% опыта за убийства", "&7Удача в бою", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_НАГРУД", "&8УДАЧА_БРОНЯ", "&7+12%% опыта за убийства", "&7Удача в бою", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4518,7 +4518,7 @@ function altarFortuneChestplateItem() :: item:
 function altarFortuneLeggingsItem() :: item:
     set {_a} to diamond leggings
     set name of {_a} to "&eПоножи Добычи"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_ПОНОЖ", "&8УДАЧА_БРОНЯ", "&710% доп. дроп с мобов", "&7КД 3с на цель", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_ПОНОЖ", "&8УДАЧА_БРОНЯ", "&710%% доп. дроп с мобов", "&7КД 3с на цель", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4534,7 +4534,7 @@ function altarFortuneBootsItem() :: item:
 function altarVoidHelmetItem() :: item:
     set {_a} to diamond helmet
     set name of {_a} to "&5Маска Бездны"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_ШЛЕМ", "&8ПУСТОТА_БРОНЯ", "&715% ослепить атакующего", "&7КД 6с", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_ШЛЕМ", "&8ПУСТОТА_БРОНЯ", "&715%% ослепить атакующего", "&7КД 6с", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4542,7 +4542,7 @@ function altarVoidHelmetItem() :: item:
 function altarVoidChestplateItem() :: item:
     set {_a} to diamond chestplate
     set name of {_a} to "&5Грудь Истощения"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_НАГРУД", "&8ПУСТОТА_БРОНЯ", "&7Resistance I ниже 30% HP", "&7Пустота держит удар", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_НАГРУД", "&8ПУСТОТА_БРОНЯ", "&7Resistance I ниже 30%% HP", "&7Пустота держит удар", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4550,7 +4550,7 @@ function altarVoidChestplateItem() :: item:
 function altarVoidLeggingsItem() :: item:
     set {_a} to diamond leggings
     set name of {_a} to "&5Поножи Сгущения"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_ПОНОЖ", "&8ПУСТОТА_БРОНЯ", "&7Speed I при получении урона", "&720% шанс", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_ПОНОЖ", "&8ПУСТОТА_БРОНЯ", "&7Speed I при получении урона", "&720%% шанс", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
