@@ -86,7 +86,7 @@
   #    может рендерить только первую строку. Для многострочного lore используй:
   #        set {_p} to lime stained glass pane
   #        set name of {_p} to "..."
-  #        set lore of {_p} to "a", "b", "c"
+  #        set lore of {_p} to "a" and "b" and "c"
   #        set slot N of {_inv} to {_p}
   # 5. Не используй player в функциях напрямую — передавай как параметр (p: player).
   #
@@ -400,30 +400,30 @@ function evoAdminCdMenuItem(key: text, base: item, label: text) :: item:
     set {_it} to {_base}
     if evoAdminCdDisabled({_key}) is true:
         set name of {_it} to "&a&l%{_label}%"
-        set lore of {_it} to "&7КД: &aВЫКЛ &7(без задержки для всех)", "&8ПКМ: включить КД обратно"
+        set lore of {_it} to "&7КД: &aВЫКЛ &7(без задержки для всех)" and "&8ПКМ: включить КД обратно"
     else:
         set name of {_it} to "&c&l%{_label}%"
-        set lore of {_it} to "&7КД: &cВКЛ &7(обычная игра)", "&8ПКМ: выключить КД"
+        set lore of {_it} to "&7КД: &cВКЛ &7(обычная игра)" and "&8ПКМ: выключить КД"
     return {_it}
 
 function evoAdminClassMenuItem(cls: text, base: item, label: text) :: item:
     set {_it} to {_base}
     if evoAdminClassDisabled({_cls}) is true:
         set name of {_it} to "&c&l%{_label}%"
-        set lore of {_it} to "&7Класс: &cОТКЛ &7(нельзя выбрать)", "&7Способности и бонусы класса не работают", "&8ПКМ: включить класс"
+        set lore of {_it} to "&7Класс: &cОТКЛ &7(нельзя выбрать)" and "&7Способности и бонусы класса не работают" and "&8ПКМ: включить класс"
     else:
         set name of {_it} to "&a&l%{_label}%"
-        set lore of {_it} to "&7Класс: &aВКЛ", "&8ПКМ: отключить класс"
+        set lore of {_it} to "&7Класс: &aВКЛ" and "&8ПКМ: отключить класс"
     return {_it}
 
 function evoAdminAbilityMenuItem(id: text, base: item, label: text) :: item:
     set {_it} to {_base}
     if evoAdminAbilityDisabled({_id}) is true:
         set name of {_it} to "&c&l%{_label}%"
-        set lore of {_it} to "&7Способность: &cОТКЛ", "&8ПКМ: включить"
+        set lore of {_it} to "&7Способность: &cОТКЛ" and "&8ПКМ: включить"
     else:
         set name of {_it} to "&a&l%{_label}%"
-        set lore of {_it} to "&7Способность: &aВКЛ", "&8ПКМ: отключить"
+        set lore of {_it} to "&7Способность: &aВКЛ" and "&8ПКМ: отключить"
     return {_it}
 
 function openEvoAdminPage(v: player, page: number):
@@ -439,16 +439,16 @@ function openEvoAdminPage(v: player, page: number):
     loop 45 times:
         set slot (loop-number - 1) of {_v}'s current inventory to gray stained glass pane named " "
     if {_pg} is 0:
-        set slot 4 of {_v}'s current inventory to nether star named "&6&lПанель администратора" with lore "&7Глобальные переключатели сервера", "&7КД, классы, способности"
-        set slot 20 of {_v}'s current inventory to clock named "&eКулдауны предметов" with lore "&7Золотое яблоко, булава, перо...", "&8ПКМ: открыть"
+        set slot 4 of {_v}'s current inventory to nether star named "&6&lПанель администратора" with lore "&7Глобальные переключатели сервера" and "&7КД, классы, способности"
+        set slot 20 of {_v}'s current inventory to clock named "&eКулдауны предметов" with lore "&7Золотое яблоко, булава, перо..." and "&8ПКМ: открыть"
         set {evo_admin_slot::%uuid of {_v}%::20} to "nav:1"
-        set slot 22 of {_v}'s current inventory to iron sword named "&cКлассы" with lore "&7Включить/выключить выбор класса", "&8ПКМ: открыть"
+        set slot 22 of {_v}'s current inventory to iron sword named "&cКлассы" with lore "&7Включить/выключить выбор класса" and "&8ПКМ: открыть"
         set {evo_admin_slot::%uuid of {_v}%::22} to "nav:2"
-        set slot 24 of {_v}'s current inventory to blaze rod named "&dСпособности (1/2)" with lore "&7Активные умения классов", "&8ПКМ: открыть"
+        set slot 24 of {_v}'s current inventory to blaze rod named "&dСпособности (1/2)" with lore "&7Активные умения классов" and "&8ПКМ: открыть"
         set {evo_admin_slot::%uuid of {_v}%::24} to "nav:3"
-        set slot 31 of {_v}'s current inventory to paper named "&7/evogive &8— выдача предметов" with lore "&7/evo &8— команды игроку", "&7/evoadmin &8— эта панель"
+        set slot 31 of {_v}'s current inventory to paper named "&7/evogive &8— выдача предметов" with lore "&7/evo &8— команды игроку" and "&7/evoadmin &8— эта панель"
     else if {_pg} is 1:
-        set slot 4 of {_v}'s current inventory to clock named "&eКулдауны предметов" with lore "&7ПКМ по предмету — переключить", "&7&aВЫКЛ КД &7= без задержки для всех"
+        set slot 4 of {_v}'s current inventory to clock named "&eКулдауны предметов" with lore "&7ПКМ по предмету — переключить" and "&7&aВЫКЛ КД &7= без задержки для всех"
         set slot 10 of {_v}'s current inventory to evoAdminCdMenuItem("golden_apple", golden apple, "Золотое яблоко")
         set {evo_admin_slot::%uuid of {_v}%::10} to "cd:golden_apple"
         set slot 11 of {_v}'s current inventory to evoAdminCdMenuItem("mace", mace, "Булава")
@@ -829,11 +829,11 @@ function giveClassKit(p: player):
         stop
     else if {_c} is "Scout":
         set {_i} to feather named "&b&lПеро Разведчика"
-        set lore of {_i} to "&7Оружие класса Разведчик", " ", "&7Инструмент способностей", "&7(не наносит доп. урона)", " ", "&8• &fПКМ (L5+) — Рывок", "&8• &fShift+ПКМ (L10+) — Невидимость", "&8• &fИммунитет к падению 3с", " ", "&8Неразрушимое"
+        set lore of {_i} to "&7Оружие класса Разведчик" and " " and "&7Инструмент способностей" and "&7(не наносит доп. урона)" and " " and "&8• &fПКМ (L5+) — Рывок" and "&8• &fShift+ПКМ (L10+) — Невидимость" and "&8• &fИммунитет к падению 3с" and " " and "&8Неразрушимое"
         give {_p} makeUnbreakable({_i})
     else if {_c} is "Tank":
         set {_i} to shield named "&6&lЩит Танка"
-        set lore of {_i} to "&7Оружие класса Танк", " ", "&7Защитный предмет", " ", "&8• &fПассивно (L15+) — Аура защитника", "&8• &fResistance I напарнику в 5 блоков", " ", "&8Неразрушимый"
+        set lore of {_i} to "&7Оружие класса Танк" and " " and "&7Защитный предмет" and " " and "&8• &fПассивно (L15+) — Аура защитника" and "&8• &fResistance I напарнику в 5 блоков" and " " and "&8Неразрушимый"
         give {_p} makeUnbreakable({_i})
     else if {_c} is "Archer":
         set {_i} to bow named "&e&lЛук Лучника"
@@ -2424,68 +2424,68 @@ function artifactFromSlot(s: number) :: item:
     set {_i} to air
     if {_s} is 0:
         set {_i} to netherite sword named "&6&lЛегендарный артефакт: Печать Пространственного Разреза"
-        set lore of {_i} to "&7Только для &cWarrior", "&7ЛКМ по воздуху — &cкрасный разрез &7вперёд ~22 блока", "&7Удар мечом/буловой по существу — бонусный урон", "&8ЛЕГЕНДАРНЫЙ"
+        set lore of {_i} to "&7Только для &cWarrior" and "&7ЛКМ по воздуху — &cкрасный разрез &7вперёд ~22 блока" and "&7Удар мечом/буловой по существу — бонусный урон" and "&8ЛЕГЕНДАРНЫЙ"
     else if {_s} is 1:
         set {_i} to echo shard named "&6&lЛегендарный артефакт: Тень Фантома"
-        set lore of {_i} to "&7Только для &bScout", "&7Шанс полностью избежать удара и уйти в инвиз", "&8ЛЕГЕНДАРНЫЙ"
+        set lore of {_i} to "&7Только для &bScout" and "&7Шанс полностью избежать удара и уйти в инвиз" and "&8ЛЕГЕНДАРНЫЙ"
     else if {_s} is 2:
         set {_i} to netherite chestplate named "&6&lЛегендарный артефакт: Якорь Мироздания"
-        set lore of {_i} to "&7Только для &fTank", "&7Давление вблизи + ударная волна при падении", "&8ЛЕГЕНДАРНЫЙ"
+        set lore of {_i} to "&7Только для &fTank" and "&7Давление вблизи + ударная волна при падении" and "&8ЛЕГЕНДАРНЫЙ"
     else if {_s} is 6:
         set {_i} to spectral arrow named "&6&lЛегендарный артефакт: Око Хищника"
-        set lore of {_i} to "&7Только для &aArcher", "&7Стрелы получают автонаводку по цели", "&8ЛЕГЕНДАРНЫЙ"
+        set lore of {_i} to "&7Только для &aArcher" and "&7Стрелы получают автонаводку по цели" and "&8ЛЕГЕНДАРНЫЙ"
     else if {_s} is 7:
         set {_i} to amethyst shard named "&6&lЛегендарный артефакт: Эфирный Разум"
-        set lore of {_i} to "&7Только для &dMage", "&7Инвертирует дебаффы в полезные баффы", "&8ЛЕГЕНДАРНЫЙ"
+        set lore of {_i} to "&7Только для &dMage" and "&7Инвертирует дебаффы в полезные баффы" and "&8ЛЕГЕНДАРНЫЙ"
     else if {_s} is 8:
         set {_i} to wither skeleton skull named "&6&lЛегендарный артефакт: Амулет Гнилого Родства"
-        set lore of {_i} to "&7Только для &5Necromancer", "&7Нежить нейтральна и следует зову хозяина", "&8ЛЕГЕНДАРНЫЙ"
+        set lore of {_i} to "&7Только для &5Necromancer" and "&7Нежить нейтральна и следует зову хозяина" and "&8ЛЕГЕНДАРНЫЙ"
     else if {_s} is 10:
         set {_i} to leather boots named "&6&lАртефакт: Сапоги Гермеса"
-        set lore of {_i} to "&7Пассивно дают &fSpeed II", "&7Работают постоянно, пока включены", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Пассивно дают &fSpeed II" and "&7Работают постоянно, пока включены" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 11:
         set {_i} to gold nugget named "&e&lАртефакт: Кольцо Ветра"
-        set lore of {_i} to "&7Даёт скорость и &a+15%% урона", "&7но быстрее тратит голод", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Даёт скорость и &a+15%% урона" and "&7но быстрее тратит голод" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 12:
         set {_i} to ghast tear named "&c&lАртефакт: Амулет вампира"
-        set lore of {_i} to "&7Часть нанесённого урона", "&7возвращается тебе как лечение", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Часть нанесённого урона" and "&7возвращается тебе как лечение" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 13:
         set {_i} to ender pearl named "&d&lАртефакт: Эфирный рывок"
-        set lore of {_i} to "&7Пассивно: при получении урона от сущности", "&7мгновенно телепортирует с эндер-частицами", "&7КД срабатывания: &e20с", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Пассивно: при получении урона от сущности" and "&7мгновенно телепортирует с эндер-частицами" and "&7КД срабатывания: &e20с" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 14:
         set {_i} to iron sword named "&4&lАртефакт: Бритва Мерунеса"
-        set lore of {_i} to "&7Шанс &c13.33%% &7мгновенно казнить цель", "&8(не срабатывает на боссах и игроках)", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Шанс &c13.33%% &7мгновенно казнить цель" and "&8(не срабатывает на боссах и игроках)" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 15:
         set {_i} to diamond sword named "&f&lАртефакт: Звёздная ярость"
-        set lore of {_i} to "&7Шанс кометы: визуальная молния", "&7поджог + двойной урон по цели", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Шанс кометы: визуальная молния" and "&7поджог + двойной урон по цели" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 16:
         set {_i} to packed ice named "&b&lАртефакт: Ледяной след"
-        set lore of {_i} to "&7Постоянно создаёт временный лёд под тобой", "&7Работает только когда артефакт включён", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Постоянно создаёт временный лёд под тобой" and "&7Работает только когда артефакт включён" and "&8Эффект: &aАКТИВЕН"
 
     else if {_s} is 19:
         set {_i} to heart of the sea named "&b&lАртефакт: Сердце ледяного великана"
-        set lore of {_i} to "&7Когда тебя бьют — атакующий", "&7получает &fSlowness I &7на 3с", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Когда тебя бьют — атакующий" and "&7получает &fSlowness I &7на 3с" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 20:
         set {_i} to shield named "&f&lАртефакт: Щит Анх"
-        set lore of {_i} to "&7Иммунитет: Poison / Slowness / Weakness", "&7Пока артефакт в инвентаре", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Иммунитет: Poison / Slowness / Weakness" and "&7Пока артефакт в инвентаре" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 21:
         set {_i} to nether star named "&d&lАртефакт: Звезда Азуры"
-        set lore of {_i} to "&7Убийства заряжают звезду", "&7ПКМ: 25 зарядов -> опыт", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Убийства заряжают звезду" and "&7ПКМ: 25 зарядов -> опыт" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 22:
         set {_i} to poisonous potato named "&2&lАртефакт: Гнилое яблоко"
-        set lore of {_i} to "&7Нейтральные животные получают", "&cx2 урон &7от твоих ударов", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Нейтральные животные получают" and "&cx2 урон &7от твоих ударов" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 23:
         set {_i} to compass named "&8&lАртефакт: Компас Пустоты"
-        set lore of {_i} to "&7Авто-сохранение места смерти", "&7Возврат после респавна (внутр. КД)", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Авто-сохранение места смерти" and "&7Возврат после респавна (внутр. КД)" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 24:
         set {_i} to gold ingot named "&6&lАртефакт: Монета удачи"
-        set lore of {_i} to "&7Шанс &a25%% &7на бонусный лут", "&7за убийство существ", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Шанс &a25%% &7на бонусный лут" and "&7за убийство существ" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 25:
         set {_i} to glass bottle named "&f&lАртефакт: Воздушный шарик"
-        set lore of {_i} to "&7Двойной прыжок + анти-урон от падения", "&7ПКМ в руке: поглотить в ядро", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Двойной прыжок + анти-урон от падения" and "&7ПКМ в руке: поглотить в ядро" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 26:
         set {_i} to golden helmet named "&6&lАртефакт: Корона Высшего Разума"
-        set lore of {_i} to "&7Пассивно: &aх3 опыт из всех источников", "&7Твои зачарования считаются на +1 уровень", "&8Эффект: &aАКТИВЕН"
+        set lore of {_i} to "&7Пассивно: &aх3 опыт из всех источников" and "&7Твои зачарования считаются на +1 уровень" and "&8Эффект: &aАКТИВЕН"
     else if {_s} is 27:
         set {_i} to portableHeaterArtifactItem()
     else if {_s} is 28:
@@ -3899,7 +3899,7 @@ function artifactRuinTrySpawnChunk(wcx: number, wcz: number, w: world):
 
 function artifactRuinSummonObeliskItem() :: item:
     set {_i} to respawn anchor named "&6&lЗов Руин"
-    set lore of {_i} to "&7Сундук: &fпервые 5 слотов &7(верхний ряд):", "&7плачущий обсидиан, обсидиан, аметистовый блок,", "&7эндер-жемчуг, незеритовый лом", "&7— открой сундук, когда всё положил.", "&7Shift+ПКМ по блоку в Оверворлде — руина.", "&0EVORUINSUMMON"
+    set lore of {_i} to "&7Сундук: &fпервые 5 слотов &7(верхний ряд):" and "&7плачущий обсидиан, обсидиан, аметистовый блок," and "&7эндер-жемчуг, незеритовый лом" and "&7— открой сундук, когда всё положил." and "&7Shift+ПКМ по блоку в Оверворлде — руина." and "&0EVORUINSUMMON"
     return {_i}
 
 function isArtifactRuinSummonItem(i: item) :: boolean:
@@ -3950,7 +3950,7 @@ function isAwakeningAltarTopButtonRel(dx: number, dz: number) :: boolean:
 function awakeningHopperTokenItem() :: item:
     set {_h} to hopper
     set name of {_h} to "&5&lАлтарь Создания"
-    set lore of {_h} to "&7Установи на центральный аметист алтаря", "&7(центр нижнего слоя куба)", "&8После установки откроется крафт воронки"
+    set lore of {_h} to "&7Установи на центральный аметист алтаря" and "&7(центр нижнего слоя куба)" and "&8После установки откроется крафт воронки"
     return {_h}
 
 function isAwakeningHopperToken(i: item) :: boolean:
@@ -4266,42 +4266,42 @@ function tryCompleteAwakeningAltarHopper(placer: player, hb: block, placed: item
 function altarEtherPickaxeItem() :: item:
     set {_p} to diamond pickaxe
     set name of {_p} to "&dЭфирная Кирка"
-    set lore of {_p} to "&8✦ Алтарная кирка", "&8ЭФИР_КИРКА", "&7ПКМ: &fшёлковое касание &7(целые блоки вкл/выкл)", "&7Shift+ПКМ: &fэфирный режим &7(пыль с мусора)", "&7Руды -> &aмгновенно в инвентарь", "&8∞ Неразрушимая"
+    set lore of {_p} to "&8✦ Алтарная кирка" and "&8ЭФИР_КИРКА" and "&7ПКМ: &fшёлковое касание &7(целые блоки вкл/выкл)" and "&7Shift+ПКМ: &fэфирный режим &7(пыль с мусора)" and "&7Руды -> &aмгновенно в инвентарь" and "&8∞ Неразрушимая"
     enchant {_p} with unbreaking 10
     return {_p}
 
 function altarFlamePickaxeItem() :: item:
     set {_p} to diamond pickaxe
     set name of {_p} to "&cПламенная Кирка"
-    set lore of {_p} to "&8✦ Алтарная кирка", "&8ПЛАМЯ_КИРКА", "&7Руды сразу плавятся в &6слитки", "&7Пылающая добыча + доп. опыт", "&8∞ Неразрушимая"
+    set lore of {_p} to "&8✦ Алтарная кирка" and "&8ПЛАМЯ_КИРКА" and "&7Руды сразу плавятся в &6слитки" and "&7Пылающая добыча + доп. опыт" and "&8∞ Неразрушимая"
     enchant {_p} with unbreaking 10
     return {_p}
 
 function altarVeinPickaxeItem() :: item:
     set {_p} to diamond pickaxe
     set name of {_p} to "&aЖильная Кирка"
-    set lore of {_p} to "&8✦ Алтарная кирка", "&8ЖИЛА_КИРКА", "&7Ломает соседнюю жилу руды", "&7До &f27 &7блоков за один удар", "&8∞ Неразрушимая"
+    set lore of {_p} to "&8✦ Алтарная кирка" and "&8ЖИЛА_КИРКА" and "&7Ломает соседнюю жилу руды" and "&7До &f27 &7блоков за один удар" and "&8∞ Неразрушимая"
     enchant {_p} with unbreaking 10
     return {_p}
 
 function altarFortunePickaxeItem() :: item:
     set {_p} to diamond pickaxe
     set name of {_p} to "&eКирка Удачи"
-    set lore of {_p} to "&8✦ Алтарная кирка", "&8УДАЧА_КИРКА", "&7Усиленная добыча редких ресурсов", "&7Бонусный дроп с руд", "&8∞ Неразрушимая"
+    set lore of {_p} to "&8✦ Алтарная кирка" and "&8УДАЧА_КИРКА" and "&7Усиленная добыча редких ресурсов" and "&7Бонусный дроп с руд" and "&8∞ Неразрушимая"
     enchant {_p} with unbreaking 10
     return {_p}
 
 function altarVoidPickaxeItem() :: item:
     set {_p} to diamond pickaxe
     set name of {_p} to "&5Кирка Пустоты"
-    set lore of {_p} to "&8✦ Алтарная кирка", "&8ПУСТОТА_КИРКА", "&7Добыча втягивается сквозь пустоту", "&7Шанс получить &5эндер-жемчуг", "&8∞ Неразрушимая"
+    set lore of {_p} to "&8✦ Алтарная кирка" and "&8ПУСТОТА_КИРКА" and "&7Добыча втягивается сквозь пустоту" and "&7Шанс получить &5эндер-жемчуг" and "&8∞ Неразрушимая"
     enchant {_p} with unbreaking 10
     return {_p}
 
 function altarOmniPickaxeItem() :: item:
     set {_p} to netherite pickaxe
     set name of {_p} to "&6&lОмни-Кирка Алтаря"
-    set lore of {_p} to "&8✦ Финальное слияние", "&8ОМНИ_КИРКА", "&7ПКМ: &fшёлковое касание &7(целые блоки)", "&7Shift+ПКМ: &fэфирный режим &7(пыль с мусора)", "&7Автосбор + плавка + жила + удача + пустота", "&8∞ Неразрушимая"
+    set lore of {_p} to "&8✦ Финальное слияние" and "&8ОМНИ_КИРКА" and "&7ПКМ: &fшёлковое касание &7(целые блоки)" and "&7Shift+ПКМ: &fэфирный режим &7(пыль с мусора)" and "&7Автосбор + плавка + жила + удача + пустота" and "&8∞ Неразрушимая"
     enchant {_p} with unbreaking 10
     enchant {_p} with efficiency 6
     return {_p}
@@ -4385,7 +4385,7 @@ function isAltarPickaxeTool(i: item) :: boolean:
 function altarEtherSwordItem() :: item:
     set {_s} to diamond sword
     set name of {_s} to "&dПульс Эфира"
-    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ЭФИР", "&7Вампиризм: 20%% урона в лечение", "&7Замедляет цель на 1с", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Алтарный меч" and "&8АЛТАР_МЕЧ_ЭФИР" and "&7Вампиризм: 20%% урона в лечение" and "&7Замедляет цель на 1с" and "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 4
     return {_s}
@@ -4393,7 +4393,7 @@ function altarEtherSwordItem() :: item:
 function altarFlameSwordItem() :: item:
     set {_s} to diamond sword
     set name of {_s} to "&cЗаря Разлома"
-    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ПЛАМЯ", "&7Поджигает на 4с", "&7+15%% урона по нежити", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Алтарный меч" and "&8АЛТАР_МЕЧ_ПЛАМЯ" and "&7Поджигает на 4с" and "&7+15%% урона по нежити" and "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 4
     enchant {_s} with fire aspect 2
@@ -4402,7 +4402,7 @@ function altarFlameSwordItem() :: item:
 function altarVeinSwordItem() :: item:
     set {_s} to diamond sword
     set name of {_s} to "&aСечение Жилы"
-    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ЖИЛА", "&7Рассечение: 35%% урона в радиусе 3", "&7Бьёт соседних врагов", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Алтарный меч" and "&8АЛТАР_МЕЧ_ЖИЛА" and "&7Рассечение: 35%% урона в радиусе 3" and "&7Бьёт соседних врагов" and "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 4
     return {_s}
@@ -4410,7 +4410,7 @@ function altarVeinSwordItem() :: item:
 function altarFortuneSwordItem() :: item:
     set {_s} to diamond sword
     set name of {_s} to "&eКлинок Созвездия"
-    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_УДАЧА", "&7+1 опыт за удар", "&720%% бонусный дроп при убийстве", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Алтарный меч" and "&8АЛТАР_МЕЧ_УДАЧА" and "&7+1 опыт за удар" and "&720%% бонусный дроп при убийстве" and "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 4
     enchant {_s} with looting 2
@@ -4419,7 +4419,7 @@ function altarFortuneSwordItem() :: item:
 function altarVoidSwordItem() :: item:
     set {_s} to diamond sword
     set name of {_s} to "&5Разрез Бездны"
-    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_ПУСТОТА", "&725%% отброс цели", "&7Weakness I на 2с", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Алтарный меч" and "&8АЛТАР_МЕЧ_ПУСТОТА" and "&725%% отброс цели" and "&7Weakness I на 2с" and "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 4
     enchant {_s} with knockback 1
@@ -4428,7 +4428,7 @@ function altarVoidSwordItem() :: item:
 function altarOmniSwordItem() :: item:
     set {_s} to netherite sword
     set name of {_s} to "&6&lКлинок Шести Искр"
-    set lore of {_s} to "&8✦ Финальное слияние", "&8АЛТАР_МЕЧ_ОМНИ", "&7Все эффекты пяти алтарных клинков", "&7Эфир + Пламя + Жила + Удача + Пустота", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Финальное слияние" and "&8АЛТАР_МЕЧ_ОМНИ" and "&7Все эффекты пяти алтарных клинков" and "&7Эфир + Пламя + Жила + Удача + Пустота" and "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 6
     enchant {_s} with fire aspect 2
@@ -4439,7 +4439,7 @@ function altarOmniSwordItem() :: item:
 function altarEtherHelmetItem() :: item:
     set {_a} to diamond helmet
     set name of {_a} to "&dЭфирный Венец"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_ШЛЕМ", "&8ЭФИР_БРОНЯ", "&7Ночное зрение при HP выше 80%%", "&7-3%% получаемого урона", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ЭФИР_ШЛЕМ" and "&8ЭФИР_БРОНЯ" and "&7Ночное зрение при HP выше 80%%" and "&7-3%% получаемого урона" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4447,7 +4447,7 @@ function altarEtherHelmetItem() :: item:
 function altarEtherChestplateItem() :: item:
     set {_a} to diamond chestplate
     set name of {_a} to "&dЭфирная Мантия"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_НАГРУД", "&8ЭФИР_БРОНЯ", "&7-5%% получаемого урона", "&7Стабилизирует урон в бою", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ЭФИР_НАГРУД" and "&8ЭФИР_БРОНЯ" and "&7-5%% получаемого урона" and "&7Стабилизирует урон в бою" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4455,7 +4455,7 @@ function altarEtherChestplateItem() :: item:
 function altarEtherLeggingsItem() :: item:
     set {_a} to diamond leggings
     set name of {_a} to "&dЭфирные Поножи"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_ПОНОЖ", "&8ЭФИР_БРОНЯ", "&7+10%% скорости бега", "&7Лёгкие, не стесняют движений", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ЭФИР_ПОНОЖ" and "&8ЭФИР_БРОНЯ" and "&7+10%% скорости бега" and "&7Лёгкие, не стесняют движений" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4463,7 +4463,7 @@ function altarEtherLeggingsItem() :: item:
 function altarEtherBootsItem() :: item:
     set {_a} to diamond boots
     set name of {_a} to "&dЭфирные Сапоги"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЭФИР_САПОГ", "&8ЭФИР_БРОНЯ", "&7+1 ❤ макс. HP", "&7Устойчивая стойка", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ЭФИР_САПОГ" and "&8ЭФИР_БРОНЯ" and "&7+1 ❤ макс. HP" and "&7Устойчивая стойка" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4471,7 +4471,7 @@ function altarEtherBootsItem() :: item:
 function altarFlameHelmetItem() :: item:
     set {_a} to diamond helmet
     set name of {_a} to "&cПепельная Корона"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПЛАМЯ_ШЛЕМ", "&8ПЛАМЯ_БРОНЯ", "&7Иммунитет к огню (шлем)", "&7Очищает горение головы", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ПЛАМЯ_ШЛЕМ" and "&8ПЛАМЯ_БРОНЯ" and "&7Иммунитет к огню (шлем)" and "&7Очищает горение головы" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4479,7 +4479,7 @@ function altarFlameHelmetItem() :: item:
 function altarFlameChestplateItem() :: item:
     set {_a} to diamond chestplate
     set name of {_a} to "&cКираса Угольника"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПЛАМЯ_НАГРУД", "&8ПЛАМЯ_БРОНЯ", "&7Иммунитет к огню", "&7Поджигает атакующих в melee", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ПЛАМЯ_НАГРУД" and "&8ПЛАМЯ_БРОНЯ" and "&7Иммунитет к огню" and "&7Поджигает атакующих в melee" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     enchant {_a} with thorns 2
@@ -4488,7 +4488,7 @@ function altarFlameChestplateItem() :: item:
 function altarFlameLeggingsItem() :: item:
     set {_a} to diamond leggings
     set name of {_a} to "&cПоножи Раскала"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПЛАМЯ_ПОНОЖ", "&8ПЛАМЯ_БРОНЯ", "&7-50%% урона от огня", "&7Искры при беге", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ПЛАМЯ_ПОНОЖ" and "&8ПЛАМЯ_БРОНЯ" and "&7-50%% урона от огня" and "&7Искры при беге" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4496,7 +4496,7 @@ function altarFlameLeggingsItem() :: item:
 function altarFlameBootsItem() :: item:
     set {_a} to diamond boots
     set name of {_a} to "&cСапоги Пепла"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПЛАМЯ_САПОГ", "&8ПЛАМЯ_БРОНЯ", "&7Ходьба по магме без урона", "&7Огненная поступь", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ПЛАМЯ_САПОГ" and "&8ПЛАМЯ_БРОНЯ" and "&7Ходьба по магме без урона" and "&7Огненная поступь" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4504,7 +4504,7 @@ function altarFlameBootsItem() :: item:
 function altarVeinHelmetItem() :: item:
     set {_a} to diamond helmet
     set name of {_a} to "&aШлем Корней"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЖИЛА_ШЛЕМ", "&8ЖИЛА_БРОНЯ", "&7Regen I при HP ниже 50%%", "&7КД 8с", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ЖИЛА_ШЛЕМ" and "&8ЖИЛА_БРОНЯ" and "&7Regen I при HP ниже 50%%" and "&7КД 8с" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4512,7 +4512,7 @@ function altarVeinHelmetItem() :: item:
 function altarVeinChestplateItem() :: item:
     set {_a} to diamond chestplate
     set name of {_a} to "&aКираса Плети"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЖИЛА_НАГРУД", "&8ЖИЛА_БРОНЯ", "&7+2 ❤ макс. HP", "&7Regen I после удара", "&7КД 5с", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ЖИЛА_НАГРУД" and "&8ЖИЛА_БРОНЯ" and "&7+2 ❤ макс. HP" and "&7Regen I после удара" and "&7КД 5с" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4520,7 +4520,7 @@ function altarVeinChestplateItem() :: item:
 function altarVeinLeggingsItem() :: item:
     set {_a} to diamond leggings
     set name of {_a} to "&aПоножи Узора"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЖИЛА_ПОНОЖ", "&8ЖИЛА_БРОНЯ", "&710%% замедлить атакующего", "&7Корни сдерживают врага", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ЖИЛА_ПОНОЖ" and "&8ЖИЛА_БРОНЯ" and "&710%% замедлить атакующего" and "&7Корни сдерживают врага" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4528,7 +4528,7 @@ function altarVeinLeggingsItem() :: item:
 function altarVeinBootsItem() :: item:
     set {_a} to diamond boots
     set name of {_a} to "&aСапоги Укоренения"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ЖИЛА_САПОГ", "&8ЖИЛА_БРОНЯ", "&7Jump Boost I", "&7Устойчивая стойка", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ЖИЛА_САПОГ" and "&8ЖИЛА_БРОНЯ" and "&7Jump Boost I" and "&7Устойчивая стойка" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4536,7 +4536,7 @@ function altarVeinBootsItem() :: item:
 function altarFortuneHelmetItem() :: item:
     set {_a} to diamond helmet
     set name of {_a} to "&eВенец Миража"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_ШЛЕМ", "&8УДАЧА_БРОНЯ", "&7+1 ❤ макс. HP", "&7+8%% опыта за убийства", "&7Ясность цели", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_УДАЧА_ШЛЕМ" and "&8УДАЧА_БРОНЯ" and "&7+1 ❤ макс. HP" and "&7+8%% опыта за убийства" and "&7Ясность цели" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4544,7 +4544,7 @@ function altarFortuneHelmetItem() :: item:
 function altarFortuneChestplateItem() :: item:
     set {_a} to diamond chestplate
     set name of {_a} to "&eНагрудник Охотника"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_НАГРУД", "&8УДАЧА_БРОНЯ", "&7+12%% опыта за убийства", "&7Удача в бою", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_УДАЧА_НАГРУД" and "&8УДАЧА_БРОНЯ" and "&7+12%% опыта за убийства" and "&7Удача в бою" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4552,7 +4552,7 @@ function altarFortuneChestplateItem() :: item:
 function altarFortuneLeggingsItem() :: item:
     set {_a} to diamond leggings
     set name of {_a} to "&eПоножи Добычи"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_ПОНОЖ", "&8УДАЧА_БРОНЯ", "&710%% доп. дроп при убийстве", "&7КД 3с на цель", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_УДАЧА_ПОНОЖ" and "&8УДАЧА_БРОНЯ" and "&710%% доп. дроп при убийстве" and "&7КД 3с на цель" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4560,7 +4560,7 @@ function altarFortuneLeggingsItem() :: item:
 function altarFortuneBootsItem() :: item:
     set {_a} to diamond boots
     set name of {_a} to "&eСапоги Следопыта"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_САПОГ", "&8УДАЧА_БРОНЯ", "&7Luck I пассивно", "&7Находит ценное", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_УДАЧА_САПОГ" and "&8УДАЧА_БРОНЯ" and "&7Luck I пассивно" and "&7Находит ценное" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4568,7 +4568,7 @@ function altarFortuneBootsItem() :: item:
 function altarVoidHelmetItem() :: item:
     set {_a} to diamond helmet
     set name of {_a} to "&5Маска Бездны"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_ШЛЕМ", "&8ПУСТОТА_БРОНЯ", "&715%% ослепить атакующего", "&7КД 6с", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ПУСТОТА_ШЛЕМ" and "&8ПУСТОТА_БРОНЯ" and "&715%% ослепить атакующего" and "&7КД 6с" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4576,7 +4576,7 @@ function altarVoidHelmetItem() :: item:
 function altarVoidChestplateItem() :: item:
     set {_a} to diamond chestplate
     set name of {_a} to "&5Грудь Истощения"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_НАГРУД", "&8ПУСТОТА_БРОНЯ", "&7+1 ❤ макс. HP", "&7Resistance I ниже 30%% HP", "&7Пустота держит удар", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ПУСТОТА_НАГРУД" and "&8ПУСТОТА_БРОНЯ" and "&7+1 ❤ макс. HP" and "&7Resistance I ниже 30%% HP" and "&7Пустота держит удар" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4584,7 +4584,7 @@ function altarVoidChestplateItem() :: item:
 function altarVoidLeggingsItem() :: item:
     set {_a} to diamond leggings
     set name of {_a} to "&5Поножи Сгущения"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_ПОНОЖ", "&8ПУСТОТА_БРОНЯ", "&7Speed I при получении урона", "&720%% шанс", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ПУСТОТА_ПОНОЖ" and "&8ПУСТОТА_БРОНЯ" and "&7Speed I при получении урона" and "&720%% шанс" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4592,7 +4592,7 @@ function altarVoidLeggingsItem() :: item:
 function altarVoidBootsItem() :: item:
     set {_a} to diamond boots
     set name of {_a} to "&5Сапоги Фазового Шага"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_ПУСТОТА_САПОГ", "&8ПУСТОТА_БРОНЯ", "&7Speed II на 2с после убийства", "&7Рывок пустоты", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня" and "&8АЛТАР_ПУСТОТА_САПОГ" and "&8ПУСТОТА_БРОНЯ" and "&7Speed II на 2с после убийства" and "&7Рывок пустоты" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -4600,7 +4600,7 @@ function altarVoidBootsItem() :: item:
 function altarOmniHelmetItem() :: item:
     set {_a} to netherite helmet
     set name of {_a} to "&6&lОмни-Венец Алтаря"
-    set lore of {_a} to "&8✦ Финальное слияние", "&8АЛТАР_ОМНИ_ШЛЕМ", "&8ОМНИ_БРОНЯ", "&7+1 ❤ макс. HP", "&7Все эффекты алтарных шлемов", "&7Protection V + все бонусы слота", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Финальное слияние" and "&8АЛТАР_ОМНИ_ШЛЕМ" and "&8ОМНИ_БРОНЯ" and "&7+1 ❤ макс. HP" and "&7Все эффекты алтарных шлемов" and "&7Protection V + все бонусы слота" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 5
     return {_a}
@@ -4608,7 +4608,7 @@ function altarOmniHelmetItem() :: item:
 function altarOmniChestplateItem() :: item:
     set {_a} to netherite chestplate
     set name of {_a} to "&6&lОмни-Мантия Алтаря"
-    set lore of {_a} to "&8✦ Финальное слияние", "&8АЛТАР_ОМНИ_НАГРУД", "&8ОМНИ_БРОНЯ", "&7+3 ❤ макс. HP", "&7Все эффекты алтарных нагрудников", "&7Protection V + все бонусы слота", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Финальное слияние" and "&8АЛТАР_ОМНИ_НАГРУД" and "&8ОМНИ_БРОНЯ" and "&7+3 ❤ макс. HP" and "&7Все эффекты алтарных нагрудников" and "&7Protection V + все бонусы слота" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 5
     enchant {_a} with thorns 2
@@ -4617,7 +4617,7 @@ function altarOmniChestplateItem() :: item:
 function altarOmniLeggingsItem() :: item:
     set {_a} to netherite leggings
     set name of {_a} to "&6&lОмни-Поножи Алтаря"
-    set lore of {_a} to "&8✦ Финальное слияние", "&8АЛТАР_ОМНИ_ПОНОЖ", "&8ОМНИ_БРОНЯ", "&7Все эффекты алтарных поножей", "&7Protection V + все бонусы слота", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Финальное слияние" and "&8АЛТАР_ОМНИ_ПОНОЖ" and "&8ОМНИ_БРОНЯ" and "&7Все эффекты алтарных поножей" and "&7Protection V + все бонусы слота" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 5
     return {_a}
@@ -4625,7 +4625,7 @@ function altarOmniLeggingsItem() :: item:
 function altarOmniBootsItem() :: item:
     set {_a} to netherite boots
     set name of {_a} to "&6&lОмни-Сапоги Алтаря"
-    set lore of {_a} to "&8✦ Финальное слияние", "&8АЛТАР_ОМНИ_САПОГ", "&8ОМНИ_БРОНЯ", "&7+1 ❤ макс. HP", "&7Все эффекты алтарных сапог", "&7Protection V + все бонусы слота", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Финальное слияние" and "&8АЛТАР_ОМНИ_САПОГ" and "&8ОМНИ_БРОНЯ" and "&7+1 ❤ макс. HP" and "&7Все эффекты алтарных сапог" and "&7Protection V + все бонусы слота" and "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 5
     return {_a}
@@ -5352,8 +5352,8 @@ function refreshAltarPassiveJump(p: player):
     apply jump boost 1 without particles to {_p} for 15 seconds
 
 function refreshAltarPassiveLuck(p: player):
-    remove luck from {_p}
-    apply luck 1 without particles to {_p} for 15 seconds
+    remove luck (potion effect type) from {_p}
+    apply luck 1 (potion effect type) without particles to {_p} for 15 seconds
 
 function applyAltarArmorPassiveEffects(p: player):
     set {_helm} to helmet of {_p}
@@ -5942,37 +5942,37 @@ function isEtherPickaxeAltarRecipeExact(inv: inventory) :: boolean:
 
 function crownHigherMindArtifactItem() :: item:
     set {_i} to golden helmet named "&6&lАртефакт: Корона Высшего Разума"
-    set lore of {_i} to "&7Пассивно: &aх3 опыт из всех источников", "&7Твои зачарования считаются на +1 уровень", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Пассивно: &aх3 опыт из всех источников" and "&7Твои зачарования считаются на +1 уровень" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function portableHeaterArtifactItem() :: item:
     set {_i} to blast furnace named "&6&lАртефакт: Портативный Нагреватель"
-    set lore of {_i} to "&7Пока в инвентаре: 1 сырая еда в руке", "&7автоматически жарится раз в 5 секунд", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Пока в инвентаре: 1 сырая еда в руке" and "&7автоматически жарится раз в 5 секунд" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function dreamCatcherArtifactItem() :: item:
     set {_i} to cobweb named "&d&lАртефакт: Ловец Снов"
-    set lore of {_i} to "&7Сон мгновенно завершает ночь", "&7Даёт Luck I на следующий день", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Сон мгновенно завершает ночь" and "&7Даёт Luck I на следующий день" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function desertHeartArtifactItem() :: item:
     set {_i} to dead bush named "&6&lАртефакт: Сердце Пустыни"
-    set lore of {_i} to "&7Испаряет воду в радиусе 5", "&7Сушит врагов (Hunger + Wither)", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Испаряет воду в радиусе 5" and "&7Сушит врагов (Hunger + Wither)" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function quantumDuplicatorArtifactItem() :: item:
     set {_i} to dispenser named "&b&lАртефакт: Квантовый Дубликатор"
-    set lore of {_i} to "&710 процентов шанс дублировать крафт на верстаке", "&7Не работает на алтарные предметы", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&710 процентов шанс дублировать крафт на верстаке" and "&7Не работает на алтарные предметы" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function facelessMaskArtifactItem() :: item:
     set {_i} to skeleton skull named "&7&lАртефакт: Маска Безликого"
-    set lore of {_i} to "&7Скрывает никнейм над головой", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Скрывает никнейм над головой" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function cursedKingGiftArtifactItem() :: item:
     set {_i} to netherite ingot named "&4&lАртефакт: Дар Проклятого Короля"
-    set lore of {_i} to "&7Воскрешает союзника-дуо рядом (10 блоков)", "&7КД 5 минут на каждого игрока", "&7Цена: -10 уровней владельцу", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Воскрешает союзника-дуо рядом (10 блоков)" and "&7КД 5 минут на каждого игрока" and "&7Цена: -10 уровней владельцу" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function hasArtifactItemInInventory(p: player, mark: text) :: boolean:
@@ -6146,52 +6146,52 @@ function isCrownHigherMindAltarRecipe(inv: inventory) :: boolean:
 # Единая выдача опыта с поддержкой Короны Высшего Разума.
 function portableHeaterItem() :: item:
     set {_i} to blast furnace named "&6&lАртефакт: Портативный Нагреватель"
-    set lore of {_i} to "&7Пока в инвентаре: сырая еда в руке", "&7автоплавится по 1 шт каждые 5 секунд", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Пока в инвентаре: сырая еда в руке" and "&7автоплавится по 1 шт каждые 5 секунд" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function dreamCatcherItem() :: item:
     set {_i} to cobweb named "&d&lАртефакт: Ловец Снов"
-    set lore of {_i} to "&7Сон мгновенно пропускает ночь", "&7Бонус: Luck I на игровой день", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Сон мгновенно пропускает ночь" and "&7Бонус: Luck I на игровой день" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function desertHeartItem() :: item:
     set {_i} to dead bush named "&6&lАртефакт: Сердце Пустыни"
-    set lore of {_i} to "&7Испаряет воду в радиусе 5", "&7Жара: голод/иссушение врагам", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Испаряет воду в радиусе 5" and "&7Жара: голод/иссушение врагам" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function quantumDuplicatorItem() :: item:
     set {_i} to dispenser named "&b&lАртефакт: Квантовый Дубликатор"
-    set lore of {_i} to "&710 процентов шанс удвоить крафт на верстаке", "&7Не работает на алтарных предметах", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&710 процентов шанс удвоить крафт на верстаке" and "&7Не работает на алтарных предметах" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function facelessMaskItem() :: item:
     set {_i} to skeleton skull named "&7&lАртефакт: Маска Безликого"
-    set lore of {_i} to "&7Скрывает никнейм над головой", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Скрывает никнейм над головой" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function lootMagnetItem() :: item:
     set {_i} to lodestone named "&b&lАртефакт: Магнит Добытчика"
-    set lore of {_i} to "&7Подтягивает выбитые предметы рядом", "&7Радиус: 5 блоков", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Подтягивает выбитые предметы рядом" and "&7Радиус: 5 блоков" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function nightLensItem() :: item:
     set {_i} to tinted glass named "&9&lАртефакт: Ночная Линза"
-    set lore of {_i} to "&7Даёт постоянное ночное зрение", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Даёт постоянное ночное зрение" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function cursedKingGiftItem() :: item:
     set {_i} to netherite ingot named "&4&lАртефакт: Дар Проклятого Короля"
-    set lore of {_i} to "&7Воскрешает союзника-дуо рядом", "&7КД 5 минут на цель", "&7Цена: -10 уровней владельцу", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Воскрешает союзника-дуо рядом" and "&7КД 5 минут на цель" and "&7Цена: -10 уровней владельцу" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function utilityMagnetItem() :: item:
     set {_i} to lightning rod named "&b&lУтилити-артефакт: Магнит добычи"
-    set lore of {_i} to "&7Притягивает предметы в радиусе 6", "&7Работает из Utility Core и из инвентаря", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Притягивает предметы в радиусе 6" and "&7Работает из Utility Core и из инвентаря" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function utilityNightLensItem() :: item:
     set {_i} to tinted glass named "&9&lУтилити-артефакт: Линза ночи"
-    set lore of {_i} to "&7Пассивно даёт Night Vision", "&7Работает из Utility Core и из инвентаря", "&8Эффект: &aАКТИВЕН"
+    set lore of {_i} to "&7Пассивно даёт Night Vision" and "&7Работает из Utility Core и из инвентаря" and "&8Эффект: &aАКТИВЕН"
     return {_i}
 
 function evoAdminItemById(id: text) :: item:
@@ -6200,19 +6200,19 @@ function evoAdminItemById(id: text) :: item:
     # Базовые altar/ключевые предметы
     if {_id} is "void_key":
         set {_k} to disc fragment 5 named "&5Ключ пустоты"
-        set lore of {_k} to "&7Найти в сундуке разрушенного портала", "&7ПКМ по главному сундуку башни руины", "&7в Оверворлде — открыть (расходуется)"
+        set lore of {_k} to "&7Найти в сундуке разрушенного портала" and "&7ПКМ по главному сундуку башни руины" and "&7в Оверворлде — открыть (расходуется)"
         return {_k}
     if {_id} is "key_void":
         set {_k} to disc fragment 5 named "&5Ключ пустоты"
-        set lore of {_k} to "&7Найти в сундуке разрушенного портала", "&7ПКМ по главному сундуку башни руины", "&7в Оверворлде — открыть (расходуется)"
+        set lore of {_k} to "&7Найти в сундуке разрушенного портала" and "&7ПКМ по главному сундуку башни руины" and "&7в Оверворлде — открыть (расходуется)"
         return {_k}
     if {_id} is "return_key":
         set {_k} to echo shard named "&3Ключ возврата"
-        set lore of {_k} to "&7ПКМ — телепорт на место последней смерти", "&7Одноразовый", "&7Точка обновляется при каждой смерти"
+        set lore of {_k} to "&7ПКМ — телепорт на место последней смерти" and "&7Одноразовый" and "&7Точка обновляется при каждой смерти"
         return {_k}
     if {_id} is "key_return":
         set {_k} to echo shard named "&3Ключ возврата"
-        set lore of {_k} to "&7ПКМ — телепорт на место последней смерти", "&7Одноразовый", "&7Точка обновляется при каждой смерти"
+        set lore of {_k} to "&7ПКМ — телепорт на место последней смерти" and "&7Одноразовый" and "&7Точка обновляется при каждой смерти"
         return {_k}
     if {_id} is "altar_hopper":
         return awakeningHopperTokenItem()
@@ -6676,18 +6676,18 @@ function openLoreGuiPage(p: player, page: number):
     wait 1 tick
     set slot 4 of current inventory of {_p} to written book named "&5&lМегалор Эпохи" with lore "&7Страница %{_pg}% из 4" and "&8Подсказки спрятаны в тексте"
     if {_pg} is 1:
-        set slot 11 of current inventory of {_p} to paper named "&8I. &dАлтарь Создания" with lore "&7Когда небо над миром почернело, под камнем", "&7проснулся Шёпот. Он не убивает сразу —", "&7он учит, оставляя знаки тем, кто слушает.", " ", "&7Сундук помнит ритуал лучше, чем рука.", "&7Ключи, обсидиан и аметист должны лечь", "&7без лишнего груза — тогда камень сам", "&7соберёт основу, а сердце попросит хоппер.", " ", "&8Намёк: у ритуала всегда 5 ингредиентов", "&8там, где ждут 5 слотов."
+        set slot 11 of current inventory of {_p} to paper named "&8I. &dАлтарь Создания" with lore "&7Когда небо над миром почернело, под камнем" and "&7проснулся Шёпот. Он не убивает сразу —" and "&7он учит, оставляя знаки тем, кто слушает." and " " and "&7Сундук помнит ритуал лучше, чем рука." and "&7Ключи, обсидиан и аметист должны лечь" and "&7без лишнего груза — тогда камень сам" and "&7соберёт основу, а сердце попросит хоппер." and " " and "&8Намёк: у ритуала всегда 5 ингредиентов" and "&8там, где ждут 5 слотов."
         set slot 15 of current inventory of {_p} to hopper named "&5Сердце Алтаря" with lore "&7Поставь в центр завершённой конструкции"
     else if {_pg} is 2:
-        set slot 11 of current inventory of {_p} to paper named "&8II. &6Зов Руин" with lore "&7Руины не любят спешку и не слышат", "&7случайный клик. Только тот, кто пригнулся", "&7и отметил блок, может разбудить их.", " ", "&7Сундук (слоты 0–4): плачущий обсидиан,", "&7обсидиан, аметистовый блок, эндер-жемчуг,", "&7незеритовый лом — только это, затем открыть.", " ", "&8Намёк: Зов отвечает в Оверворлде,", "&8на подходящей поверхности и подальше", "&8от мирового спавна."
-        set slot 15 of current inventory of {_p} to respawn anchor named "&6Зов Руин" with lore "&7Shift+ПКМ по блоку — возвести руину", "&7Крафт: 5 слотов сундука, см. слева"
+        set slot 11 of current inventory of {_p} to paper named "&8II. &6Зов Руин" with lore "&7Руины не любят спешку и не слышат" and "&7случайный клик. Только тот, кто пригнулся" and "&7и отметил блок, может разбудить их." and " " and "&7Сундук (слоты 0–4): плачущий обсидиан," and "&7обсидиан, аметистовый блок, эндер-жемчуг," and "&7незеритовый лом — только это, затем открыть." and " " and "&8Намёк: Зов отвечает в Оверворлде," and "&8на подходящей поверхности и подальше" and "&8от мирового спавна."
+        set slot 15 of current inventory of {_p} to respawn anchor named "&6Зов Руин" with lore "&7Shift+ПКМ по блоку — возвести руину" and "&7Крафт: 5 слотов сундука, см. слева"
     else if {_pg} is 3:
-        set slot 11 of current inventory of {_p} to paper named "&8III. &5Ключи Башни и Памяти" with lore "&7Ключ Пустоты открывает сердце башни.", "&7Ключ Возврата слышит только последнюю смерть", "&7и сгорает вместе с пройденным путём.", " ", "&8Намёк: держи Возврат отдельно,", "&8чтобы не сжечь его не в тот момент."
+        set slot 11 of current inventory of {_p} to paper named "&8III. &5Ключи Башни и Памяти" with lore "&7Ключ Пустоты открывает сердце башни." and "&7Ключ Возврата слышит только последнюю смерть" and "&7и сгорает вместе с пройденным путём." and " " and "&8Намёк: держи Возврат отдельно," and "&8чтобы не сжечь его не в тот момент."
         set slot 14 of current inventory of {_p} to evoAdminItemById("void_key")
         set slot 16 of current inventory of {_p} to evoAdminItemById("return_key")
     else:
-        set slot 11 of current inventory of {_p} to paper named "&8IV. &eСвитки, Дневник, Ядра" with lore "&7Свитки — это не сила, а знание.", "&7Дневник хранит рецепты, но смерть", "&7вырывает случайную страницу.", " ", "&7Обычное ядро любит порядок,", "&7Utility-ядро любит полезность.", " ", "&8Намёк: проверяй, что включено в ядрах,", "&8и подбирай потерянные страницы после боя."
-        set slot 15 of current inventory of {_p} to written book named "&5&lФинальная запись" with lore "&7Кто читает знаки — выживает.", "&7Кто игнорирует — кормит руины."
+        set slot 11 of current inventory of {_p} to paper named "&8IV. &eСвитки, Дневник, Ядра" with lore "&7Свитки — это не сила, а знание." and "&7Дневник хранит рецепты, но смерть" and "&7вырывает случайную страницу." and " " and "&7Обычное ядро любит порядок," and "&7Utility-ядро любит полезность." and " " and "&8Намёк: проверяй, что включено в ядрах," and "&8и подбирай потерянные страницы после боя."
+        set slot 15 of current inventory of {_p} to written book named "&5&lФинальная запись" with lore "&7Кто читает знаки — выживает." and "&7Кто игнорирует — кормит руины."
     if {_pg} > 1:
         set slot 18 of current inventory of {_p} to arrow named "&eНазад"
     if {_pg} < 4:
@@ -8179,9 +8179,9 @@ function openStatsMenu(viewer: player, target: player):
     set {_head} to player head
     set name of {_head} to "&e&l%{_target}%"
     if {_c} is "None":
-        set lore of {_head} to "&7Класс: &fНет", "&7Уровень: &e%{_l}%", "&7Killов всего: &b%{_tk}%"
+        set lore of {_head} to "&7Класс: &fНет" and "&7Уровень: &e%{_l}%" and "&7Killов всего: &b%{_tk}%"
     else:
-        set lore of {_head} to "&7Класс: %{_clsDisp}%", "&7Роль: %{_rc}%%{_role}%", "&7Уровень: &e%{_l}%&7/&625", "&7Killов всего: &b%{_tk}%"
+        set lore of {_head} to "&7Класс: %{_clsDisp}%" and "&7Роль: %{_rc}%%{_role}%" and "&7Уровень: &e%{_l}%&7/&625" and "&7Killов всего: &b%{_tk}%"
     set slot 4 of {_viewer}'s current inventory to {_head}
 
     # ===== Slot 11: Класс =====
@@ -8209,13 +8209,13 @@ function openStatsMenu(viewer: player, target: player):
     set {_xpItem} to experience bottle
     if {_l} >= 25:
         set name of {_xpItem} to "&6&l✪ Уровень: &eMAX (25)"
-        set lore of {_xpItem} to "&7Killов всего: &b%{_tk}%", "&aМаксимальный уровень достигнут!"
+        set lore of {_xpItem} to "&7Killов всего: &b%{_tk}%" and "&aМаксимальный уровень достигнут!"
     else:
         set {_kForLvl} to floor({_k} / 2) * 2
         set {_kInLvl} to {_k} - {_kForLvl}
         set {_kNeed} to 2 - {_kInLvl}
         set name of {_xpItem} to "&e&l⬆ Уровень: &6%{_l}% &7/ &e25"
-        set lore of {_xpItem} to "&7XP: &a%{_k}%&7/&f49 killов", "&7Killов всего: &b%{_tk}%", " ", "&7До след. уровня: &e%{_kNeed}% &7killов"
+        set lore of {_xpItem} to "&7XP: &a%{_k}%&7/&f49 killов" and "&7Killов всего: &b%{_tk}%" and " " and "&7До след. уровня: &e%{_kNeed}% &7killов"
     set slot 13 of {_viewer}'s current inventory to {_xpItem}
 
     # ===== Slot 15: Роль =====
@@ -8239,14 +8239,14 @@ function openStatsMenu(viewer: player, target: player):
         set {_pi} to blaze powder
         set name of {_pi} to "&6&l▶ Primary"
         set {_pAbil} to classAbilityName({_c}, "primary")
-        set lore of {_pi} to "%{_pAbil}%", " ", "&7Главная способность класса", "&8Активируется автоматически или ПКМ"
+        set lore of {_pi} to "%{_pAbil}%" and " " and "&7Главная способность класса" and "&8Активируется автоматически или ПКМ"
         set slot 20 of {_viewer}'s current inventory to {_pi}
 
     # ===== Slot 22: Перк =====
     if {_l} < 15:
         set {_perkLocked} to red stained glass pane
         set name of {_perkLocked} to "&7Перк: &cЗаблокирован"
-        set lore of {_perkLocked} to "&8Откроется на &615 уровне", "&7Сейчас: &eL%{_l}%"
+        set lore of {_perkLocked} to "&8Откроется на &615 уровне" and "&7Сейчас: &eL%{_l}%"
         set slot 22 of {_viewer}'s current inventory to {_perkLocked}
     else:
         if {perk::%{_u}%} is set:
@@ -8264,7 +8264,7 @@ function openStatsMenu(viewer: player, target: player):
         else:
             set {_perkPick} to nether star
             set name of {_perkPick} to "&6&l⚡ Перк не выбран!"
-            set lore of {_perkPick} to "&eИспользуй &6/perk &eчтобы выбрать", "&8Один из 4 на класс"
+            set lore of {_perkPick} to "&eИспользуй &6/perk &eчтобы выбрать" and "&8Один из 4 на класс"
             set slot 22 of {_viewer}'s current inventory to {_perkPick}
 
     # ===== Slot 24: Secondary ability =====
@@ -8277,14 +8277,14 @@ function openStatsMenu(viewer: player, target: player):
         set {_si} to nether star
         set name of {_si} to "&b&l◢ Secondary"
         set {_sAbil} to classAbilityName({_c}, "secondary")
-        set lore of {_si} to "%{_sAbil}%", " ", "&7Вторая способность класса", "&8Раскрывается с уровнем"
+        set lore of {_si} to "%{_sAbil}%" and " " and "&7Вторая способность класса" and "&8Раскрывается с уровнем"
         set slot 24 of {_viewer}'s current inventory to {_si}
 
     # ===== Slot 26: Legendary =====
     if {_c} is "None":
         set {_lg} to barrier
         set name of {_lg} to "&6Легендарный артефакт"
-        set lore of {_lg} to "&7Недоступно без класса", "&8Сначала выбери класс"
+        set lore of {_lg} to "&7Недоступно без класса" and "&8Сначала выбери класс"
     else:
         set {_lgKey} to classLegendaryKey({_target})
         if {_lgKey} is "":
@@ -8327,28 +8327,28 @@ function openStatsMenu(viewer: player, target: player):
     set name of {_swItem} to "&cМеч &8» &eLv %{_swLvl}%"
     set {_swNeed} to wXPNeeded({_swLvl})
     set {_swBonus} to ({_swLvl} - 1) * 6
-    set lore of {_swItem} to "&7Бонус урона: &a+%{_swBonus}%%%", "&7XP: &b%{_swXp}%&7/&f%{_swNeed}%"
+    set lore of {_swItem} to "&7Бонус урона: &a+%{_swBonus}%%%" and "&7XP: &b%{_swXp}%&7/&f%{_swNeed}%"
     set slot 28 of {_viewer}'s current inventory to {_swItem}
 
     set {_axItem} to iron axe
     set name of {_axItem} to "&6Топор &8» &eLv %{_axLvl}%"
     set {_axNeed} to wXPNeeded({_axLvl})
     set {_axBonus} to ({_axLvl} - 1) * 6
-    set lore of {_axItem} to "&7Бонус урона: &a+%{_axBonus}%%%", "&7XP: &b%{_axXp}%&7/&f%{_axNeed}%"
+    set lore of {_axItem} to "&7Бонус урона: &a+%{_axBonus}%%%" and "&7XP: &b%{_axXp}%&7/&f%{_axNeed}%"
     set slot 30 of {_viewer}'s current inventory to {_axItem}
 
     set {_bwItem} to bow
     set name of {_bwItem} to "&aЛук &8» &eLv %{_bwLvl}%"
     set {_bwNeed} to wXPNeeded({_bwLvl})
     set {_bwBonus} to ({_bwLvl} - 1) * 6
-    set lore of {_bwItem} to "&7Бонус урона: &a+%{_bwBonus}%%%", "&7XP: &b%{_bwXp}%&7/&f%{_bwNeed}%"
+    set lore of {_bwItem} to "&7Бонус урона: &a+%{_bwBonus}%%%" and "&7XP: &b%{_bwXp}%&7/&f%{_bwNeed}%"
     set slot 32 of {_viewer}'s current inventory to {_bwItem}
 
     set {_mcItem} to mace
     set name of {_mcItem} to "&5Булава &8» &eLv %{_mcLvl}%"
     set {_mcNeed} to wXPNeeded({_mcLvl})
     set {_mcBonus} to ({_mcLvl} - 1) * 6
-    set lore of {_mcItem} to "&7Бонус урона: &a+%{_mcBonus}%%%", "&7XP: &b%{_mcXp}%&7/&f%{_mcNeed}%"
+    set lore of {_mcItem} to "&7Бонус урона: &a+%{_mcBonus}%%%" and "&7XP: &b%{_mcXp}%&7/&f%{_mcNeed}%"
     set slot 34 of {_viewer}'s current inventory to {_mcItem}
 
     # ===== Row 5 (37..43): 7 milestones (L1, L5, L8, L10★, L15, L20, L25) =====
@@ -8380,16 +8380,16 @@ function openStatsMenu(viewer: player, target: player):
             if {_l} >= {_lreq}:
                 set {_pane} to lime stained glass pane
                 set name of {_pane} to "&a✔ &fLv %{_lreq}%"
-                set lore of {_pane} to "&f%{_desc}%", " ", "&aОТКРЫТО"
+                set lore of {_pane} to "&f%{_desc}%" and " " and "&aОТКРЫТО"
                 set slot {_sl} of {_viewer}'s current inventory to {_pane}
             else:
                 set {_pane} to red stained glass pane
                 set name of {_pane} to "&c✘ &7Lv %{_lreq}%"
-                set lore of {_pane} to "&7%{_desc}%", " ", "&cЗакрыто &8(%{_l}%/%{_lreq}%)"
+                set lore of {_pane} to "&7%{_desc}%" and " " and "&cЗакрыто &8(%{_l}%/%{_lreq}%)"
                 set slot {_sl} of {_viewer}'s current inventory to {_pane}
     set {_label} to nether star
     set name of {_label} to "&6&lПрокачка класса"
-    set lore of {_label} to "&7Тиры: &fL1 L5 L8 &aL10★ &fL15 L20 L25", "&8Открываются по уровню"
+    set lore of {_label} to "&7Тиры: &fL1 L5 L8 &aL10★ &fL15 L20 L25" and "&8Открываются по уровню"
     set slot 36 of {_viewer}'s current inventory to {_label}
 
     # ===== Slot 44: Дуо =====
@@ -8397,12 +8397,12 @@ function openStatsMenu(viewer: player, target: player):
         set {_partner} to duoPartner({_target})
         set {_duoItem} to player head
         set name of {_duoItem} to "&aДуо: &f%{_partner}%"
-        set lore of {_duoItem} to "&7Партнёр в дуо", "&8Многие способности усиливаются"
+        set lore of {_duoItem} to "&7Партнёр в дуо" and "&8Многие способности усиливаются"
         set slot 44 of {_viewer}'s current inventory to {_duoItem}
     else:
         set {_noDuo} to compass
         set name of {_noDuo} to "&7Дуо: &cнет"
-        set lore of {_noDuo} to "&8/duo <ник> — пригласить", "&8Многие классы получают бонусы в дуо"
+        set lore of {_noDuo} to "&8/duo <ник> — пригласить" and "&8Многие классы получают бонусы в дуо"
         set slot 44 of {_viewer}'s current inventory to {_noDuo}
 
     # ===== Slot 49: Закрыть =====
@@ -13004,32 +13004,32 @@ command /class:
             set slot (loop-number - 1) of player's current inventory to gray stained glass pane named " "
 
         set slot 9 of player's current inventory to iron sword named "&c&lWarrior"
-        set lore of slot 9 of player's current inventory to "&7Танк-DPS ближнего боя", " ", "&8• &fДуал-меч (одинаковый материал = +скорость атаки)", "&8• &fСила при низком ❤", "&8• &fПарирование на L20 (возврат урона)"
+        set lore of slot 9 of player's current inventory to "&7Танк-DPS ближнего боя" and " " and "&8• &fДуал-меч (одинаковый материал = +скорость атаки)" and "&8• &fСила при низком ❤" and "&8• &fПарирование на L20 (возврат урона)"
 
         set slot 10 of player's current inventory to feather named "&b&lScout"
-        set lore of slot 10 of player's current inventory to "&7Мобильный убийца", " ", "&8• &fSpeed I пассивно", "&8• &fКрит в спину +25%%", "&8• &fРывок на L5", "&8• &fИнвиз на L10", "&8• &fИммунитет к падению L25"
+        set lore of slot 10 of player's current inventory to "&7Мобильный убийца" and " " and "&8• &fSpeed I пассивно" and "&8• &fКрит в спину +25%%" and "&8• &fРывок на L5" and "&8• &fИнвиз на L10" and "&8• &fИммунитет к падению L25"
 
         set slot 11 of player's current inventory to shield named "&6&lTank"
-        set lore of slot 11 of player's current inventory to "&7Защитник команды", " ", "&8• &fL25: &f20 ❤ &7макс.", "&8• &fДо L25: &f10 ❤ &7как у всех", "&8• &f-15%% получ. урона", "&8• &fШипы ½❤ на L10", "&8• &fАура защитника L15"
+        set lore of slot 11 of player's current inventory to "&7Защитник команды" and " " and "&8• &fL25: &f20 ❤ &7макс." and "&8• &fДо L25: &f10 ❤ &7как у всех" and "&8• &f-15%% получ. урона" and "&8• &fШипы ½❤ на L10" and "&8• &fАура защитника L15"
 
         set slot 12 of player's current inventory to bow named "&e&lArcher"
-        set lore of slot 12 of player's current inventory to "&7Урон с дистанции", " ", "&8• &fSpeed I пассивно", "&8• &f+10%% урона луком", "&8• &f25%% крит x2 на L5", "&8• &fx1.4 урон на L10", "&8• &fОрлиный взор L25"
+        set lore of slot 12 of player's current inventory to "&7Урон с дистанции" and " " and "&8• &fSpeed I пассивно" and "&8• &f+10%% урона луком" and "&8• &f25%% крит x2 на L5" and "&8• &fx1.4 урон на L10" and "&8• &fОрлиный взор L25"
 
         set slot 13 of player's current inventory to blaze rod named "&d&lMage"
-        set lore of slot 13 of player's current inventory to "&7Магия и поддержка", " ", "&8• &fФаербол с L1", "&8• &fРеген после килла", "&8• &fМасс-хил на L10", "&8• &fЭндер-перл L15", "&8• &fБольшой фаербол L25"
+        set lore of slot 13 of player's current inventory to "&7Магия и поддержка" and " " and "&8• &fФаербол с L1" and "&8• &fРеген после килла" and "&8• &fМасс-хил на L10" and "&8• &fЭндер-перл L15" and "&8• &fБольшой фаербол L25"
 
         set slot 14 of player's current inventory to bone named "&2&lNecromancer"
-        set lore of slot 14 of player's current inventory to "&7Повелитель мёртвых", " ", "&8• &fПризыв миньона (КД 30с)", "&8• &fКостяной молот + Кража жизни", "&8• &fМетка смерти (L5) +20%% урона", "&8• &fДуша мстителя (L15)", "&8• &fАура смерти Wither (L20)", "&8• &fВосставший чемпион (L25)"
+        set lore of slot 14 of player's current inventory to "&7Повелитель мёртвых" and " " and "&8• &fПризыв миньона (КД 30с)" and "&8• &fКостяной молот + Кража жизни" and "&8• &fМетка смерти (L5) +20%% урона" and "&8• &fДуша мстителя (L15)" and "&8• &fАура смерти Wither (L20)" and "&8• &fВосставший чемпион (L25)"
 
         # ===== Плейсхолдеры под будущие классы (справа подряд) =====
         set slot 15 of player's current inventory to barrier named "&8&l? ? ?"
-        set lore of slot 15 of player's current inventory to "&7Слот под &fновый класс", " ", "&8Скоро..."
+        set lore of slot 15 of player's current inventory to "&7Слот под &fновый класс" and " " and "&8Скоро..."
 
         set slot 16 of player's current inventory to barrier named "&8&l? ? ?"
-        set lore of slot 16 of player's current inventory to "&7Слот под &fновый класс", " ", "&8Скоро..."
+        set lore of slot 16 of player's current inventory to "&7Слот под &fновый класс" and " " and "&8Скоро..."
 
         set slot 17 of player's current inventory to barrier named "&8&l? ? ?"
-        set lore of slot 17 of player's current inventory to "&7Слот под &fновый класс", " ", "&8Скоро..."
+        set lore of slot 17 of player's current inventory to "&7Слот под &fновый класс" and " " and "&8Скоро..."
 
 
 on inventory click:
@@ -13077,7 +13077,7 @@ command /artifacts:
             set slot (loop-number - 1) of player's current inventory to gray stained glass pane named " "
 
         set slot 4 of player's current inventory to nether star named "&6&lАРТЕФАКТЫ: ЯДРО"
-        set lore of slot 4 of player's current inventory to "&75 слотов ядра (обычные артефакты)", "&7ПКМ: включить/выключить", "&7ЛКМ: извлечь в предмет", "&7Utility-ядро: &e/utilities", "&7Легендарные: &e/legendary"
+        set lore of slot 4 of player's current inventory to "&75 слотов ядра (обычные артефакты)" and "&7ПКМ: включить/выключить" and "&7ЛКМ: извлечь в предмет" and "&7Utility-ядро: &e/utilities" and "&7Легендарные: &e/legendary"
 
         loop 5 times:
             set {_idx} to loop-number
@@ -13157,7 +13157,7 @@ command /utilities:
         loop 27 times:
             set slot (loop-number - 1) of player's current inventory to light blue stained glass pane named " "
         set slot 4 of player's current inventory to clock named "&b&lUTILITY: ЯДРО"
-        set lore of slot 4 of player's current inventory to "&7Utility-ядро без лимита слотов", "&7ПКМ: включить/выключить", "&7ЛКМ: извлечь в предмет", "&7Обычные артефакты: &e/artifacts"
+        set lore of slot 4 of player's current inventory to "&7Utility-ядро без лимита слотов" and "&7ПКМ: включить/выключить" and "&7ЛКМ: извлечь в предмет" and "&7Обычные артефакты: &e/artifacts"
         loop 5 times:
             set {_idx} to loop-number
             set {_slot} to 10 + loop-number
@@ -13225,12 +13225,12 @@ command /legendary:
         loop 0, 1, 2, 6, 8, 9, 11, 15, 17, 18, 19, 20, 24, 25 and 26:
             set slot loop-value of player's current inventory to orange stained glass pane named " "
         set slot 4 of player's current inventory to nether star named "&6&l✦ ЛЕГЕНДАРНЫЙ АРТЕФАКТ ✦"
-        set lore of slot 4 of player's current inventory to "&7Твой активный легендарный слот", "&7по текущему классу.", " ", "&aПКМ: включить/выключить", "&eЛКМ: извлечь в предмет"
+        set lore of slot 4 of player's current inventory to "&7Твой активный легендарный слот" and "&7по текущему классу." and " " and "&aПКМ: включить/выключить" and "&eЛКМ: извлечь в предмет"
         set slot 22 of player's current inventory to barrier named "&c&lЗакрыть"
         set lore of slot 22 of player's current inventory to "&7Нажми, чтобы закрыть меню"
         set {_k} to classLegendaryKey(player)
         if {_k} is "":
-            set slot 13 of player's current inventory to barrier named "&cЛегендарка недоступна" with lore "&7Сначала выбери класс через &e/class", "&7Затем вернись в это меню"
+            set slot 13 of player's current inventory to barrier named "&cЛегендарка недоступна" with lore "&7Сначала выбери класс через &e/class" and "&7Затем вернись в это меню"
             stop
         set {_s} to artifactSlotFromKey({_k})
         if {_s} < 0:
@@ -13749,7 +13749,7 @@ command /evo [<offline player>] [<text>] [<text>]:
                 send "{@prefix} &cИспользование: /evo <player> setkills <число>"
 
         else if arg-2 is "setclass":
-            if arg-3 is "Warrior", "Scout", "Tank", "Archer", "Mage", "Necromancer" or "None":
+            if arg-3 is "Warrior" or "Scout" or "Tank" or "Archer" or "Mage" or "Necromancer" or "None":
                 set {class::%{_u}%} to arg-3
                 if arg-3 is "None":
                     delete {perk::%{_u}%}
@@ -13769,7 +13769,7 @@ command /evo [<offline player>] [<text>] [<text>]:
                 delete {perk_notified::%{_u}%}
                 send "{@prefix} &fПерк &e%arg-1%&f → &aочищен"
                 stop
-            if arg-3 is "warrior_A", "warrior_B", "warrior_C", "warrior_D", "scout_A", "scout_B", "scout_C", "scout_D", "tank_A", "tank_B", "tank_C", "tank_D", "archer_A", "archer_B", "archer_C", "archer_D", "mage_A", "mage_B", "mage_C", "mage_D", "necro_A", "necro_B", "necro_C", "necro_D":
+            if arg-3 is "warrior_A" or "warrior_B" or "warrior_C" or "warrior_D" or "scout_A" or "scout_B" or "scout_C" or "scout_D" or "tank_A" or "tank_B" or "tank_C" or "tank_D" or "archer_A" or "archer_B" or "archer_C" or "archer_D" or "mage_A" or "mage_B" or "mage_C" or "mage_D" or "necro_A" or "necro_B" or "necro_C" or "necro_D":
                 set {perk::%{_u}%} to arg-3
                 set {perk_notified::%{_u}%} to true
                 send "{@prefix} &fПерк &e%arg-1%&f → &a%arg-3%"
@@ -14341,65 +14341,65 @@ command /perk:
 
         if {_cls} is "Warrior":
             set slot 1 of player's current inventory to iron sword named "&6&lA — Палач"
-            set lore of slot 1 of player's current inventory to "&7Удар по цели с ❤≤4 наносит", "&c+75%% урона &7+ &cStrength I &7на 3с", "", "&8» Добивай раненых одним ударом"
+            set lore of slot 1 of player's current inventory to "&7Удар по цели с ❤≤4 наносит" and "&c+75%% урона &7+ &cStrength I &7на 3с" and "" and "&8» Добивай раненых одним ударом"
             set slot 3 of player's current inventory to redstone named "&4&lB — Кровавая клятва"
-            set lore of slot 3 of player's current inventory to "&7При ❤<6 — постоянно &cStr II + Speed I", "&7Но получаешь &c+15%% входящего урона", "", "&8» Отчаянный режим выживания"
+            set lore of slot 3 of player's current inventory to "&7При ❤<6 — постоянно &cStr II + Speed I" and "&7Но получаешь &c+15%% входящего урона" and "" and "&8» Отчаянный режим выживания"
             set slot 5 of player's current inventory to shield named "&e&lC — Идеальное парирование"
-            set lore of slot 5 of player's current inventory to "&7Парирование возвращает &cx1.5 урона", "&7+ Slowness II &7+ &8Blindness на 4с", "&7КД парирования &c-50%%", "&8(броня атакующего поглощает урон)", "", "&8» Мастер боя 1-в-1"
+            set lore of slot 5 of player's current inventory to "&7Парирование возвращает &cx1.5 урона" and "&7+ Slowness II &7+ &8Blindness на 4с" and "&7КД парирования &c-50%%" and "&8(броня атакующего поглощает урон)" and "" and "&8» Мастер боя 1-в-1"
             set slot 7 of player's current inventory to totem of undying named "&a&lD — Второй ветер"
-            set lore of slot 7 of player's current inventory to "&7Раз в 3 минуты при смертельном ударе:", "&aспасение на 6❤ + Resistance II + Regen II", "&7на 6с", "", "&8» Ангел-хранитель"
+            set lore of slot 7 of player's current inventory to "&7Раз в 3 минуты при смертельном ударе:" and "&aспасение на 6❤ + Resistance II + Regen II" and "&7на 6с" and "" and "&8» Ангел-хранитель"
 
         else if {_cls} is "Scout":
             set slot 1 of player's current inventory to sugar named "&b&lA — Двойной рывок"
-            set lore of slot 1 of player's current inventory to "&7Можно сделать &fдва рывка &7подряд", "&7(КД 1-го: 4с, 2-й сразу за 1-м)", "", "&8» Молниеносная мобильность"
+            set lore of slot 1 of player's current inventory to "&7Можно сделать &fдва рывка &7подряд" and "&7(КД 1-го: 4с, 2-й сразу за 1-м)" and "" and "&8» Молниеносная мобильность"
             set slot 3 of player's current inventory to iron sword named "&5&lB — Невидимый клинок"
-            set lore of slot 3 of player's current inventory to "&7Удар в невидимости даёт &c+100%% урона", "&7+ невидимость &fне снимается &7ещё 2с", "&8(макс. цепочка инвиза — &f30с&8)", "", "&8» Атака из тени"
+            set lore of slot 3 of player's current inventory to "&7Удар в невидимости даёт &c+100%% урона" and "&7+ невидимость &fне снимается &7ещё 2с" and "&8(макс. цепочка инвиза — &f30с&8)" and "" and "&8» Атака из тени"
             set slot 5 of player's current inventory to phantom membrane named "&f&lC — Парашют"
-            set lore of slot 5 of player's current inventory to "&7Shift в воздухе при падении >5 блоков", "&7= &fSlow Falling 5с &7(КД 30с)", "", "&8» Никогда не разобьёшься"
+            set lore of slot 5 of player's current inventory to "&7Shift в воздухе при падении >5 блоков" and "&7= &fSlow Falling 5с &7(КД 30с)" and "" and "&8» Никогда не разобьёшься"
             set slot 7 of player's current inventory to ghast tear named "&c&lD — Кровопийца"
-            set lore of slot 7 of player's current inventory to "&7Каждый &f4-й удар &7лечит &c+½❤", "&7При ❤<6 даёт &fSpeed III &7на 5с (КД 20с)", "", "&8» Вампирский темп"
+            set lore of slot 7 of player's current inventory to "&7Каждый &f4-й удар &7лечит &c+½❤" and "&7При ❤<6 даёт &fSpeed III &7на 5с (КД 20с)" and "" and "&8» Вампирский темп"
 
         else if {_cls} is "Tank":
             set slot 1 of player's current inventory to magma cream named "&c&lA — Магма-броня"
-            set lore of slot 1 of player's current inventory to "&7Атакующий поджигается на &c4с", "&7+ получает &c2❤ огнём", "", "&8» Враги горят рядом с тобой"
+            set lore of slot 1 of player's current inventory to "&7Атакующий поджигается на &c4с" and "&7+ получает &c2❤ огнём" and "" and "&8» Враги горят рядом с тобой"
             set slot 3 of player's current inventory to anvil named "&8&lB — Сейсмический удар"
-            set lore of slot 3 of player's current inventory to "&7Каждый &f4-й удар &7по тебе автоматически", "&7вызывает толчок: всех врагов в радиусе 4", "&7отталкивает + &fSlowness II &7на 3с", "", "&8» Реактивная защита — нажимать ничего не надо"
+            set lore of slot 3 of player's current inventory to "&7Каждый &f4-й удар &7по тебе автоматически" and "&7вызывает толчок: всех врагов в радиусе 4" and "&7отталкивает + &fSlowness II &7на 3с" and "" and "&8» Реактивная защита — нажимать ничего не надо"
             set slot 5 of player's current inventory to netherite ingot named "&4&lC — Несокрушимый"
-            set lore of slot 5 of player's current inventory to "&7При ≤40%% макс. ❤ — &cResistance III &7+ &c-30%% урона", "&7сверху", "", "&8» Чем меньше ❤, тем мощнее броня"
+            set lore of slot 5 of player's current inventory to "&7При ≤40%% макс. ❤ — &cResistance III &7+ &c-30%% урона" and "&7сверху" and "" and "&8» Чем меньше ❤, тем мощнее броня"
             set slot 7 of player's current inventory to golden apple named "&6&lD — Защитник дуо"
-            set lore of slot 7 of player's current inventory to "&7Союзник дуо в радиусе 8 получает", "&aResistance II + Regen I &7пассивно", "&7Ты получаешь &c50%% его урона", "", "&8» Истинный танк-бабсилитер"
+            set lore of slot 7 of player's current inventory to "&7Союзник дуо в радиусе 8 получает" and "&aResistance II + Regen I &7пассивно" and "&7Ты получаешь &c50%% его урона" and "" and "&8» Истинный танк-бабсилитер"
 
         else if {_cls} is "Archer":
             set slot 1 of player's current inventory to spectral arrow named "&e&lA — Снайпер"
-            set lore of slot 1 of player's current inventory to "&7Стрелы наносят &c+50%% урона", "&7если цель дальше &f20 блоков", "", "&8» Дальнобойная резня"
+            set lore of slot 1 of player's current inventory to "&7Стрелы наносят &c+50%% урона" and "&7если цель дальше &f20 блоков" and "" and "&8» Дальнобойная резня"
             set slot 3 of player's current inventory to packed ice named "&b&lB — Морозная стрела"
-            set lore of slot 3 of player's current inventory to "&7Стрела даёт цели:", "&fSlowness III + Mining Fatigue II + Weakness I", "&7на 5с", "", "&8» Полная парализация"
+            set lore of slot 3 of player's current inventory to "&7Стрела даёт цели:" and "&fSlowness III + Mining Fatigue II + Weakness I" and "&7на 5с" and "" and "&8» Полная парализация"
             set slot 5 of player's current inventory to bow named "&6&lC — Тройной выстрел"
-            set lore of slot 5 of player's current inventory to "&7Shift+ПКМ луком — &fвыпустить 3 стрелы", "&7веером сразу (КД 12с)", "", "&8» Пулемёт"
+            set lore of slot 5 of player's current inventory to "&7Shift+ПКМ луком — &fвыпустить 3 стрелы" and "&7веером сразу (КД 12с)" and "" and "&8» Пулемёт"
             set slot 7 of player's current inventory to ender pearl named "&d&lD — Рикошет"
-            set lore of slot 7 of player's current inventory to "&7Стрела наносит &c75%% урона", "&7ближайшему врагу в радиусе 6", "&7от первой цели", "", "&8» Цепная стрельба"
+            set lore of slot 7 of player's current inventory to "&7Стрела наносит &c75%% урона" and "&7ближайшему врагу в радиусе 6" and "&7от первой цели" and "" and "&8» Цепная стрельба"
 
         else if {_cls} is "Mage":
             set slot 1 of player's current inventory to fire charge named "&c&lA — Метеор"
-            set lore of slot 1 of player's current inventory to "&7Большой фаербол &fдоступен с L1", "&7через Shift+ПКМ блейз-родом (КД 20с)", "", "&8» Досрочный ульт"
+            set lore of slot 1 of player's current inventory to "&7Большой фаербол &fдоступен с L1" and "&7через Shift+ПКМ блейз-родом (КД 20с)" and "" and "&8» Досрочный ульт"
             set slot 3 of player's current inventory to packed ice named "&b&lB — Ледяной взрыв"
-            set lore of slot 3 of player's current inventory to "&7Фаербол при попадании замораживает", "&7врагов в радиусе 4: &fSlowness III &7на 6с", "", "&8» AoE контроль"
+            set lore of slot 3 of player's current inventory to "&7Фаербол при попадании замораживает" and "&7врагов в радиусе 4: &fSlowness III &7на 6с" and "" and "&8» AoE контроль"
             set slot 5 of player's current inventory to glistering melon slice named "&a&lC — Аура регена"
-            set lore of slot 5 of player's current inventory to "&7Союзники в радиусе 10 пассивно", "&7получают &aRegeneration I", "", "&8» Группа всегда живёт"
+            set lore of slot 5 of player's current inventory to "&7Союзники в радиусе 10 пассивно" and "&7получают &aRegeneration I" and "" and "&8» Группа всегда живёт"
             set slot 7 of player's current inventory to amethyst shard named "&d&lD — Арканная перегрузка"
-            set lore of slot 7 of player's current inventory to "&7При получении удара (КД 20с):", "&7враг получает &fSlow II + Weakness I 4с", "&7а ты — &fSpeed II 3с", "", "&8» Контроль дистанции и кайт"
+            set lore of slot 7 of player's current inventory to "&7При получении удара (КД 20с):" and "&7враг получает &fSlow II + Weakness I 4с" and "&7а ты — &fSpeed II 3с" and "" and "&8» Контроль дистанции и кайт"
 
         else if {_cls} is "Necromancer":
             set slot 1 of player's current inventory to soul lantern named "&2&lA — Армия мёртвых"
-            set lore of slot 1 of player's current inventory to "&7Призыв даёт &f+1 миньон сверху", "&7Время жизни — &f75с &7(вместо 45с)", "", "&8» Маленькая армия"
+            set lore of slot 1 of player's current inventory to "&7Призыв даёт &f+1 миньон сверху" and "&7Время жизни — &f75с &7(вместо 45с)" and "" and "&8» Маленькая армия"
             set slot 3 of player's current inventory to fermented spider eye named "&5&lB — Чумной взрыв"
-            set lore of slot 3 of player's current inventory to "&7Миньон при смерти взрывается:", "&fPoison II 8с + Wither II 5с", "&7в радиусе 4", "", "&8» Каждая смерть — оружие"
+            set lore of slot 3 of player's current inventory to "&7Миньон при смерти взрывается:" and "&fPoison II 8с + Wither II 5с" and "&7в радиусе 4" and "" and "&8» Каждая смерть — оружие"
             set slot 5 of player's current inventory to fishing rod named "&8&lC — Мёртвая хватка"
-            set lore of slot 5 of player's current inventory to "&7Shift+ПКМ костью — &fвытянуть врага", "&7к себе + Slowness III на 4с (КД 20с)", "", "&8» Безотказный гангк"
+            set lore of slot 5 of player's current inventory to "&7Shift+ПКМ костью — &fвытянуть врага" and "&7к себе + Slowness III на 4с (КД 20с)" and "" and "&8» Безотказный гангк"
             set slot 7 of player's current inventory to wither skeleton skull named "&4&lD — Могильный лорд"
-            set lore of slot 7 of player's current inventory to "&7Миньоны: &fx2 ❤ + 30%% урона", "&7+ накладывают &fWither I &7при ударе", "", "&8» Босс-армия"
+            set lore of slot 7 of player's current inventory to "&7Миньоны: &fx2 ❤ + 30%% урона" and "&7+ накладывают &fWither I &7при ударе" and "" and "&8» Босс-армия"
 
-        set slot 4 of player's current inventory to book named "&eВыбор перка" with lore "&7Выбор &cокончательный&7.", "&8Класс: &f%{_cls}%", "", "&7Кликай на любой из четырёх перков"
+        set slot 4 of player's current inventory to book named "&eВыбор перка" with lore "&7Выбор &cокончательный&7." and "&8Класс: &f%{_cls}%" and "" and "&7Кликай на любой из четырёх перков"
 
 on inventory click:
     if name of event-inventory is "&8Choose your Perk":
@@ -15112,101 +15112,101 @@ function initAncientScrollRecipes():
     # Легендарные
     set {ancient_scroll_recipes::leg_warrior::name} to "Печать Пространственного Разреза"
     set {ancient_scroll_recipes::leg_warrior::tier} to "absolute"
-    set {ancient_scroll_recipes::leg_warrior::ing::*} to "Незеритовый меч", "Огненный стержень", "Редстоун блок", "Эндер-жемчуг", "Алмазный блок"
+    set {ancient_scroll_recipes::leg_warrior::ing::*} to "Незеритовый меч" and "Огненный стержень" and "Редстоун блок" and "Эндер-жемчуг" and "Алмазный блок"
     set {ancient_scroll_recipes::leg_scout::name} to "Тень Фантома"
     set {ancient_scroll_recipes::leg_scout::tier} to "absolute"
-    set {ancient_scroll_recipes::leg_scout::ing::*} to "Незеритовые ботинки", "Мембрана фантома", "Эхо-осколок", "Алмазный блок", "Эндер-жемчуг"
+    set {ancient_scroll_recipes::leg_scout::ing::*} to "Незеритовые ботинки" and "Мембрана фантома" and "Эхо-осколок" and "Алмазный блок" and "Эндер-жемчуг"
     set {ancient_scroll_recipes::leg_tank::name} to "Якорь Мироздания"
     set {ancient_scroll_recipes::leg_tank::tier} to "absolute"
-    set {ancient_scroll_recipes::leg_tank::ing::*} to "Незеритовый нагрудник", "Обсидиан", "Щит", "Железный блок", "Золотое яблоко"
+    set {ancient_scroll_recipes::leg_tank::ing::*} to "Незеритовый нагрудник" and "Обсидиан" and "Щит" and "Железный блок" and "Золотое яблоко"
     set {ancient_scroll_recipes::leg_archer::name} to "Око Хищника"
     set {ancient_scroll_recipes::leg_archer::tier} to "absolute"
-    set {ancient_scroll_recipes::leg_archer::ing::*} to "Спектральная стрела", "Лук", "Незеритовый слиток", "Око Эндера", "Изумрудный блок"
+    set {ancient_scroll_recipes::leg_archer::ing::*} to "Спектральная стрела" and "Лук" and "Незеритовый слиток" and "Око Эндера" and "Изумрудный блок"
     set {ancient_scroll_recipes::leg_mage::name} to "Эфирный Разум"
     set {ancient_scroll_recipes::leg_mage::tier} to "absolute"
-    set {ancient_scroll_recipes::leg_mage::ing::*} to "Аметистовый блок", "Огненный стержень", "Книга чар", "Око Эндера", "Слеза гаста"
+    set {ancient_scroll_recipes::leg_mage::ing::*} to "Аметистовый блок" and "Огненный стержень" and "Книга чар" and "Око Эндера" and "Слеза гаста"
     set {ancient_scroll_recipes::leg_necro::name} to "Амулет Гнилого Родства"
     set {ancient_scroll_recipes::leg_necro::tier} to "absolute"
-    set {ancient_scroll_recipes::leg_necro::ing::*} to "Незеритовый нагрудник", "Череп визер-скелета", "Песок душ", "Тотем бессмертия", "Блок адского нароста"
+    set {ancient_scroll_recipes::leg_necro::ing::*} to "Незеритовый нагрудник" and "Череп визер-скелета" and "Песок душ" and "Тотем бессмертия" and "Блок адского нароста"
 
     # Обычные артефакты
     set {ancient_scroll_recipes::hermes::name} to "Сапоги Гермеса"
     set {ancient_scroll_recipes::hermes::tier} to "medium"
-    set {ancient_scroll_recipes::hermes::ing::*} to "Кожаные ботинки", "Кроличья лапка", "Сахар", "Перо", "Золотой слиток"
+    set {ancient_scroll_recipes::hermes::ing::*} to "Кожаные ботинки" and "Кроличья лапка" and "Сахар" and "Перо" and "Золотой слиток"
     set {ancient_scroll_recipes::windring::name} to "Кольцо Ветра"
     set {ancient_scroll_recipes::windring::tier} to "medium"
-    set {ancient_scroll_recipes::windring::ing::*} to "Золотой самородок", "Сахар", "Изумруд", "Перо", "Золотой слиток"
+    set {ancient_scroll_recipes::windring::ing::*} to "Золотой самородок" and "Сахар" and "Изумруд" and "Перо" and "Золотой слиток"
     set {ancient_scroll_recipes::vampcharm::name} to "Амулет вампира"
     set {ancient_scroll_recipes::vampcharm::tier} to "medium"
-    set {ancient_scroll_recipes::vampcharm::ing::*} to "Слеза гаста", "Паучий глаз", "Маринованный паучий глаз", "Редстоун", "Золотой слиток"
+    set {ancient_scroll_recipes::vampcharm::ing::*} to "Слеза гаста" and "Паучий глаз" and "Маринованный паучий глаз" and "Редстоун" and "Золотой слиток"
     set {ancient_scroll_recipes::etherdash::name} to "Эфирный рывок"
     set {ancient_scroll_recipes::etherdash::tier} to "medium"
-    set {ancient_scroll_recipes::etherdash::ing::*} to "Эндер-жемчуг", "Хорус-фрукт", "Аметистовый осколок", "Мембрана фантома", "Золотой слиток"
+    set {ancient_scroll_recipes::etherdash::ing::*} to "Эндер-жемчуг" and "Хорус-фрукт" and "Аметистовый осколок" and "Мембрана фантома" and "Золотой слиток"
     set {ancient_scroll_recipes::mehrunes::name} to "Бритва Мерунеса"
     set {ancient_scroll_recipes::mehrunes::tier} to "medium"
-    set {ancient_scroll_recipes::mehrunes::ing::*} to "Железный меч", "Огненный порошок", "Адский нарост", "Лавовый крем", "Золотой слиток"
+    set {ancient_scroll_recipes::mehrunes::ing::*} to "Железный меч" and "Огненный порошок" and "Адский нарост" and "Лавовый крем" and "Золотой слиток"
     set {ancient_scroll_recipes::starfury::name} to "Звёздная ярость"
     set {ancient_scroll_recipes::starfury::tier} to "medium"
-    set {ancient_scroll_recipes::starfury::ing::*} to "Алмазный меч", "Звезда Незера", "Светокаменная пыль", "Огненный заряд", "Золотой слиток"
+    set {ancient_scroll_recipes::starfury::ing::*} to "Алмазный меч" and "Звезда Незера" and "Светокаменная пыль" and "Огненный заряд" and "Золотой слиток"
     set {ancient_scroll_recipes::icewalker::name} to "Ледяной след"
     set {ancient_scroll_recipes::icewalker::tier} to "medium"
-    set {ancient_scroll_recipes::icewalker::ing::*} to "Плотный лёд", "Синий лёд", "Блок снега", "Кристалл призмарина", "Золотой слиток"
+    set {ancient_scroll_recipes::icewalker::ing::*} to "Плотный лёд" and "Синий лёд" and "Блок снега" and "Кристалл призмарина" and "Золотой слиток"
     set {ancient_scroll_recipes::frostheart::name} to "Сердце ледяного великана"
     set {ancient_scroll_recipes::frostheart::tier} to "medium"
-    set {ancient_scroll_recipes::frostheart::ing::*} to "Сердце моря", "Лёд", "Снежок", "Осколок призмарина", "Золотой слиток"
+    set {ancient_scroll_recipes::frostheart::ing::*} to "Сердце моря" and "Лёд" and "Снежок" and "Осколок призмарина" and "Золотой слиток"
     set {ancient_scroll_recipes::ankhshield::name} to "Щит Анх"
     set {ancient_scroll_recipes::ankhshield::tier} to "medium"
-    set {ancient_scroll_recipes::ankhshield::ing::*} to "Щит", "Золотое яблоко", "Железный слиток", "Тотем бессмертия", "Золотой слиток"
+    set {ancient_scroll_recipes::ankhshield::ing::*} to "Щит" and "Золотое яблоко" and "Железный слиток" and "Тотем бессмертия" and "Золотой слиток"
     set {ancient_scroll_recipes::azura::name} to "Звезда Азуры"
     set {ancient_scroll_recipes::azura::tier} to "medium"
-    set {ancient_scroll_recipes::azura::ing::*} to "Звезда Незера", "Аметистовый осколок", "Пузырёк опыта", "Лазурит", "Золотой слиток"
+    set {ancient_scroll_recipes::azura::ing::*} to "Звезда Незера" and "Аметистовый осколок" and "Пузырёк опыта" and "Лазурит" and "Золотой слиток"
     set {ancient_scroll_recipes::rottenapple::name} to "Гнилое яблоко"
     set {ancient_scroll_recipes::rottenapple::tier} to "medium"
-    set {ancient_scroll_recipes::rottenapple::ing::*} to "Ядовитый картофель", "Гнилая плоть", "Паучий глаз", "Костная мука", "Золотой слиток"
+    set {ancient_scroll_recipes::rottenapple::ing::*} to "Ядовитый картофель" and "Гнилая плоть" and "Паучий глаз" and "Костная мука" and "Золотой слиток"
     set {ancient_scroll_recipes::voidcompass::name} to "Компас Пустоты"
     set {ancient_scroll_recipes::voidcompass::tier} to "medium"
-    set {ancient_scroll_recipes::voidcompass::ing::*} to "Компас", "Обсидиан", "Эндер-жемчуг", "Аметистовый осколок", "Золотой слиток"
+    set {ancient_scroll_recipes::voidcompass::ing::*} to "Компас" and "Обсидиан" and "Эндер-жемчуг" and "Аметистовый осколок" and "Золотой слиток"
     set {ancient_scroll_recipes::luckcoin::name} to "Монета удачи"
     set {ancient_scroll_recipes::luckcoin::tier} to "medium"
-    set {ancient_scroll_recipes::luckcoin::ing::*} to "Золотой слиток", "Изумруд", "Кроличья лапка", "Семена пшеницы", "Лазурит"
+    set {ancient_scroll_recipes::luckcoin::ing::*} to "Золотой слиток" and "Изумруд" and "Кроличья лапка" and "Семена пшеницы" and "Лазурит"
     set {ancient_scroll_recipes::cloudjump::name} to "Воздушный шарик"
     set {ancient_scroll_recipes::cloudjump::tier} to "medium"
-    set {ancient_scroll_recipes::cloudjump::ing::*} to "Стеклянная колба", "Перо", "Мембрана фантома", "Слизь", "Золотой слиток"
+    set {ancient_scroll_recipes::cloudjump::ing::*} to "Стеклянная колба" and "Перо" and "Мембрана фантома" and "Слизь" and "Золотой слиток"
     set {ancient_scroll_recipes::crownmind::name} to "Корона Высшего Разума"
     set {ancient_scroll_recipes::crownmind::tier} to "absolute"
-    set {ancient_scroll_recipes::crownmind::ing::*} to "Эфирный Разум", "Звезда Азуры", "Золотой шлем", "Книга чар", "Пузырёк опыта"
+    set {ancient_scroll_recipes::crownmind::ing::*} to "Эфирный Разум" and "Звезда Азуры" and "Золотой шлем" and "Книга чар" and "Пузырёк опыта"
 
     # Utility
     set {ancient_scroll_recipes::heater::name} to "Портативный Нагреватель"
     set {ancient_scroll_recipes::heater::tier} to "medium"
-    set {ancient_scroll_recipes::heater::ing::*} to "Печка", "Огненный порошок", "Медный блок", "Уголь", "Слиток железа"
+    set {ancient_scroll_recipes::heater::ing::*} to "Печка" and "Огненный порошок" and "Медный блок" and "Уголь" and "Слиток железа"
     set {ancient_scroll_recipes::dreamcatcher::name} to "Ловец Снов"
     set {ancient_scroll_recipes::dreamcatcher::tier} to "medium"
-    set {ancient_scroll_recipes::dreamcatcher::ing::*} to "Нить", "Паутина", "Светокаменная пыль", "Перо", "Золотой самородок"
+    set {ancient_scroll_recipes::dreamcatcher::ing::*} to "Нить" and "Паутина" and "Светокаменная пыль" and "Перо" and "Золотой самородок"
     set {ancient_scroll_recipes::desertheart::name} to "Сердце Пустыни"
     set {ancient_scroll_recipes::desertheart::tier} to "medium"
-    set {ancient_scroll_recipes::desertheart::ing::*} to "Кактус", "Песок душ", "Огненный порошок", "Золотой слиток", "Кремень"
+    set {ancient_scroll_recipes::desertheart::ing::*} to "Кактус" and "Песок душ" and "Огненный порошок" and "Золотой слиток" and "Кремень"
     set {ancient_scroll_recipes::quantdup::name} to "Квантовый Дубликатор"
     set {ancient_scroll_recipes::quantdup::tier} to "medium"
-    set {ancient_scroll_recipes::quantdup::ing::*} to "Раздатчик", "Аметист", "Медный слиток", "Редстоун блок", "Светокаменная пыль"
+    set {ancient_scroll_recipes::quantdup::ing::*} to "Раздатчик" and "Аметист" and "Медный слиток" and "Редстоун блок" and "Светокаменная пыль"
     set {ancient_scroll_recipes::facelessmask::name} to "Маска Безликого"
     set {ancient_scroll_recipes::facelessmask::tier} to "medium"
-    set {ancient_scroll_recipes::facelessmask::ing::*} to "Кожа", "Белая шерсть", "Зелье невидимости", "Чернильный мешок", "Золотой слиток"
+    set {ancient_scroll_recipes::facelessmask::ing::*} to "Кожа" and "Белая шерсть" and "Зелье невидимости" and "Чернильный мешок" and "Золотой слиток"
     set {ancient_scroll_recipes::lootmagnet::name} to "Магнит Добытчика"
     set {ancient_scroll_recipes::lootmagnet::tier} to "medium"
-    set {ancient_scroll_recipes::lootmagnet::ing::*} to "Воронка", "Редстоун", "Железный слиток", "Эндер-жемчуг", "Золотой самородок"
+    set {ancient_scroll_recipes::lootmagnet::ing::*} to "Воронка" and "Редстоун" and "Железный слиток" and "Эндер-жемчуг" and "Золотой самородок"
     set {ancient_scroll_recipes::nightlens::name} to "Ночная Линза"
     set {ancient_scroll_recipes::nightlens::tier} to "medium"
-    set {ancient_scroll_recipes::nightlens::ing::*} to "Стекло", "Светокаменная пыль", "Аметистовый осколок", "Мембрана фантома", "Паучий глаз"
+    set {ancient_scroll_recipes::nightlens::ing::*} to "Стекло" and "Светокаменная пыль" and "Аметистовый осколок" and "Мембрана фантома" and "Паучий глаз"
     set {ancient_scroll_recipes::ruin_summon::name} to "Зов Руин"
     set {ancient_scroll_recipes::ruin_summon::tier} to "medium"
-    set {ancient_scroll_recipes::ruin_summon::ing::*} to "Плачущий обсидиан", "Обсидиан", "Аметистовый блок", "Эндер-жемчуг", "Незеритовый лом"
+    set {ancient_scroll_recipes::ruin_summon::ing::*} to "Плачущий обсидиан" and "Обсидиан" and "Аметистовый блок" and "Эндер-жемчуг" and "Незеритовый лом"
     set {ancient_scroll_recipes::awakening_altar::name} to "Сундук — Алтарь Создания"
     set {ancient_scroll_recipes::awakening_altar::tier} to "medium"
-    set {ancient_scroll_recipes::awakening_altar::ing::*} to "Ключ пустоты — 5 шт. (в сумме)", "Плачущий обсидиан — 3 шт.", "Обсидиан — 3 шт.", "Аметистовый осколок — 3 шт.", "Только это в сундуке — открыть"
+    set {ancient_scroll_recipes::awakening_altar::ing::*} to "Ключ пустоты — 5 шт. (в сумме)" and "Плачущий обсидиан — 3 шт." and "Обсидиан — 3 шт." and "Аметистовый осколок — 3 шт." and "Только это в сундуке — открыть"
     set {ancient_scroll_recipes::cursedgift::name} to "Дар Проклятого Короля"
     set {ancient_scroll_recipes::cursedgift::tier} to "absolute"
-    set {ancient_scroll_recipes::cursedgift::ing::*} to "Посох Некро-Тирана", "Корона Высшего Разума", "Зачарованное золотое яблоко", "Голова игрока", "Слиток незерита"
+    set {ancient_scroll_recipes::cursedgift::ing::*} to "Посох Некро-Тирана" and "Корона Высшего Разума" and "Зачарованное золотое яблоко" and "Голова игрока" and "Слиток незерита"
     initAltarGearAncientScrollRecipes()
 
 function initAltarGearAncientScrollRecipes():
@@ -15222,7 +15222,7 @@ function initAltarGearAncientScrollRecipes():
         delete {ancient_scroll_recipes::%{_id}%::ing::*}
         set {_ing::*} to altarLocalRecipeIngredients({_id})
         loop {_ing::*}:
-            add loop-value to {ancient_scroll_recipes::%{_id}%::ing::*}
+            add loop-value-2 to {ancient_scroll_recipes::%{_id}%::ing::*}
 
 function ancientScrollItem(id: text) :: item:
     set {_n} to {ancient_scroll_recipes::%{_id}%::name}
