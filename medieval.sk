@@ -5054,64 +5054,64 @@ function altarSwordIsUndead(v: living entity) :: boolean:
         return true
     return false
 
-function applyAltarSwordOnHit(attacker: player, victim: living entity, dmg: number):
-    set {_tk} to attacker's tool
+function applyAltarSwordOnHit(atk: player, vic: living entity, dmg: number):
+    set {_tk} to {_atk}'s tool
     set {_omni} to false
     if isOmniSword({_tk}) is true:
         set {_omni} to true
     if isEtherSword({_tk}) is true:
-        heal attacker by {_dmg} * 0.2
-        apply slowness 1 without particles to victim for 1 second
+        heal {_atk} by {_dmg} * 0.2
+        apply slowness 1 without particles to {_vic} for 1 second
     if isFlameSword({_tk}) is true:
-        if victim is not a player:
-            ignite victim for 4 seconds
+        if {_vic} is not a player:
+            ignite {_vic} for 4 seconds
         else:
-            ignite victim for 2 seconds
-        if altarSwordIsUndead(victim) is true:
-            damage victim by {_dmg} * 0.15
+            ignite {_vic} for 2 seconds
+        if altarSwordIsUndead({_vic}) is true:
+            damage {_vic} by {_dmg} * 0.15
     if isVeinSword({_tk}) is true:
-        set {_vloc} to location of victim
+        set {_vloc} to location of {_vic}
         set {_hitN} to 0
         loop all living entities in radius 3 around {_vloc}:
-            if loop-entity is not attacker:
-                if loop-entity is not victim:
-                    if distance between loop-entity and victim <= 2.75:
+            if loop-entity is not {_atk}:
+                if loop-entity is not {_vic}:
+                    if distance between loop-entity and {_vic} <= 2.75:
                         add 1 to {_hitN}
                         if {_hitN} <= 3:
                             damage loop-entity by {_dmg} * 0.35
     if isFortuneSword({_tk}) is true:
-        if victim is not a player:
-            giveArtifactScaledExperience(attacker, 1)
+        if {_vic} is not a player:
+            giveArtifactScaledExperience({_atk}, 1)
     if isVoidSword({_tk}) is true:
         if random integer between 1 and 100 <= 25:
-            push victim away from attacker at speed 0.65
-        apply weakness 1 without particles to victim for 2 seconds
+            push {_vic} away from {_atk} at speed 0.65
+        apply weakness 1 without particles to {_vic} for 2 seconds
     if {_omni} is true:
-        heal attacker by {_dmg} * 0.2
-        apply slowness 1 without particles to victim for 1 second
-        if victim is not a player:
-            ignite victim for 4 seconds
+        heal {_atk} by {_dmg} * 0.2
+        apply slowness 1 without particles to {_vic} for 1 second
+        if {_vic} is not a player:
+            ignite {_vic} for 4 seconds
         else:
-            ignite victim for 2 seconds
-        if altarSwordIsUndead(victim) is true:
-            damage victim by {_dmg} * 0.15
-        set {_vloc} to location of victim
+            ignite {_vic} for 2 seconds
+        if altarSwordIsUndead({_vic}) is true:
+            damage {_vic} by {_dmg} * 0.15
+        set {_vloc} to location of {_vic}
         set {_hitN} to 0
         loop all living entities in radius 3 around {_vloc}:
-            if loop-entity is not attacker:
-                if loop-entity is not victim:
-                    if distance between loop-entity and victim <= 2.75:
+            if loop-entity is not {_atk}:
+                if loop-entity is not {_vic}:
+                    if distance between loop-entity and {_vic} <= 2.75:
                         add 1 to {_hitN}
                         if {_hitN} <= 3:
                             damage loop-entity by {_dmg} * 0.35
-        if victim is not a player:
-            giveArtifactScaledExperience(attacker, 1)
+        if {_vic} is not a player:
+            giveArtifactScaledExperience({_atk}, 1)
         if random integer between 1 and 100 <= 25:
-            push victim away from attacker at speed 0.65
-        apply weakness 1 without particles to victim for 2 seconds
+            push {_vic} away from {_atk} at speed 0.65
+        apply weakness 1 without particles to {_vic} for 2 seconds
 
-function applyAltarSwordOnKill(attacker: player):
-    set {_tk} to attacker's tool
+function applyAltarSwordOnKill(atk: player):
+    set {_tk} to {_atk}'s tool
     set {_fortune} to false
     set {_void} to false
     if isFortuneSword({_tk}) is true:
@@ -5126,150 +5126,155 @@ function applyAltarSwordOnKill(attacker: player):
             set {_bonus} to gold nugget
             if random integer between 1 and 100 <= 35:
                 set {_bonus} to emerald
-            giveOrDrop({_bonus}, attacker, location of attacker)
-        giveArtifactScaledExperience(attacker, 2)
+            giveOrDrop({_bonus}, {_atk}, location of {_atk})
+        giveArtifactScaledExperience({_atk}, 2)
     if {_void} is true:
-        apply speed 2 without particles to attacker for 2 seconds
+        apply speed 2 without particles to {_atk} for 2 seconds
 
-function applyAltarArmorPieceDamaged(victim: player, piece: item, attacker: entity):
+function altarArmorPieceBlocksDamage(pl: player, piece: item, dc: text) :: boolean:
+    if {_piece} is air:
+        return false
+    set {_d} to {_dc} in lower case
+    if isFlameHelmet({_piece}) is true:
+        if {_d} is "fire":
+            return true
+        if {_d} is "fire tick":
+            return true
+    if isOmniHelmet({_piece}) is true:
+        if {_d} is "fire":
+            return true
+        if {_d} is "fire tick":
+            return true
+    if isFlameChestplate({_piece}) is true:
+        if {_d} is "fire":
+            return true
+        if {_d} is "fire tick":
+            return true
+    if isOmniChestplate({_piece}) is true:
+        if {_d} is "fire":
+            return true
+        if {_d} is "fire tick":
+            return true
+    if isFlameBoots({_piece}) is true:
+        if {_d} is "lava":
+            return true
+        if {_d} is "hot floor":
+            return true
+    if isOmniBoots({_piece}) is true:
+        if {_d} is "lava":
+            return true
+        if {_d} is "hot floor":
+            return true
+    return false
+
+function altarArmorPieceDamageMult(pl: player, piece: item, dc: text) :: number:
+    if {_piece} is air:
+        return 1
+    set {_d} to {_dc} in lower case
+    if isEtherHelmet({_piece}) is true:
+        return 0.97
+    if isOmniHelmet({_piece}) is true:
+        return 0.97
+    if isEtherChestplate({_piece}) is true:
+        return 0.95
+    if isOmniChestplate({_piece}) is true:
+        return 0.95
+    if isFlameLeggings({_piece}) is true:
+        if {_d} is "fire":
+            return 0.5
+        if {_d} is "fire tick":
+            return 0.5
+    if isOmniLeggings({_piece}) is true:
+        if {_d} is "fire":
+            return 0.5
+        if {_d} is "fire tick":
+            return 0.5
+    return 1
+
+function applyAltarArmorPieceEffects(pl: player, piece: item, atk: entity):
     if {_piece} is air:
         stop
-    set {_vu} to uuid of victim
+    set {_vu} to uuid of {_pl}
     set {_now} to unix timestamp of now
     # Шлем
-    if isEtherHelmet({_piece}) is true:
-        set damage to damage * 0.97
-    if isFlameHelmet({_piece}) is true:
-        if damage cause is fire:
-            cancel event
-            stop
-        if damage cause is fire tick:
-            cancel event
-            stop
     if isVeinHelmet({_piece}) is true:
-        set {_maxHp} to max health of victim
-        if health of victim <= ({_maxHp} * 0.5):
+        set {_maxHp} to max health of {_pl}
+        if health of {_pl} <= ({_maxHp} * 0.5):
             set {_last} to {altar_armor_veinhelm_cd::%{_vu}%} ? 0
             if {_now} - {_last} >= 8:
                 set {altar_armor_veinhelm_cd::%{_vu}%} to {_now}
-                apply regeneration 1 without particles to victim for 2 seconds
+                apply regeneration 1 without particles to {_pl} for 2 seconds
     if isVoidHelmet({_piece}) is true:
-        if attacker is a living entity:
-            if attacker is not victim:
+        if {_atk} is a living entity:
+            if {_atk} is not {_pl}:
                 set {_last} to {altar_armor_voidhelm_cd::%{_vu}%} ? 0
                 if {_now} - {_last} >= 6:
                     if random integer between 1 and 100 <= 15:
                         set {altar_armor_voidhelm_cd::%{_vu}%} to {_now}
-                        apply blindness 1 without particles to attacker for 2 seconds
+                        apply blindness 1 without particles to {_atk} for 2 seconds
     if isOmniHelmet({_piece}) is true:
-        set damage to damage * 0.97
-        if damage cause is fire:
-            cancel event
-            stop
-        if damage cause is fire tick:
-            cancel event
-            stop
-        set {_maxHp} to max health of victim
-        if health of victim <= ({_maxHp} * 0.5):
+        set {_maxHp} to max health of {_pl}
+        if health of {_pl} <= ({_maxHp} * 0.5):
             set {_last} to {altar_armor_veinhelm_cd::%{_vu}%} ? 0
             if {_now} - {_last} >= 8:
                 set {altar_armor_veinhelm_cd::%{_vu}%} to {_now}
-                apply regeneration 1 without particles to victim for 2 seconds
-        if attacker is a living entity:
-            if attacker is not victim:
+                apply regeneration 1 without particles to {_pl} for 2 seconds
+        if {_atk} is a living entity:
+            if {_atk} is not {_pl}:
                 set {_last} to {altar_armor_voidhelm_cd::%{_vu}%} ? 0
                 if {_now} - {_last} >= 6:
                     if random integer between 1 and 100 <= 15:
                         set {altar_armor_voidhelm_cd::%{_vu}%} to {_now}
-                        apply blindness 1 without particles to attacker for 2 seconds
+                        apply blindness 1 without particles to {_atk} for 2 seconds
     # Нагрудник
-    if isEtherChestplate({_piece}) is true:
-        set damage to damage * 0.95
     if isFlameChestplate({_piece}) is true:
-        if damage cause is fire:
-            cancel event
-            stop
-        if damage cause is fire tick:
-            cancel event
-            stop
-        if attacker is a living entity:
-            if attacker is not victim:
-                if distance between attacker and victim <= 4:
-                    ignite attacker for 2 seconds
+        if {_atk} is a living entity:
+            if {_atk} is not {_pl}:
+                if distance between {_atk} and {_pl} <= 4:
+                    ignite {_atk} for 2 seconds
     if isVeinChestplate({_piece}) is true:
         set {_last} to {altar_armor_regen_cd::%{_vu}%} ? 0
         if {_now} - {_last} >= 5:
             set {altar_armor_regen_cd::%{_vu}%} to {_now}
-            apply regeneration 1 without particles to victim for 2 seconds
+            apply regeneration 1 without particles to {_pl} for 2 seconds
     if isVoidChestplate({_piece}) is true:
-        set {_maxHp} to max health of victim
-        if health of victim <= ({_maxHp} * 0.3):
-            apply resistance 1 without particles to victim for 3 seconds
+        set {_maxHp} to max health of {_pl}
+        if health of {_pl} <= ({_maxHp} * 0.3):
+            apply resistance 1 without particles to {_pl} for 3 seconds
     if isOmniChestplate({_piece}) is true:
-        set damage to damage * 0.95
-        if damage cause is fire:
-            cancel event
-            stop
-        if damage cause is fire tick:
-            cancel event
-            stop
-        if attacker is a living entity:
-            if attacker is not victim:
-                if distance between attacker and victim <= 4:
-                    ignite attacker for 2 seconds
+        if {_atk} is a living entity:
+            if {_atk} is not {_pl}:
+                if distance between {_atk} and {_pl} <= 4:
+                    ignite {_atk} for 2 seconds
         set {_last} to {altar_armor_regen_cd::%{_vu}%} ? 0
         if {_now} - {_last} >= 5:
             set {altar_armor_regen_cd::%{_vu}%} to {_now}
-            apply regeneration 1 without particles to victim for 2 seconds
-        set {_maxHp} to max health of victim
-        if health of victim <= ({_maxHp} * 0.3):
-            apply resistance 1 without particles to victim for 3 seconds
+            apply regeneration 1 without particles to {_pl} for 2 seconds
+        set {_maxHp} to max health of {_pl}
+        if health of {_pl} <= ({_maxHp} * 0.3):
+            apply resistance 1 without particles to {_pl} for 3 seconds
     # Поножи
-    if isFlameLeggings({_piece}) is true:
-        if damage cause is fire:
-            set damage to damage * 0.5
-        if damage cause is fire tick:
-            set damage to damage * 0.5
     if isVeinLeggings({_piece}) is true:
-        if attacker is a living entity:
-            if attacker is not victim:
+        if {_atk} is a living entity:
+            if {_atk} is not {_pl}:
                 if random integer between 1 and 100 <= 10:
-                    apply slowness 1 without particles to attacker for 1 second
+                    apply slowness 1 without particles to {_atk} for 1 second
     if isVoidLeggings({_piece}) is true:
         if random integer between 1 and 100 <= 20:
-            apply speed 1 without particles to victim for 2 seconds
+            apply speed 1 without particles to {_pl} for 2 seconds
     if isOmniLeggings({_piece}) is true:
-        if damage cause is fire:
-            set damage to damage * 0.5
-        if damage cause is fire tick:
-            set damage to damage * 0.5
-        if attacker is a living entity:
-            if attacker is not victim:
+        if {_atk} is a living entity:
+            if {_atk} is not {_pl}:
                 if random integer between 1 and 100 <= 10:
-                    apply slowness 1 without particles to attacker for 1 second
+                    apply slowness 1 without particles to {_atk} for 1 second
         if random integer between 1 and 100 <= 20:
-            apply speed 1 without particles to victim for 2 seconds
-    # Сапоги
-    if isFlameBoots({_piece}) is true:
-        if damage cause is lava:
-            cancel event
-            stop
-        if damage cause is hot floor:
-            cancel event
-            stop
-    if isOmniBoots({_piece}) is true:
-        if damage cause is lava:
-            cancel event
-            stop
-        if damage cause is hot floor:
-            cancel event
-            stop
+            apply speed 1 without particles to {_pl} for 2 seconds
 
-function applyAltarArmorOnDamaged(victim: player, attacker: entity):
-    applyAltarArmorPieceDamaged(victim, helmet of victim, attacker)
-    applyAltarArmorPieceDamaged(victim, chestplate of victim, attacker)
-    applyAltarArmorPieceDamaged(victim, leggings of victim, attacker)
-    applyAltarArmorPieceDamaged(victim, boots of victim, attacker)
+function applyAltarArmorHitEffects(pl: player, atk: entity):
+    applyAltarArmorPieceEffects({_pl}, helmet of {_pl}, {_atk})
+    applyAltarArmorPieceEffects({_pl}, chestplate of {_pl}, {_atk})
+    applyAltarArmorPieceEffects({_pl}, leggings of {_pl}, {_atk})
+    applyAltarArmorPieceEffects({_pl}, boots of {_pl}, {_atk})
 
 function applyAltarArmorPassiveEffects(p: player):
     set {_helm} to helmet of {_p}
@@ -5312,19 +5317,19 @@ function altarArmorFortuneXpBonus(p: player) :: number:
         add 3 to {_bonus}
     return {_bonus}
 
-function applyAltarArmorOnKill(attacker: player):
-    if isVoidBoots(boots of attacker) is true:
-        apply speed 2 without particles to attacker for 2 seconds
-    else if isOmniBoots(boots of attacker) is true:
-        apply speed 2 without particles to attacker for 2 seconds
-    if isFortuneLeggings(leggings of attacker) is true:
+function applyAltarArmorOnKill(atk: player):
+    if isVoidBoots(boots of {_atk}) is true:
+        apply speed 2 without particles to {_atk} for 2 seconds
+    else if isOmniBoots(boots of {_atk}) is true:
+        apply speed 2 without particles to {_atk} for 2 seconds
+    if isFortuneLeggings(leggings of {_atk}) is true:
         if random integer between 1 and 100 <= 10:
             set {_bonus} to gold nugget
-            giveOrDrop({_bonus}, attacker, location of attacker)
-    else if isOmniLeggings(leggings of attacker) is true:
+            giveOrDrop({_bonus}, {_atk}, location of {_atk})
+    else if isOmniLeggings(leggings of {_atk}) is true:
         if random integer between 1 and 100 <= 10:
             set {_bonus} to gold nugget
-            giveOrDrop({_bonus}, attacker, location of attacker)
+            giveOrDrop({_bonus}, {_atk}, location of {_atk})
 
 function altarGearRecipeIdFromItem(it: item) :: text:
     if {_it} is air:
@@ -7358,10 +7363,17 @@ on damage:
                 if victim is not attacker:
                     applyAltarSwordOnHit(attacker, victim, damage)
 
-    # Алтарная броня (нагрудник): защита и контратаки
+    # Алтарная броня: защита и контратаки
     if victim is a player:
         syncAltarGearDurability(victim)
-        applyAltarArmorOnDamaged(victim, attacker)
+        set {_altarDc} to "%damage cause%" in lower case
+        loop helmet, chestplate, leggings and boots of victim:
+            if altarArmorPieceBlocksDamage(victim, loop-value, {_altarDc}) is true:
+                cancel event
+                stop
+            set {_altarMult} to altarArmorPieceDamageMult(victim, loop-value, {_altarDc})
+            set damage to damage * {_altarMult}
+        applyAltarArmorHitEffects(victim, attacker)
 
     # Легендарка Warrior: Печать Пространственного Разреза
     # Тип оружия — как у бонуса L1 воина: isSword() (любой материал) + булава 1.21
