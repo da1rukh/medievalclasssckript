@@ -4374,7 +4374,7 @@ function altarVeinSwordItem() :: item:
 function altarFortuneSwordItem() :: item:
     set {_s} to diamond sword
     set name of {_s} to "&eКлинок Созвездия"
-    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_УДАЧА", "&7+1 опыт за удар по мобу", "&720%% бонусный дроп при убийстве", "&8∞ Неразрушимый"
+    set lore of {_s} to "&8✦ Алтарный меч", "&8АЛТАР_МЕЧ_УДАЧА", "&7+1 опыт за удар", "&720%% бонусный дроп при убийстве", "&8∞ Неразрушимый"
     enchant {_s} with unbreaking 10
     enchant {_s} with sharpness 4
     enchant {_s} with looting 2
@@ -4516,7 +4516,7 @@ function altarFortuneChestplateItem() :: item:
 function altarFortuneLeggingsItem() :: item:
     set {_a} to diamond leggings
     set name of {_a} to "&eПоножи Добычи"
-    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_ПОНОЖ", "&8УДАЧА_БРОНЯ", "&710%% доп. дроп с мобов", "&7КД 3с на цель", "&8∞ Неразрушимая"
+    set lore of {_a} to "&8✦ Алтарная броня", "&8АЛТАР_УДАЧА_ПОНОЖ", "&8УДАЧА_БРОНЯ", "&710%% доп. дроп при убийстве", "&7КД 3с на цель", "&8∞ Неразрушимая"
     enchant {_a} with unbreaking 10
     enchant {_a} with protection 4
     return {_a}
@@ -5061,10 +5061,7 @@ function applyAltarSwordOnHit(atk: player, vic: living entity, dmg: number):
         heal {_atk} by {_dmg} * 0.2
         apply slowness 1 without particles to {_vic} for 1 second
     if isFlameSword({_tk}) is true:
-        if {_vic} is not a player:
-            ignite {_vic} for 4 seconds
-        else:
-            ignite {_vic} for 2 seconds
+        ignite {_vic} for 3 seconds
         if altarSwordIsUndead({_vic}) is true:
             damage {_vic} by {_dmg} * 0.15
     if isVeinSword({_tk}) is true:
@@ -5078,8 +5075,7 @@ function applyAltarSwordOnHit(atk: player, vic: living entity, dmg: number):
                         if {_hitN} <= 3:
                             damage loop-entity by {_dmg} * 0.35
     if isFortuneSword({_tk}) is true:
-        if {_vic} is not a player:
-            giveArtifactScaledExperience({_atk}, 1)
+        giveArtifactScaledExperience({_atk}, 1)
     if isVoidSword({_tk}) is true:
         if random integer between 1 and 100 <= 25:
             push {_vic} away from {_atk} at speed 0.65
@@ -5087,10 +5083,7 @@ function applyAltarSwordOnHit(atk: player, vic: living entity, dmg: number):
     if {_omni} is true:
         heal {_atk} by {_dmg} * 0.2
         apply slowness 1 without particles to {_vic} for 1 second
-        if {_vic} is not a player:
-            ignite {_vic} for 4 seconds
-        else:
-            ignite {_vic} for 2 seconds
+        ignite {_vic} for 3 seconds
         if altarSwordIsUndead({_vic}) is true:
             damage {_vic} by {_dmg} * 0.15
         set {_vloc} to location of {_vic}
@@ -5102,8 +5095,7 @@ function applyAltarSwordOnHit(atk: player, vic: living entity, dmg: number):
                         add 1 to {_hitN}
                         if {_hitN} <= 3:
                             damage loop-entity by {_dmg} * 0.35
-        if {_vic} is not a player:
-            giveArtifactScaledExperience({_atk}, 1)
+        giveArtifactScaledExperience({_atk}, 1)
         if random integer between 1 and 100 <= 25:
             push {_vic} away from {_atk} at speed 0.65
         apply weakness 1 without particles to {_vic} for 2 seconds
@@ -6788,6 +6780,7 @@ command /altar:
         send "{@prefix} &7У каждой части брони своё имя и свой эффект — см. /diary после крафта."
         send "{@prefix} &7Бонус ❤: жила-нагрудник +2, пустота-нагрудник +1, удача-шлем +1, эфир-сапоги +1; омни-слоты суммируют."
         send "{@prefix} &7Пассивные зелья брони: тик 1с = длительность 1с (без накопления). Slow falling не даётся."
+        send "{@prefix} &7Все эффекты мечей и брони работают и в PvE, и в PvP."
         send "{@prefix} &fГолова игрока: &aдёрн + &6золотое яблоко + &bалмаз + &cnetherrack + &fкамень энда."
         send "{@prefix} &6Корона Высшего Разума: &6Эфирный Разум + &dЗвезда Азуры + &eзолотой шлем + &fenchanted book + &aпузырёк опыта."
         send "{@prefix} &6Портативный Нагреватель: &7печка + blaze powder + медный блок + уголь + железный слиток"
@@ -7761,10 +7754,10 @@ on death:
                         drop 4 iron ingot at location of victim
                     send action bar "&6&lМОНЕТА УДАЧИ! &7Бонусный лут выпал" to attacker
 
-        # Алтарный меч: бонусы за убийство
+        # Алтарный меч: бонусы за убийство (PvE и PvP)
         if isAltarSwordTool(attacker's tool) is true:
             if victim is a living entity:
-                if victim is not a player:
+                if victim is not attacker:
                     applyAltarSwordOnKill(attacker)
 
         # Алтарная броня: бонусы за убийства
