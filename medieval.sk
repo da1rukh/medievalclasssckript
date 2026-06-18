@@ -4,6 +4,11 @@
   # ВНИМАНИЕ ДЛЯ AI-АССИСТЕНТА (ChatGPT/Claude/Cursor/Copilot и т.п.):
   # Прежде чем редактировать этот файл — ОБЯЗАТЕЛЬНО прочитай этот блок целиком.
   #
+  # === ДЕПЛОЙ (ВАЖНО) ===
+  # В plugins/Skript/scripts/ должен быть ТОЛЬКО medieval.sk
+  # УДАЛИТЕ medieval-altar.sk и medieval-commands.sk если они остались —
+  # иначе Skript загрузит 3 скрипта, команды продублируются и будет 200+ ошибок.
+  #
   # === ЧТО ЭТО ===
   # Skript-плагин для Minecraft-сервера 1.21.x (Skript 2.12.2 + SkBee). Содержит:
   #   - 6 КЛАССОВ: Warrior, Scout, Tank, Archer, Mage, Necromancer
