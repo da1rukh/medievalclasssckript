@@ -3310,7 +3310,7 @@ function artifactRuinFeetAtColumn(bx: number, bz: number, w: world) :: location:
     set {_bf} to block at {_feet}
     if {_bf} is water:
         return location at 0, -512, 0 in {_w}
-    if {_bf} is lava:
+    if {_bf} is minecraft:lava:
         return location at 0, -512, 0 in {_w}
     if {_bf} is air:
         return {_feet}
@@ -3678,7 +3678,7 @@ function artifactRuinGoodNeighborForNetherrack(nb: block) :: boolean:
         return false
     if {_nb} is water:
         return false
-    if {_nb} is lava:
+    if {_nb} is minecraft:lava:
         return false
     if {_nb} is netherrack:
         return false
@@ -5353,7 +5353,7 @@ function refreshAltarPassiveJump(p: player):
 
 function refreshAltarPassiveLuck(p: player):
     remove luck (potion effect type) from {_p}
-    apply luck 1 (potion effect type) without particles to {_p} for 15 seconds
+    apply luck 1 without particles to {_p} for 15 seconds
 
 function applyAltarArmorPassiveEffects(p: player):
     set {_helm} to helmet of {_p}
@@ -7410,10 +7410,7 @@ every 10 ticks:
                     remove mining fatigue from loop-player
                     apply haste 2 without particles to loop-player for 5 seconds
 
-        # Легендарка Tank: Якорь Мироздания (урон убран — только "стенка")
-        if {class::%{_u}%} is "Tank":
-            if hasArtifact(loop-player, "leg_tank") is true:
-                # Пассивный урон отключён; эффект "не пройти сквозь танка" ниже в every 2 ticks
+        # Легендарка Tank: Якорь Мироздания — пассивный урон отключён; эффект "стенка" ниже в every 2 ticks
 
         # Легендарка Necromancer: Амулет Гнилого Родства
         if {class::%{_u}%} is "Necromancer":
@@ -13451,8 +13448,8 @@ command /evoruinspawn [<number>] [<number>] [<text>]:
             set {_z} to floor(arg-2)
             delete {_w}
             if arg-3 is set:
-                set {_wn} to "%arg-3%"
-                set {_w} to world("%{_wn}%")
+                set {_wn} to arg-3
+                set {_w} to world({_wn})
                 if {_w} is not set:
                     send "{@prefix} &cМир &f%{_wn}% &cне найден."
                     stop
@@ -13496,8 +13493,8 @@ command /evoruinlegspawn [<number>] [<number>] [<text>]:
             set {_z} to floor(arg-2)
             delete {_w}
             if arg-3 is set:
-                set {_wn} to "%arg-3%"
-                set {_w} to world("%{_wn}%")
+                set {_wn} to arg-3
+                set {_w} to world({_wn})
                 if {_w} is not set:
                     send "{@prefix} &cМир &f%{_wn}% &cне найден."
                     stop
