@@ -67,7 +67,9 @@
   #    Регенерация только как кратковременный триггер: на килл, на перк, на способность.
   # 4. ЗАПРЕЩЕНО давать ПЛАВНОЕ ПАДЕНИЕ (slow falling) с алтарной брони и в periodic tick.
   # 5. Безопасные periodic-эффекты: Speed, Luck, Jump Boost, Night Vision, Fire Res,
-  #    Resistance, Strength, Haste, Saturation — только for 20 ticks при every 1 second.
+  #    Resistance, Strength, Haste, Saturation — for 20 ticks при every 1 second.
+  #    Night Vision (алтарный шлем): remove + apply 40 ticks — overlap без накопления
+  #    и без мигания (20 ticks тик / 40 ticks эффект).
   #
   # === ПРАВИЛА СИНТАКСИСА SKRIPT (на чём мы уже спотыкались) ===
   # 1. ОДНОСТРОЧНЫЙ if X: return (a, b)  →  ПАРСЕР ЛОМАЕТСЯ.
@@ -5303,19 +5305,26 @@ function syncPlayerMaxHealth(p: player):
     if health of {_p} > {_target}:
         set health of {_p} to {_target}
 
+function altarApplyStableNightVision(p: player):
+    remove night vision from {_p}
+    apply night vision 1 without particles to {_p} for 40 ticks
+
 function applyAltarArmorPassiveEffects(p: player):
     set {_helm} to helmet of {_p}
     set {_boots} to boots of {_p}
     set {_legs} to leggings of {_p}
     syncPlayerMaxHealth({_p})
+    set {_nvHelm} to false
     if isEtherHelmet({_helm}) is true:
-        set {_maxHp} to max health of {_p}
-        if health of {_p} > ({_maxHp} * 0.8):
-            apply night vision 1 without particles to {_p} for 20 ticks
+        set {_nvHelm} to true
     else if isOmniHelmet({_helm}) is true:
+        set {_nvHelm} to true
+    if {_nvHelm} is true:
         set {_maxHp} to max health of {_p}
         if health of {_p} > ({_maxHp} * 0.8):
-            apply night vision 1 without particles to {_p} for 20 ticks
+            altarApplyStableNightVision({_p})
+        else:
+            remove night vision from {_p}
     if isFortuneBoots({_boots}) is true:
         apply luck 1 without particles to {_p} for 20 ticks
     else if isOmniBoots({_boots}) is true:
