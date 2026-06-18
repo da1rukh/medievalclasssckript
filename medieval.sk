@@ -901,6 +901,8 @@ function bestSword(p: player) :: item:
 
 # Легендарка Warrior: длинный «слэш» по прямой взгляда + урон вдоль луча
 function warriorLegSpatialAirSlash(p: player):
+    set {_pu} to uuid of {_p}
+    set {leg_warrior_slashing::%{_pu}%} to true
     delete {_wh::*}
     set {_dh} to levelOf({_p}) / 5
     if {_dh} < 1.5:
@@ -991,13 +993,15 @@ function warriorLegSpatialAirSlash(p: player):
                             set {_hr} to 2.6
                         if distance between loop-entity and {_hitLoc} <= {_hr}:
                             set {_wh::%{_eid}%} to true
-                        damage loop-entity by {_dh} with fake damage cause entity attack
-                        if loop-entity is a player:
-                            if areDuo({_p}, loop-entity) is not true:
-                                tagCombat({_p})
-                                tagCombat(loop-entity)
+                            damage loop-entity by {_dh} with fake damage cause entity attack
+                            # Комбат-лог только за PvP — по мобам (голем и т.д.) не вводим в бой
+                            if loop-entity is a player:
+                                if areDuo({_p}, loop-entity) is not true:
+                                    tagCombat({_p})
+                                    tagCombat(loop-entity)
         if loop-number < 15:
             wait 1 tick
+    delete {leg_warrior_slashing::%{_pu}%}
 
 function spawnScoutPhantomDecoy(p: player, atLoc: location, useFallbackArmor: boolean, h: item, c: item, l: item, b: item):
     spawn armor stand at {_atLoc}
@@ -6196,24 +6200,27 @@ on damage:
     if attacker is a player:
         if classOf(attacker) is "Warrior":
             if hasArtifact(attacker, "leg_warrior") is true:
-                if levelOf(attacker) < 20:
-                    if isNetherite(attacker's tool) is true:
-                        stop
-                if victim is a living entity:
-                    if victim is not attacker:
-                        if warriorLegMeleeWeapon(attacker) is true:
-                            set {_slash} to damage * 0.4
-                            if {_slash} < 1:
-                                set {_slash} to 1
-                            damage victim by {_slash}
-                            set {_vlocSlash} to location of victim
-                            execute console command "particle minecraft:sweep_attack %x-coordinate of {_vlocSlash}% %y-coordinate of {_vlocSlash}% %z-coordinate of {_vlocSlash}% 0.25 0.25 0.25 0 4 force"
-                            send action bar "&6&lПРОСТРАНСТВЕННЫЙ РАЗРЕЗ!" to attacker
-                            loop all living entities in radius 10 around attacker:
-                                if loop-entity is not attacker:
-                                    if loop-entity is not victim:
-                                        if distance between loop-entity and victim <= 2.5:
-                                            damage loop-entity by {_slash}
+                # Красный разрез (air slash) сам наносит урон — не дублируем пассивку от fake damage
+                set {_warAuid} to uuid of attacker
+                if {leg_warrior_slashing::%{_warAuid}%} is not set:
+                    if levelOf(attacker) < 20:
+                        if isNetherite(attacker's tool) is true:
+                            stop
+                    if victim is a living entity:
+                        if victim is not attacker:
+                            if warriorLegMeleeWeapon(attacker) is true:
+                                set {_slash} to damage * 0.4
+                                if {_slash} < 1:
+                                    set {_slash} to 1
+                                damage victim by {_slash}
+                                set {_vlocSlash} to location of victim
+                                execute console command "particle minecraft:sweep_attack %x-coordinate of {_vlocSlash}% %y-coordinate of {_vlocSlash}% %z-coordinate of {_vlocSlash}% 0.25 0.25 0.25 0 4 force"
+                                send action bar "&6&lПРОСТРАНСТВЕННЫЙ РАЗРЕЗ!" to attacker
+                                loop all living entities in radius 10 around attacker:
+                                    if loop-entity is not attacker:
+                                        if loop-entity is not victim:
+                                            if distance between loop-entity and victim <= 2.5:
+                                                damage loop-entity by {_slash}
 
     # Кольцо Ветра: +15% урона в бою
     if attacker is a player:
@@ -13082,6 +13089,7 @@ on quit:
         broadcast "{@prefix} &c&l%player% &cсбежал из боя и был убит!"
     delete {combat_until::%{_qid}%}
     delete {leg_warrior_air_last::%{_qid}%}
+    delete {leg_warrior_slashing::%{_qid}%}
     delete {duotpa_warm_until::%{_qid}%}
     delete {duotpa_warm_loc::%{_qid}%}
     delete {duotpa_warm_target::%{_qid}%}
