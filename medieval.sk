@@ -5283,27 +5283,27 @@ function applyAltarArmorPassiveEffects(p: player):
     if isEtherHelmet({_helm}) is true:
         set {_maxHp} to max health of {_p}
         if health of {_p} > ({_maxHp} * 0.8):
-            apply night vision 1 without particles to {_p} for 3 seconds
+            apply night vision 1 without particles to {_p} for 1.1 seconds
     else if isOmniHelmet({_helm}) is true:
         set {_maxHp} to max health of {_p}
         if health of {_p} > ({_maxHp} * 0.8):
-            apply night vision 1 without particles to {_p} for 3 seconds
+            apply night vision 1 without particles to {_p} for 1.1 seconds
     if isFortuneBoots({_boots}) is true:
-        apply luck 1 without particles to {_p} for 3 seconds
+        apply luck 1 without particles to {_p} for 1.1 seconds
     else if isOmniBoots({_boots}) is true:
-        apply luck 1 without particles to {_p} for 3 seconds
+        apply luck 1 without particles to {_p} for 1.1 seconds
     if isVeinBoots({_boots}) is true:
-        apply jump boost 1 without particles to {_p} for 3 seconds
+        apply jump boost 1 without particles to {_p} for 1.1 seconds
     else if isOmniBoots({_boots}) is true:
-        apply jump boost 1 without particles to {_p} for 3 seconds
+        apply jump boost 1 without particles to {_p} for 1.1 seconds
     if isEtherBoots({_boots}) is true:
-        apply slow falling 1 without particles to {_p} for 3 seconds
+        apply slow falling 1 without particles to {_p} for 1.1 seconds
     else if isOmniBoots({_boots}) is true:
-        apply slow falling 1 without particles to {_p} for 3 seconds
+        apply slow falling 1 without particles to {_p} for 1.1 seconds
     if isEtherLeggings({_legs}) is true:
-        apply speed 1 without particles to {_p} for 3 seconds
+        apply speed 1 without particles to {_p} for 1.1 seconds
     else if isOmniLeggings({_legs}) is true:
-        apply speed 1 without particles to {_p} for 3 seconds
+        apply speed 1 without particles to {_p} for 1.1 seconds
 
 function altarArmorFortuneXpBonus(p: player) :: number:
     set {_bonus} to 0
