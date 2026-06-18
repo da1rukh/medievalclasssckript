@@ -2862,8 +2862,27 @@ function artifactRuinCommonArtifactRandom() :: item:
     set {_pick} to random element out of {_pool::*}
     return artifactFromSlot({_pick})
 
+function artifactRuinRandomAltarScrollItem() :: item:
+    set {_ids::*} to altarLocalRecipeIds()
+    if size of {_ids::*} <= 0:
+        return ancientScrollItem("ether_pick")
+    set {_pick} to random element out of {_ids::*}
+    set {_sc} to ancientScrollItem({_pick})
+    if {_sc} is air:
+        return ancientScrollItem("ether_pick")
+    return {_sc}
+
+function artifactRuinScrollPoolIds() :: texts:
+    delete {_ids::*}
+    loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon" and "cursedgift":
+        add loop-value to {_ids::*}
+    loop altarLocalRecipeIds():
+        add loop-value to {_ids::*}
+    return {_ids::*}
+
 function artifactRuinRandomScrollItem() :: item:
-    set {_pick} to random element out of "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon" and "cursedgift"
+    set {_ids::*} to artifactRuinScrollPoolIds()
+    set {_pick} to random element out of {_ids::*}
     set {_sc} to ancientScrollItem({_pick})
     if {_sc} is air:
         return ancientScrollItem("hermes")
@@ -3016,7 +3035,10 @@ function artifactRuinFillChest(loc: location, tier: text):
                     set {_subp} to 100
                 set {_rsc} to random integer between 1 and 100
                 if {_rsc} <= {_subp}:
-                    set slot {_sl} of inventory of {_b} to artifactRuinRandomDiaryPageItem()
+                    if random integer between 1 and 100 <= 50:
+                        set slot {_sl} of inventory of {_b} to artifactRuinRandomAltarScrollItem()
+                    else:
+                        set slot {_sl} of inventory of {_b} to artifactRuinRandomDiaryPageItem()
                 else:
                     set slot {_sl} of inventory of {_b} to artifactRuinLootMaterialsOnly({_tier})
 
@@ -6380,6 +6402,8 @@ function evoAdminItemIdList() :: texts:
     loop "leg_warrior", "leg_scout", "leg_tank", "leg_archer", "leg_mage", "leg_necro", "hermes", "windring", "vampcharm", "etherdash", "mehrunes", "starfury", "icewalker", "frostheart", "ankhshield", "azura", "rottenapple", "voidcompass", "luckcoin", "cloudjump", "crownmind", "heater", "dreamcatcher", "desertheart", "quantdup", "facelessmask", "lootmagnet", "nightlens", "ruin_summon", "awakening_altar" and "cursedgift":
         set {_sid} to "scroll_%loop-value%"
         add {_sid} to {_ids::*}
+    loop altarLocalRecipeIds():
+        add "scroll_%loop-value%" to {_ids::*}
     return {_ids::*}
 
 function isArtifactRecipeByFive(inv: inventory, i1: item, i2: item, i3: item, i4: item, i5: item) :: boolean:
@@ -6552,6 +6576,17 @@ function diaryRecipeEntryFromItem(it: item) :: text:
         if {_n} is set:
             if {_nm} contains {_n}:
                 return loop-value
+    loop altarLocalRecipeIds():
+        set {_n} to {ancient_scroll_recipes::%loop-value%::name}
+        if {_n} is set:
+            if {_nm} contains {_n}:
+                return loop-value
+    set {_txt} to diaryRecipeTextByItem({_it})
+    if {_txt} starts with "recipe_local::":
+        set {_rid} to {_txt}
+        replace all "recipe_local::" in {_rid} with ""
+        if {ancient_scroll_recipes::%{_rid}%::name} is set:
+            return {_rid}
     return ""
 
 function openAdventurerJournalPage(p: player, page: number):
@@ -7109,7 +7144,7 @@ command /altar:
         send "{@prefix} &6Омни-слияние: &75 предметов &fодного слота &7(меч/шлем/...) разных тем."
         send "{@prefix} &7У каждой части брони своё имя и свой эффект — см. /diary после крафта."
         send "{@prefix} &7Бонус ❤: жила-нагрудник +2, пустота-нагрудник +1, удача-шлем +1, эфир-сапоги +1; омни-слоты суммируют."
-        send "{@prefix} &7Пассивные зелья брони: тик 1с = длительность 1с (без накопления). Slow falling не даётся."
+        send "{@prefix} &7Пассивные зелья брони: Speed/Luck/Jump/NV — refresh каждые 4с (remove+15с). Slow falling не даётся."
         send "{@prefix} &7Все эффекты мечей и брони работают и в PvE, и в PvP."
         send "{@prefix} &fГолова игрока: &aдёрн + &6золотое яблоко + &bалмаз + &cnetherrack + &fкамень энда."
         send "{@prefix} &6Корона Высшего Разума: &6Эфирный Разум + &dЗвезда Азуры + &eзолотой шлем + &fenchanted book + &aпузырёк опыта."
@@ -15161,6 +15196,21 @@ function initAncientScrollRecipes():
     set {ancient_scroll_recipes::cursedgift::name} to "Дар Проклятого Короля"
     set {ancient_scroll_recipes::cursedgift::tier} to "absolute"
     set {ancient_scroll_recipes::cursedgift::ing::*} to "Посох Некро-Тирана", "Корона Высшего Разума", "Зачарованное золотое яблоко", "Голова игрока", "Слиток незерита"
+    initAltarGearAncientScrollRecipes()
+
+function initAltarGearAncientScrollRecipes():
+    loop altarLocalRecipeIds():
+        set {_id} to loop-value
+        set {_r} to {_id} in lower case
+        set {_tier} to "medium"
+        if {_r} starts with "omni_":
+            set {_tier} to "absolute"
+        set {ancient_scroll_recipes::%{_id}%::name} to altarLocalRecipeName({_id})
+        set {ancient_scroll_recipes::%{_id}%::tier} to {_tier}
+        delete {ancient_scroll_recipes::%{_id}%::ing::*}
+        set {_ing::*} to altarLocalRecipeIngredients({_id})
+        loop {_ing::*}:
+            add loop-value to {ancient_scroll_recipes::%{_id}%::ing::*}
 
 function ancientScrollItem(id: text) :: item:
     set {_n} to {ancient_scroll_recipes::%{_id}%::name}
