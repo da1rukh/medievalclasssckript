@@ -354,6 +354,191 @@ function noCooldownMode(p: player) :: boolean:
         return true
     return false
 
+function evoAdminCdDisabled(key: text) :: boolean:
+    if {evo_admin_cd_off::%{_key}%} is true:
+        return true
+    return false
+
+function evoAdminAbilityDisabled(id: text) :: boolean:
+    if {evo_admin_ability_off::%{_id}%} is true:
+        return true
+    return false
+
+function evoAdminClassDisabled(cls: text) :: boolean:
+    if {evo_admin_class_off::%{_cls}%} is true:
+        return true
+    return false
+
+function evoAdminNoCdFor(p: player, itemKey: text) :: boolean:
+    if noCooldownMode({_p}) is true:
+        return true
+    if evoAdminCdDisabled({_itemKey}) is true:
+        return true
+    return false
+
+function evoAdminToggleCd(key: text):
+    if {evo_admin_cd_off::%{_key}%} is true:
+        delete {evo_admin_cd_off::%{_key}%}
+    else:
+        set {evo_admin_cd_off::%{_key}%} to true
+
+function evoAdminToggleClass(cls: text):
+    if {evo_admin_class_off::%{_cls}%} is true:
+        delete {evo_admin_class_off::%{_cls}%}
+    else:
+        set {evo_admin_class_off::%{_cls}%} to true
+
+function evoAdminToggleAbility(id: text):
+    if {evo_admin_ability_off::%{_id}%} is true:
+        delete {evo_admin_ability_off::%{_id}%}
+    else:
+        set {evo_admin_ability_off::%{_id}%} to true
+
+function evoAdminCdMenuItem(key: text, base: item, label: text) :: item:
+    set {_it} to {_base}
+    if evoAdminCdDisabled({_key}) is true:
+        set name of {_it} to "&a&l%{_label}%"
+        set lore of {_it} to "&7КД: &aВЫКЛ &7(без задержки для всех)", "&8ПКМ: включить КД обратно"
+    else:
+        set name of {_it} to "&c&l%{_label}%"
+        set lore of {_it} to "&7КД: &cВКЛ &7(обычная игра)", "&8ПКМ: выключить КД"
+    return {_it}
+
+function evoAdminClassMenuItem(cls: text, base: item, label: text) :: item:
+    set {_it} to {_base}
+    if evoAdminClassDisabled({_cls}) is true:
+        set name of {_it} to "&c&l%{_label}%"
+        set lore of {_it} to "&7Класс: &cОТКЛ &7(нельзя выбрать)", "&7Способности и бонусы класса не работают", "&8ПКМ: включить класс"
+    else:
+        set name of {_it} to "&a&l%{_label}%"
+        set lore of {_it} to "&7Класс: &aВКЛ", "&8ПКМ: отключить класс"
+    return {_it}
+
+function evoAdminAbilityMenuItem(id: text, base: item, label: text) :: item:
+    set {_it} to {_base}
+    if evoAdminAbilityDisabled({_id}) is true:
+        set name of {_it} to "&c&l%{_label}%"
+        set lore of {_it} to "&7Способность: &cОТКЛ", "&8ПКМ: включить"
+    else:
+        set name of {_it} to "&a&l%{_label}%"
+        set lore of {_it} to "&7Способность: &aВКЛ", "&8ПКМ: отключить"
+    return {_it}
+
+function openEvoAdminPage(v: player, page: number):
+    set {_pg} to {_page}
+    if {_pg} < 0:
+        set {_pg} to 0
+    if {_pg} > 4:
+        set {_pg} to 4
+    set {evo_admin_page::%uuid of {_v}%} to {_pg}
+    delete {evo_admin_slot::%uuid of {_v}%::*}
+    open chest inventory with 6 rows named "&0EVO ADMIN" to {_v}
+    wait 1 tick
+    loop 45 times:
+        set slot (loop-number - 1) of {_v}'s current inventory to gray stained glass pane named " "
+    if {_pg} is 0:
+        set slot 4 of {_v}'s current inventory to nether star named "&6&lПанель администратора" with lore "&7Глобальные переключатели сервера", "&7КД, классы, способности"
+        set slot 20 of {_v}'s current inventory to clock named "&eКулдауны предметов" with lore "&7Золотое яблоко, булава, перо...", "&8ПКМ: открыть"
+        set {evo_admin_slot::%uuid of {_v}%::20} to "nav:1"
+        set slot 22 of {_v}'s current inventory to iron sword named "&cКлассы" with lore "&7Включить/выключить выбор класса", "&8ПКМ: открыть"
+        set {evo_admin_slot::%uuid of {_v}%::22} to "nav:2"
+        set slot 24 of {_v}'s current inventory to blaze rod named "&dСпособности (1/2)" with lore "&7Активные умения классов", "&8ПКМ: открыть"
+        set {evo_admin_slot::%uuid of {_v}%::24} to "nav:3"
+        set slot 31 of {_v}'s current inventory to paper named "&7/evogive &8— выдача предметов" with lore "&7/evo &8— команды игроку", "&7/evoadmin &8— эта панель"
+    else if {_pg} is 1:
+        set slot 4 of {_v}'s current inventory to clock named "&eКулдауны предметов" with lore "&7ПКМ по предмету — переключить", "&7&aВЫКЛ КД &7= без задержки для всех"
+        set slot 10 of {_v}'s current inventory to evoAdminCdMenuItem("golden_apple", golden apple, "Золотое яблоко")
+        set {evo_admin_slot::%uuid of {_v}%::10} to "cd:golden_apple"
+        set slot 11 of {_v}'s current inventory to evoAdminCdMenuItem("mace", mace, "Булава")
+        set {evo_admin_slot::%uuid of {_v}%::11} to "cd:mace"
+        set slot 12 of {_v}'s current inventory to evoAdminCdMenuItem("feather", feather, "Перо (Scout)")
+        set {evo_admin_slot::%uuid of {_v}%::12} to "cd:feather"
+        set slot 13 of {_v}'s current inventory to evoAdminCdMenuItem("bone", bone, "Кость (Necro)")
+        set {evo_admin_slot::%uuid of {_v}%::13} to "cd:bone"
+        set slot 14 of {_v}'s current inventory to evoAdminCdMenuItem("blaze_rod", blaze rod, "Жезл (Mage)")
+        set {evo_admin_slot::%uuid of {_v}%::14} to "cd:blaze_rod"
+        set slot 15 of {_v}'s current inventory to evoAdminCdMenuItem("splash_potion", splash potion, "Зелье (Mage хил)")
+        set {evo_admin_slot::%uuid of {_v}%::15} to "cd:splash_potion"
+        set slot 16 of {_v}'s current inventory to evoAdminCdMenuItem("sword_parry", iron sword, "Парирование (Warrior)")
+        set {evo_admin_slot::%uuid of {_v}%::16} to "cd:sword_parry"
+        set slot 19 of {_v}'s current inventory to evoAdminCdMenuItem("archer_eagle", spyglass, "Орлиный взор (Archer)")
+        set {evo_admin_slot::%uuid of {_v}%::19} to "cd:archer_eagle"
+        set slot 20 of {_v}'s current inventory to evoAdminCdMenuItem("archer_triple", spectral arrow, "Тройной выстрел")
+        set {evo_admin_slot::%uuid of {_v}%::20} to "cd:archer_triple"
+        set slot 21 of {_v}'s current inventory to evoAdminCdMenuItem("necro_grip", wither skeleton skull, "Мёртвая хватка")
+        set {evo_admin_slot::%uuid of {_v}%::21} to "cd:necro_grip"
+    else if {_pg} is 2:
+        set slot 4 of {_v}'s current inventory to iron sword named "&cКлассы" with lore "&7ПКМ — переключить доступность"
+        set slot 10 of {_v}'s current inventory to evoAdminClassMenuItem("Warrior", iron sword, "Warrior")
+        set {evo_admin_slot::%uuid of {_v}%::10} to "class:Warrior"
+        set slot 11 of {_v}'s current inventory to evoAdminClassMenuItem("Scout", feather, "Scout")
+        set {evo_admin_slot::%uuid of {_v}%::11} to "class:Scout"
+        set slot 12 of {_v}'s current inventory to evoAdminClassMenuItem("Tank", shield, "Tank")
+        set {evo_admin_slot::%uuid of {_v}%::12} to "class:Tank"
+        set slot 13 of {_v}'s current inventory to evoAdminClassMenuItem("Archer", bow, "Archer")
+        set {evo_admin_slot::%uuid of {_v}%::13} to "class:Archer"
+        set slot 14 of {_v}'s current inventory to evoAdminClassMenuItem("Mage", blaze rod, "Mage")
+        set {evo_admin_slot::%uuid of {_v}%::14} to "class:Mage"
+        set slot 15 of {_v}'s current inventory to evoAdminClassMenuItem("Necromancer", bone, "Necromancer")
+        set {evo_admin_slot::%uuid of {_v}%::15} to "class:Necromancer"
+    else if {_pg} is 3:
+        set slot 4 of {_v}'s current inventory to paper named "&dСпособности I" with lore "&7Warrior, Scout, Archer"
+        set slot 10 of {_v}'s current inventory to evoAdminAbilityMenuItem("warrior_parry", iron sword, "Warrior: Парирование L20")
+        set {evo_admin_slot::%uuid of {_v}%::10} to "ability:warrior_parry"
+        set slot 11 of {_v}'s current inventory to evoAdminAbilityMenuItem("warrior_second_wind", totem of undying, "Warrior: Второй ветер (перк D)")
+        set {evo_admin_slot::%uuid of {_v}%::11} to "ability:warrior_second_wind"
+        set slot 12 of {_v}'s current inventory to evoAdminAbilityMenuItem("scout_dash", feather, "Scout: Рывок L5")
+        set {evo_admin_slot::%uuid of {_v}%::12} to "ability:scout_dash"
+        set slot 13 of {_v}'s current inventory to evoAdminAbilityMenuItem("scout_invis", phantom membrane, "Scout: Невидимость L10")
+        set {evo_admin_slot::%uuid of {_v}%::13} to "ability:scout_invis"
+        set slot 14 of {_v}'s current inventory to evoAdminAbilityMenuItem("scout_bloodrush", redstone, "Scout: Кровопийца (перk D)")
+        set {evo_admin_slot::%uuid of {_v}%::14} to "ability:scout_bloodrush"
+        set slot 15 of {_v}'s current inventory to evoAdminAbilityMenuItem("archer_eagle", spyglass, "Archer: Орлиный взор L25")
+        set {evo_admin_slot::%uuid of {_v}%::15} to "ability:archer_eagle"
+        set slot 16 of {_v}'s current inventory to evoAdminAbilityMenuItem("archer_triple", spectral arrow, "Archer: Тройной выстрел (перk C)")
+        set {evo_admin_slot::%uuid of {_v}%::16} to "ability:archer_triple"
+    else:
+        set slot 4 of {_v}'s current inventory to paper named "&dСпособности II" with lore "&7Tank, Mage, Necromancer"
+        set slot 10 of {_v}'s current inventory to evoAdminAbilityMenuItem("tank_laststand", shield, "Tank: Последний рубеж L8")
+        set {evo_admin_slot::%uuid of {_v}%::10} to "ability:tank_laststand"
+        set slot 11 of {_v}'s current inventory to evoAdminAbilityMenuItem("tank_seismic", anvil, "Tank: Сейсмический удар (перk B)")
+        set {evo_admin_slot::%uuid of {_v}%::11} to "ability:tank_seismic"
+        set slot 12 of {_v}'s current inventory to evoAdminAbilityMenuItem("mage_fireball", fire charge, "Mage: Фаербол")
+        set {evo_admin_slot::%uuid of {_v}%::12} to "ability:mage_fireball"
+        set slot 13 of {_v}'s current inventory to evoAdminAbilityMenuItem("mage_teleport", ender pearl, "Mage: Эндер-перл L15")
+        set {evo_admin_slot::%uuid of {_v}%::13} to "ability:mage_teleport"
+        set slot 14 of {_v}'s current inventory to evoAdminAbilityMenuItem("mage_mass_heal", splash potion, "Mage: Масс-хил L10")
+        set {evo_admin_slot::%uuid of {_v}%::14} to "ability:mage_mass_heal"
+        set slot 15 of {_v}'s current inventory to evoAdminAbilityMenuItem("necro_minion", bone, "Necro: Призыв миньона")
+        set {evo_admin_slot::%uuid of {_v}%::15} to "ability:necro_minion"
+        set slot 16 of {_v}'s current inventory to evoAdminAbilityMenuItem("necro_grip", wither skeleton skull, "Necro: Мёртвая хватка (перk C)")
+        set {evo_admin_slot::%uuid of {_v}%::16} to "ability:necro_grip"
+    set slot 49 of {_v}'s current inventory to paper named "&6Страница %{_pg}%" with lore "&7EVO ADMIN — глобальные настройки"
+    if {_pg} > 0:
+        set slot 45 of {_v}'s current inventory to arrow named "&e← Назад"
+        set {evo_admin_slot::%uuid of {_v}%::45} to "nav:back"
+    if {_pg} is 3:
+        set slot 52 of {_v}'s current inventory to arrow named "&eСпособности II →"
+        set {evo_admin_slot::%uuid of {_v}%::52} to "nav:4"
+    else if {_pg} > 0:
+        if {_pg} < 3:
+            set slot 52 of {_v}'s current inventory to arrow named "&eВперёд →"
+            set {evo_admin_slot::%uuid of {_v}%::52} to "nav:next"
+        else if {_pg} is 4:
+            set slot 52 of {_v}'s current inventory to arrow named "&e← Способности I"
+            set {evo_admin_slot::%uuid of {_v}%::52} to "nav:3"
+    set slot 53 of {_v}'s current inventory to barrier named "&cЗакрыть"
+    set {evo_admin_slot::%uuid of {_v}%::53} to "nav:close"
+
+function openEvoAdminGui(p: player):
+    openEvoAdminPage({_p}, 0)
+
+command /evoadmin:
+    permission: evo.admin
+    permission message: {@prefix} &cУ вас нет прав!
+    trigger:
+        openEvoAdminGui(player)
+
 function isNetherite(i: item) :: boolean:
     if "%{_i}%" contains "netherite":
         return true
@@ -7282,12 +7467,13 @@ every 5 seconds:
                     remove slowness from loop-player
             # Перк D "Кровопийца": при ❤<6 → Speed III на 5с (КД 20с)
             if {perk::%{_u}%} is "scout_D":
-                if loop-player's health < 6:
-                    if {scout_bloodrush_cd::%{_u}%} ? 0 <= 0:
-                        apply speed 3 without particles to loop-player for 100 ticks
-                        set {scout_bloodrush_cd::%{_u}%} to 20
-                        play sound "entity.vampire.ambient" with volume 0.5 and pitch 1.5 at loop-player for loop-player
-                        send action bar "&c&lКРОВОПИЙЦА! &7Speed III 5с" to loop-player
+                if evoAdminAbilityDisabled("scout_bloodrush") is false:
+                    if loop-player's health < 6:
+                        if {scout_bloodrush_cd::%{_u}%} ? 0 <= 0:
+                            apply speed 3 without particles to loop-player for 100 ticks
+                            set {scout_bloodrush_cd::%{_u}%} to 20
+                            play sound "entity.vampire.ambient" with volume 0.5 and pitch 1.5 at loop-player for loop-player
+                            send action bar "&c&lКРОВОПИЙЦА! &7Speed III 5с" to loop-player
             # L25 — флай для двойного прыжка (вкл. в каждом тике, не только при join)
 
         # ===== TANK =====
@@ -7442,18 +7628,22 @@ on damage:
     set {_c} to {class::%{_u}%} ? "None"
     set {_l} to {level::%{_u}%} ? 1
 
+    if {_c} is not "None":
+        if evoAdminClassDisabled({_c}) is true:
+            stop
+
     # ----- Дуал-вилд (мечи в обеих руках) — только Воин -----
     # Скорость атаки повышается через атрибут на самом игроке (см. периодический лоуп ниже).
-    # Здесь — пусто, эффект применяется автоматически при подходящем инвентаре.
 
     # ----- Кулдаун булавы (SkBee) -----
     if attacker's tool is a mace:
         if cooldown of mace for attacker > 0 seconds:
-            if noCooldownMode(attacker) is false:
+            if evoAdminNoCdFor(attacker, "mace") is false:
                 cancel event
                 stop
             set cooldown of mace for attacker to 0 seconds
-        set cooldown of mace for attacker to 60 seconds
+        if evoAdminNoCdFor(attacker, "mace") is false:
+            set cooldown of mace for attacker to 60 seconds
 
     # ===== БАФФ УРОНА ОТ УРОВНЯ ОРУЖИЯ =====
     set {_wt} to weaponType(attacker's tool)
@@ -7697,20 +7887,23 @@ on damage:
                         apply slowness 1 without particles to attacker for 2 seconds
                 # L8 — Последний рубеж: при ≤30%% макс. ❤ → Resistance II 5с (КД 30с)
                 if {_lv} >= 8:
-                    if tankHpBelowLastStand(victim) is true:
-                        set {_now_ts} to unix timestamp of now
-                        set {_cd} to {tank_laststand_cd::%{_uv}%} ? 0
-                        set {_allowLaststand} to false
-                        if {_cd} <= {_now_ts}:
-                            set {_allowLaststand} to true
-                        if noCooldownMode(victim) is true:
-                            set {_allowLaststand} to true
-                        if {_allowLaststand} is true:
-                            apply resistance 2 without particles to victim for 5 seconds
-                            set {tank_laststand_cd::%{_uv}%} to {_now_ts} + 30
-                            set {_vloc} to location of victim
-                            play sound "block.beacon.activate" with volume 0.8 and pitch 1.5 at {_vloc} for victim
-                            send action bar "&4&l⛨ ПОСЛЕДНИЙ РУБЕЖ!" to victim
+                    if evoAdminAbilityDisabled("tank_laststand") is false:
+                        if tankHpBelowLastStand(victim) is true:
+                            set {_now_ts} to unix timestamp of now
+                            set {_cd} to {tank_laststand_cd::%{_uv}%} ? 0
+                            set {_allowLaststand} to false
+                            if {_cd} <= {_now_ts}:
+                                set {_allowLaststand} to true
+                            if noCooldownMode(victim) is true:
+                                set {_allowLaststand} to true
+                            if evoAdminCdDisabled("tank_laststand") is true:
+                                set {_allowLaststand} to true
+                            if {_allowLaststand} is true:
+                                apply resistance 2 without particles to victim for 5 seconds
+                                set {tank_laststand_cd::%{_uv}%} to {_now_ts} + 30
+                                set {_vloc} to location of victim
+                                play sound "block.beacon.activate" with volume 0.8 and pitch 1.5 at {_vloc} for victim
+                                send action bar "&4&l⛨ ПОСЛЕДНИЙ РУБЕЖ!" to victim
                 if {_lv} >= 10:
                     if attacker is a player:
                         if areDuo(victim, attacker) is not true:
@@ -7728,27 +7921,27 @@ on damage:
                     else:
                         ignite attacker for 4 seconds
                         damage attacker by 2 with fake damage cause entity attack
-                # Перк B "Сейсмический удар" (пассивный, реактивный):
-                # каждый 4-й удар по танку отталкивает всех врагов в радиусе 4
+                # Перk B "Сейсмический удар" (пассивный, реактивный):
                 if {perk::%{_uv}%} is "tank_B":
-                    add 1 to {tank_seismic_hits::%{_uv}%}
-                    if {tank_seismic_hits::%{_uv}%} >= 4:
-                        set {tank_seismic_hits::%{_uv}%} to 0
-                        set {_pl} to location of victim
-                        play sound "entity.generic.explode" with volume 0.8 and pitch 0.6 at {_pl} for all players
-                        execute console command "particle minecraft:large_smoke %x-coordinate of {_pl}% %y-coordinate of {_pl}% %z-coordinate of {_pl}% 0.4 0.4 0.4 0.1 30 force"
-                        loop all living entities in radius 4 around victim:
-                            if loop-entity is not victim:
-                                if loop-entity is a player:
-                                    if areDuo(victim, loop-entity) is not true:
+                    if evoAdminAbilityDisabled("tank_seismic") is false:
+                        add 1 to {tank_seismic_hits::%{_uv}%}
+                        if {tank_seismic_hits::%{_uv}%} >= 4:
+                            set {tank_seismic_hits::%{_uv}%} to 0
+                            set {_pl} to location of victim
+                            play sound "entity.generic.explode" with volume 0.8 and pitch 0.6 at {_pl} for all players
+                            execute console command "particle minecraft:large_smoke %x-coordinate of {_pl}% %y-coordinate of {_pl}% %z-coordinate of {_pl}% 0.4 0.4 0.4 0.1 30 force"
+                            loop all living entities in radius 4 around victim:
+                                if loop-entity is not victim:
+                                    if loop-entity is a player:
+                                        if areDuo(victim, loop-entity) is not true:
+                                            apply slowness 2 without particles to loop-entity for 3 seconds
+                                            push loop-entity upwards at speed 0.4
+                                            push loop-entity backwards at speed 0.7
+                                    else:
                                         apply slowness 2 without particles to loop-entity for 3 seconds
                                         push loop-entity upwards at speed 0.4
                                         push loop-entity backwards at speed 0.7
-                                else:
-                                    apply slowness 2 without particles to loop-entity for 3 seconds
-                                    push loop-entity upwards at speed 0.4
-                                    push loop-entity backwards at speed 0.7
-                        send action bar "&8&lСЕЙСМИЧЕСКИЙ УДАР!" to victim
+                            send action bar "&8&lСЕЙСМИЧЕСКИЙ УДАР!" to victim
 
     # Перк B "Кровавая клятва" (Warrior): +15% входящего урона
         if {_cv} is "Warrior":
@@ -7770,27 +7963,30 @@ on damage:
                                     send action bar "&6&lТАНК ЗАЩИЩАЕТ" to victim
                                     send action bar "&6&lТЫ ПРИНЯЛ УДАР" to {_partner}
 
-    # Перк D "Второй ветер" (Warrior): спасение от смертельного удара (КД 180с)
+    # Перk D "Второй ветер" (Warrior): спасение от смертельного удара (КД 180с)
         if {_cv} is "Warrior":
             if {perk::%{_uv}%} is "warrior_D":
-                if damage >= victim's health:
-                    set {_swCd} to {warrior_secondwind_cd::%{_uv}%} ? 0
-                    set {_allowSecondwind} to false
-                    if {_swCd} <= 0:
-                        set {_allowSecondwind} to true
-                    if noCooldownMode(victim) is true:
-                        set {_allowSecondwind} to true
-                    if {_allowSecondwind} is true:
-                        if playerHoldsTotemOfUndying(victim) is false:
-                            cancel event
-                            set victim's health to 6
-                            apply resistance 2 without particles to victim for 6 seconds
-                            apply regeneration 2 without particles to victim for 6 seconds
-                            set {warrior_secondwind_cd::%{_uv}%} to 180
-                            play sound "item.totem.use" with volume 1 and pitch 1 at victim for all players
-                            send title "&a&lВТОРОЙ ВЕТЕР!" with subtitle "&7Спасение от смерти" to victim for 2 seconds
+                if evoAdminAbilityDisabled("warrior_second_wind") is false:
+                    if damage >= victim's health:
+                        set {_swCd} to {warrior_secondwind_cd::%{_uv}%} ? 0
+                        set {_allowSecondwind} to false
+                        if {_swCd} <= 0:
+                            set {_allowSecondwind} to true
+                        if noCooldownMode(victim) is true:
+                            set {_allowSecondwind} to true
+                        if evoAdminCdDisabled("warrior_second_wind") is true:
+                            set {_allowSecondwind} to true
+                        if {_allowSecondwind} is true:
+                            if playerHoldsTotemOfUndying(victim) is false:
+                                cancel event
+                                set victim's health to 6
+                                apply resistance 2 without particles to victim for 6 seconds
+                                apply regeneration 2 without particles to victim for 6 seconds
+                                set {warrior_secondwind_cd::%{_uv}%} to 180
+                                play sound "item.totem.use" with volume 1 and pitch 1 at victim for all players
+                                send title "&a&lВТОРОЙ ВЕТЕР!" with subtitle "&7Спасение от смерти" to victim for 2 seconds
 
-    # Перк D "Арканная перегрузка" (Mage): реактивный контр-импульс (КД 20с)
+    # Перk D "Арканная перегрузка" (Mage): реактивный контр-импульс (КД 20с)
         if {_cv} is "Mage":
             if {perk::%{_uv}%} is "mage_D":
                 set {_molCd} to {mage_overload_cd::%{_uv}%} ? 0
@@ -7839,14 +8035,14 @@ on damage:
 
 # ---- Кулдаун золотых яблок (для всех) ----
 on right click with golden apple:
-    if noCooldownMode(player) is true:
+    if evoAdminNoCdFor(player, "golden_apple") is true:
         stop
     if cooldown of golden apple for player > 0 seconds:
         cancel event
         send action bar "&cЗолотые яблоки на кулдауне!" to player
 
 on consume of golden apple:
-    if noCooldownMode(player) is true:
+    if evoAdminNoCdFor(player, "golden_apple") is true:
         set cooldown of golden apple for player to 0 seconds
         stop
     set cooldown of golden apple for player to 10 seconds
@@ -7861,14 +8057,20 @@ on right click:
     set {_u} to player's uuid
     set {_c} to {class::%{_u}%} ? "None"
     set {_l} to {level::%{_u}%} ? 1
+    if {_c} is not "None":
+        if evoAdminClassDisabled({_c}) is true:
+            send action bar "&cКласс &f%{_c}% &cотключён администратором." to player
+            stop
+
     set {_tool} to player's tool
-    set {_nocd} to noCooldownMode(player)
 
     # ===== WARRIOR L20: Активное парирование (ПКМ с мечом, КД 15с) =====
     if {_c} is "Warrior":
         if {_l} >= 20:
             if isSword({_tool}) is true:
-                if {_nocd} is false:
+                if evoAdminAbilityDisabled("warrior_parry") is true:
+                    stop
+                if evoAdminNoCdFor(player, "sword_parry") is false:
                     if cooldown of {_tool} for player > 0 seconds:
                         stop
                 # Перк C "Идеальное парирование": КД -50% (30с → 15с)
@@ -7895,8 +8097,10 @@ on right click:
         if {_tool} is feather:
             # shift = инвиз (L10)
             if player is sneaking:
+                if evoAdminAbilityDisabled("scout_invis") is true:
+                    stop
                 if {_l} >= 10:
-                    if {_nocd} is false:
+                    if evoAdminNoCdFor(player, "feather") is false:
                         if cooldown of feather for player > 0 seconds:
                             send action bar "&cНевидимость на КД!" to player
                             stop
@@ -7909,8 +8113,10 @@ on right click:
                 stop
             # без shift = рывок (L5)
             else:
+                if evoAdminAbilityDisabled("scout_dash") is true:
+                    stop
                 if {_l} >= 5:
-                    # Перк A "Двойной рывок": два рывка в окне 5с с КД 4с между; затем общий КД 15с
+                    # Перk A "Двойной рывок": два рывка в окне 5с с КД 4с между; затем общий КД 15с
                     if {perk::%{_u}%} is "scout_A":
                         # Если в окне второго рывка (один уже использован)
                         if {scout_dash_window::%{_u}%} is set:
@@ -7924,7 +8130,7 @@ on right click:
                                 set {scout_dash_fallimmune::%{_u}%} to true
                                 send action bar "&b&lВТОРОЙ РЫВОК!" to player
                                 stop
-                        if {_nocd} is false:
+                        if evoAdminNoCdFor(player, "feather") is false:
                             if cooldown of feather for player > 0 seconds:
                                 send action bar "&cРывок на КД!" to player
                                 stop
@@ -7938,7 +8144,7 @@ on right click:
                         set {scout_dash_fallimmune::%{_u}%} to true
                         send action bar "&b&lРЫВОК!" to player
                         stop
-                    if {_nocd} is false:
+                    if evoAdminNoCdFor(player, "feather") is false:
                         if cooldown of feather for player > 0 seconds:
                             send action bar "&cРывок на КД!" to player
                             stop
@@ -7959,9 +8165,11 @@ on right click:
     if {_c} is "Archer":
         if {_tool} is bow:
             if player is sneaking:
-                # Перк C "Тройной выстрел" — приоритет над Орлиным взором
+                # Перk C "Тройной выстрел" — приоритет над Орлиным взором
                 if {perk::%{_u}%} is "archer_C":
-                    if {_nocd} is false:
+                    if evoAdminAbilityDisabled("archer_triple") is true:
+                        stop
+                    if evoAdminNoCdFor(player, "archer_triple") is false:
                         if {archer_triple_cd::%{_u}%} ? 0 > 0:
                             send action bar "&cТройной выстрел: КД &e%{archer_triple_cd::%{_u}%}%с" to player
                             stop
@@ -7986,7 +8194,9 @@ on right click:
                     send action bar "&6&lТРОЙНОЙ ВЫСТРЕЛ!" to player
                     stop
                 if {_l} >= 25:
-                    if {_nocd} is false:
+                    if evoAdminAbilityDisabled("archer_eagle") is true:
+                        stop
+                    if evoAdminNoCdFor(player, "archer_eagle") is false:
                         if {archer_eye_cd::%player's uuid%} ? 0 > 0:
                             send action bar "&cОрлиный взор: КД &e%{archer_eye_cd::%player's uuid%}%с" to player
                             stop
@@ -8012,10 +8222,12 @@ on right click:
     # ===== NECROMANCER: ПКМ костью — Призыв миньона =====
     if {_c} is "Necromancer":
         if {_tool} is bone:
-            # Перк C "Мёртвая хватка": Shift+ПКМ костью — притянуть врага
+            # Перk C "Мёртвая хватка": Shift+ПКМ костью — притянуть врага
             if player is sneaking:
                 if {perk::%{_u}%} is "necro_C":
-                    if {_nocd} is false:
+                    if evoAdminAbilityDisabled("necro_grip") is true:
+                        stop
+                    if evoAdminNoCdFor(player, "necro_grip") is false:
                         if {necro_grip_cd::%{_u}%} ? 0 > 0:
                             send action bar "&cМёртвая хватка: КД &e%{necro_grip_cd::%{_u}%}%с" to player
                             stop
@@ -8036,7 +8248,9 @@ on right click:
                     else:
                         send action bar "&cНаведись на врага" to player
                     stop
-            if {_nocd} is false:
+            if evoAdminAbilityDisabled("necro_minion") is true:
+                stop
+            if evoAdminNoCdFor(player, "bone") is false:
                 if cooldown of bone for player > 0 seconds:
                     send action bar "&cПризыв на КД!" to player
                     stop
@@ -8050,8 +8264,10 @@ on right click:
         if {_tool} is blaze rod:
             # shift = эндер-перл (L15)
             if player is sneaking:
+                if evoAdminAbilityDisabled("mage_teleport") is true:
+                    stop
                 if {_l} >= 15:
-                    if {_nocd} is false:
+                    if evoAdminNoCdFor(player, "blaze_rod") is false:
                         if cooldown of blaze rod for player > 0 seconds:
                             send action bar "&cТелепорт на КД!" to player
                             stop
@@ -8064,7 +8280,9 @@ on right click:
                 stop
             # без shift = фаербол (L1+ малый, L25+ большой)
             else:
-                if {_nocd} is false:
+                if evoAdminAbilityDisabled("mage_fireball") is true:
+                    stop
+                if evoAdminNoCdFor(player, "blaze_rod") is false:
                     if cooldown of blaze rod for player > 0 seconds:
                         send action bar "&cФаербол на КД!" to player
                         stop
@@ -8074,7 +8292,7 @@ on right click:
                     if {mage_charge::%{_u}%} > unix timestamp of now:
                         set {_charged} to true
                     delete {mage_charge::%{_u}%}
-                # Перк A "Метеор": большой фаербол доступен с L1 (КД 20с)
+                # Перk A "Метеор": большой фаербол доступен с L1 (КД 20с)
                 if {perk::%{_u}%} is "mage_A":
                     shoot a fireball from player at speed 2
                     set {fireball_shooter::%uuid of last spawned entity%} to {_u}
@@ -8112,7 +8330,9 @@ on right click:
         # MAGE L10: Масс-хил зельем (радиус 6)
         if {_l} >= 10:
             if "%{_tool}%" contains "potion":
-                if {_nocd} is false:
+                if evoAdminAbilityDisabled("mage_mass_heal") is true:
+                    stop
+                if evoAdminNoCdFor(player, "splash_potion") is false:
                     if cooldown of splash potion for player > 0 seconds:
                         send action bar "&cМасс-хил на КД!" to player
                         stop
@@ -11238,6 +11458,10 @@ on inventory click:
                 set {_n} to "Necromancer"
 
             if {_n} is not "None":
+                if evoAdminClassDisabled({_n}) is true:
+                    send "{@prefix} &cКласс &f%{_n}% &cотключён администратором." to player
+                    play sound "entity.villager.no" with volume 0.8 and pitch 1 at player for player
+                    stop
                 set {class::%player's uuid%} to {_n}
                 set {class_lock::%player's uuid%} to false
                 set {level::%player's uuid%} to 1
@@ -11764,6 +11988,69 @@ command /evogive [<player>]:
         send "{@prefix} &7GUI выдачи открыт. Цель: &e%{_target}%&7."
 
 on inventory click:
+    if name of event-inventory is "&0EVO ADMIN":
+        cancel event
+        if clicked inventory is not event-inventory:
+            stop
+        set {_slot} to index of event-slot
+        if {_slot} is not set:
+            set {_slot} to clicked slot
+        set {_act} to {evo_admin_slot::%uuid of player%::%{_slot}%}
+        if {_act} is not set:
+            stop
+        if {_act} is "nav:close":
+            close player's inventory
+            stop
+        set {_pg} to {evo_admin_page::%uuid of player%} ? 0
+        if {_act} is "nav:back":
+            if {_pg} is 1:
+                set {evo_admin_reopen::%uuid of player%} to true
+                openEvoAdminPage(player, 0)
+            else if {_pg} is 4:
+                set {evo_admin_reopen::%uuid of player%} to true
+                openEvoAdminPage(player, 3)
+            else:
+                set {evo_admin_reopen::%uuid of player%} to true
+                openEvoAdminPage(player, {_pg} - 1)
+            stop
+        if {_act} is "nav:next":
+            set {evo_admin_reopen::%uuid of player%} to true
+            openEvoAdminPage(player, {_pg} + 1)
+            stop
+        if {_act} starts with "nav:":
+            set {_nav} to {_act}
+            replace all "nav:" in {_nav} with ""
+            set {_npg} to {_nav} parsed as number
+            if {_npg} is set:
+                set {evo_admin_reopen::%uuid of player%} to true
+                openEvoAdminPage(player, {_npg})
+            stop
+        if {_act} starts with "cd:":
+            set {_k} to {_act}
+            replace all "cd:" in {_k} with ""
+            evoAdminToggleCd({_k})
+            set {evo_admin_reopen::%uuid of player%} to true
+            openEvoAdminPage(player, {_pg})
+            play sound "ui.button.click" with volume 0.8 and pitch 1.2 at player for player
+            stop
+        if {_act} starts with "class:":
+            set {_k} to {_act}
+            replace all "class:" in {_k} with ""
+            evoAdminToggleClass({_k})
+            set {evo_admin_reopen::%uuid of player%} to true
+            openEvoAdminPage(player, {_pg})
+            play sound "ui.button.click" with volume 0.8 and pitch 1.2 at player for player
+            stop
+        if {_act} starts with "ability:":
+            set {_k} to {_act}
+            replace all "ability:" in {_k} with ""
+            evoAdminToggleAbility({_k})
+            set {evo_admin_reopen::%uuid of player%} to true
+            openEvoAdminPage(player, {_pg})
+            play sound "ui.button.click" with volume 0.8 and pitch 1.2 at player for player
+            stop
+
+on inventory click:
     if name of event-inventory is "&0EVO GIVE":
         cancel event
         if clicked inventory is not event-inventory:
@@ -11807,6 +12094,14 @@ on inventory click:
             send "{@prefix} &aАдмин выдал вам: &e%{_id}% &7x%{_amount}%" to {_target}
 
 on inventory close:
+    if name of event-inventory is "&0EVO ADMIN":
+        if {evo_admin_reopen::%uuid of player%} is true:
+            delete {evo_admin_reopen::%uuid of player%}
+            stop
+        delete {evo_admin_slot::%uuid of player%::*}
+        delete {evo_admin_page::%uuid of player%}
+
+on inventory close:
     if name of event-inventory is "&0EVO GIVE":
         if {evo_give_reopen::%uuid of player%} is true:
             delete {evo_give_reopen::%uuid of player%}
@@ -11821,6 +12116,8 @@ command /evo [<offline player>] [<text>] [<text>]:
     trigger:
         if arg-1 is not set:
             send "&8&l--- {@prefix} &6ADMIN HELP &8&l---"
+            send "&e/evogive [игрок] &7— GUI выдачи предметов"
+            send "&e/evoadmin &7— GUI настроек (КД, классы, способности)"
             send "&e/evo <player> setlevel <num>"
             send "&e/evo <player> setkills <num>"
             send "&e/evo <player> setclass <Warrior|Scout|Tank|Archer|Mage|None>"
