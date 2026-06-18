@@ -119,7 +119,7 @@ options:
     artifact_ruin_portal_roll_common_max: 0
     # Главный сундук башни: шанс что в центральном слоте свиток вместо артефакта (0–100).
     artifact_ruin_boss_chest_scroll_percent: 78
-    # Обычные сундуки руины: при заполнении слота ресурсами — шанс подставить свиток (0–100).
+    # Обычные сундуки руины: при заполнении слота ресурсами — шанс страницы дневника с алтарным рецептом (0–100).
     artifact_ruin_side_chest_scroll_substitute_percent: 30
     # Обычные сундуки: шанс ключа возврата и (суммарно после него) ключа пустоты на один «лут-слот» (0–100).
     artifact_ruin_side_chest_return_key_percent: 11
@@ -3005,9 +3005,18 @@ function artifactRuinFillChest(loc: location, tier: text):
             else if {_rkey} <= {_keyhi}:
                 set slot {_sl} of inventory of {_b} to evoAdminItemById("void_key")
             else:
-                # В обычных сундуках руины больше не спавним свитки:
-                # единственный "особый" дроп (свиток ИЛИ артефакт) — только в сундуке башни.
-                set slot {_sl} of inventory of {_b} to artifactRuinLootMaterialsOnly({_tier})
+                set {_subp} to "{@artifact_ruin_side_chest_scroll_substitute_percent}" parsed as number
+                if {_subp} is not set:
+                    set {_subp} to 30
+                if {_subp} < 0:
+                    set {_subp} to 0
+                if {_subp} > 100:
+                    set {_subp} to 100
+                set {_rsc} to random integer between 1 and 100
+                if {_rsc} <= {_subp}:
+                    set slot {_sl} of inventory of {_b} to artifactRuinRandomDiaryPageItem()
+                else:
+                    set slot {_sl} of inventory of {_b} to artifactRuinLootMaterialsOnly({_tier})
 
 function artifactRuinFillChestBoss(loc: location, kind: text):
     if {_kind} is "legendary":
@@ -5361,6 +5370,70 @@ function applyAltarArmorOnKill(atk: player):
             set {_bonus} to gold nugget
             giveOrDrop({_bonus}, {_atk}, location of {_atk})
 
+function altarTagToLocalRecipeId(tag: text) :: text:
+    set {_t} to {_tag}
+    if {_t} is "АЛТАР_МЕЧ_ЭФИР":
+        return "ether_sword"
+    if {_t} is "АЛТАР_МЕЧ_ПЛАМЯ":
+        return "flame_sword"
+    if {_t} is "АЛТАР_МЕЧ_ЖИЛА":
+        return "vein_sword"
+    if {_t} is "АЛТАР_МЕЧ_УДАЧА":
+        return "fortune_sword"
+    if {_t} is "АЛТАР_МЕЧ_ПУСТОТА":
+        return "void_sword"
+    if {_t} is "АЛТАР_МЕЧ_ОМНИ":
+        return "omni_sword"
+    if {_t} is "АЛТАР_ЭФИР_ШЛЕМ":
+        return "ether_helm"
+    if {_t} is "АЛТАР_ПЛАМЯ_ШЛЕМ":
+        return "flame_helm"
+    if {_t} is "АЛТАР_ЖИЛА_ШЛЕМ":
+        return "vein_helm"
+    if {_t} is "АЛТАР_УДАЧА_ШЛЕМ":
+        return "fortune_helm"
+    if {_t} is "АЛТАР_ПУСТОТА_ШЛЕМ":
+        return "void_helm"
+    if {_t} is "АЛТАР_ОМНИ_ШЛЕМ":
+        return "omni_helm"
+    if {_t} is "АЛТАР_ЭФИР_НАГРУД":
+        return "ether_chest"
+    if {_t} is "АЛТАР_ПЛАМЯ_НАГРУД":
+        return "flame_chest"
+    if {_t} is "АЛТАР_ЖИЛА_НАГРУД":
+        return "vein_chest"
+    if {_t} is "АЛТАР_УДАЧА_НАГРУД":
+        return "fortune_chest"
+    if {_t} is "АЛТАР_ПУСТОТА_НАГРУД":
+        return "void_chest"
+    if {_t} is "АЛТАР_ОМНИ_НАГРУД":
+        return "omni_chest"
+    if {_t} is "АЛТАР_ЭФИР_ПОНОЖ":
+        return "ether_legs"
+    if {_t} is "АЛТАР_ПЛАМЯ_ПОНОЖ":
+        return "flame_legs"
+    if {_t} is "АЛТАР_ЖИЛА_ПОНОЖ":
+        return "vein_legs"
+    if {_t} is "АЛТАР_УДАЧА_ПОНОЖ":
+        return "fortune_legs"
+    if {_t} is "АЛТАР_ПУСТОТА_ПОНОЖ":
+        return "void_legs"
+    if {_t} is "АЛТАР_ОМНИ_ПОНОЖ":
+        return "omni_legs"
+    if {_t} is "АЛТАР_ЭФИР_САПОГ":
+        return "ether_boots"
+    if {_t} is "АЛТАР_ПЛАМЯ_САПОГ":
+        return "flame_boots"
+    if {_t} is "АЛТАР_ЖИЛА_САПОГ":
+        return "vein_boots"
+    if {_t} is "АЛТАР_УДАЧА_САПОГ":
+        return "fortune_boots"
+    if {_t} is "АЛТАР_ПУСТОТА_САПОГ":
+        return "void_boots"
+    if {_t} is "АЛТАР_ОМНИ_САПОГ":
+        return "omni_boots"
+    return ""
+
 function altarGearRecipeIdFromItem(it: item) :: text:
     if {_it} is air:
         return ""
@@ -5370,10 +5443,216 @@ function altarGearRecipeIdFromItem(it: item) :: text:
         if {_lv} contains "АЛТАР_":
             set {_id} to {_lv}
             replace all "&8" in {_id} with ""
-            set {_idLow} to "%{_id}%"
-            set {_idLow} to {_idLow} in lower case
-            return "recipe_local::%{_idLow}%"
+            set {_rid} to altarTagToLocalRecipeId({_id})
+            if {_rid} is not "":
+                return "recipe_local::%{_rid}%"
     return ""
+
+function altarLocalRecipeIds() :: texts:
+    delete {_ids::*}
+    loop "ether_pick", "flame_pick", "vein_pick", "fortune_pick", "void_pick", "omni_pick", "ether_sword", "flame_sword", "vein_sword", "fortune_sword", "void_sword", "omni_sword", "ether_helm", "flame_helm", "vein_helm", "fortune_helm", "void_helm", "omni_helm", "ether_chest", "flame_chest", "vein_chest", "fortune_chest", "void_chest", "omni_chest", "ether_legs", "flame_legs", "vein_legs", "fortune_legs", "void_legs", "omni_legs", "ether_boots", "flame_boots", "vein_boots", "fortune_boots", "void_boots" and "omni_boots":
+        add loop-value to {_ids::*}
+    return {_ids::*}
+
+function altarLocalRecipeName(rid: text) :: text:
+    set {_r} to {_rid} in lower case
+    if {_r} is "ether_pick":
+        return "Эфирная кирка"
+    if {_r} is "flame_pick":
+        return "Пламенная кирка"
+    if {_r} is "vein_pick":
+        return "Жильная кирка"
+    if {_r} is "fortune_pick":
+        return "Кирка Удачи"
+    if {_r} is "void_pick":
+        return "Кирка Пустоты"
+    if {_r} is "omni_pick":
+        return "Омни-кирка Алтаря"
+    if {_r} is "ether_sword":
+        return "Пульс Эфира"
+    if {_r} is "flame_sword":
+        return "Заря Разлома"
+    if {_r} is "vein_sword":
+        return "Сечение Жилы"
+    if {_r} is "fortune_sword":
+        return "Клинок Созвездия"
+    if {_r} is "void_sword":
+        return "Разрез Бездны"
+    if {_r} is "omni_sword":
+        return "Клинок Шести Искр"
+    if {_r} is "ether_helm":
+        return "Эфирный Венец"
+    if {_r} is "flame_helm":
+        return "Пепельная Корона"
+    if {_r} is "vein_helm":
+        return "Шлем Корней"
+    if {_r} is "fortune_helm":
+        return "Венец Миража"
+    if {_r} is "void_helm":
+        return "Маска Бездны"
+    if {_r} is "omni_helm":
+        return "Омни-Венец Алтаря"
+    if {_r} is "ether_chest":
+        return "Эфирная Мантия"
+    if {_r} is "flame_chest":
+        return "Кираса Угольника"
+    if {_r} is "vein_chest":
+        return "Кираса Плети"
+    if {_r} is "fortune_chest":
+        return "Нагрудник Охотника"
+    if {_r} is "void_chest":
+        return "Грудь Истощения"
+    if {_r} is "omni_chest":
+        return "Омни-Мантия Алтаря"
+    if {_r} is "ether_legs":
+        return "Эфирные Поножи"
+    if {_r} is "flame_legs":
+        return "Поножи Раскала"
+    if {_r} is "vein_legs":
+        return "Поножи Узора"
+    if {_r} is "fortune_legs":
+        return "Поножи Добычи"
+    if {_r} is "void_legs":
+        return "Поножи Сгущения"
+    if {_r} is "omni_legs":
+        return "Омни-Поножи Алтаря"
+    if {_r} is "ether_boots":
+        return "Эфирные Сапоги"
+    if {_r} is "flame_boots":
+        return "Сапоги Пепла"
+    if {_r} is "vein_boots":
+        return "Сапоги Укоренения"
+    if {_r} is "fortune_boots":
+        return "Сапоги Следопыта"
+    if {_r} is "void_boots":
+        return "Сапоги Фазового Шага"
+    if {_r} is "omni_boots":
+        return "Омни-Сапоги Алтаря"
+    return {_rid}
+
+function altarLocalRecipeSlotBaseName(slot: text) :: text:
+    set {_s} to {_slot} in lower case
+    if {_s} is "pick":
+        return "Алмазная кирка"
+    if {_s} is "sword":
+        return "Алмазный меч"
+    if {_s} is "helm":
+        return "Алмазный шлем"
+    if {_s} is "chest":
+        return "Алмазный нагрудник"
+    if {_s} is "legs":
+        return "Алмазные поножи"
+    if {_s} is "boots":
+        return "Алмазные сапоги"
+    return "Алмазный предмет"
+
+function altarLocalRecipeOmniIngredients(slot: text) :: texts:
+    delete {_out::*}
+    set {_s} to {_slot} in lower case
+    if {_s} is "pick":
+        set {_out::*} to "Эфирная кирка", "Пламенная кирка", "Жильная кирка", "Кирка Удачи" and "Кирка Пустоты"
+    else if {_s} is "sword":
+        set {_out::*} to "Пульс Эфира", "Заря Разлома", "Сечение Жилы", "Клинок Созвездия" and "Разрез Бездны"
+    else if {_s} is "helm":
+        set {_out::*} to "Эфирный Венец", "Пепельная Корона", "Шлем Корней", "Венец Миража" and "Маска Бездны"
+    else if {_s} is "chest":
+        set {_out::*} to "Эфирная Мантия", "Кираса Угольника", "Кираса Плети", "Нагрудник Охотника" and "Грудь Истощения"
+    else if {_s} is "legs":
+        set {_out::*} to "Эфирные Поножи", "Поножи Раскала", "Поножи Узора", "Поножи Добычи" and "Поножи Сгущения"
+    else if {_s} is "boots":
+        set {_out::*} to "Эфирные Сапоги", "Сапоги Пепла", "Сапоги Укоренения", "Сапоги Следопыта" and "Сапоги Фазового Шага"
+    return {_out::*}
+
+function altarLocalRecipeIngredients(rid: text) :: texts:
+    delete {_out::*}
+    set {_r} to {_rid} in lower case
+    if {_r} starts with "omni_":
+        set {_slot} to {_r}
+        replace all "omni_" in {_slot} with ""
+        set {_out::*} to altarLocalRecipeOmniIngredients({_slot})
+        return {_out::*}
+    set {_theme} to ""
+    set {_slot} to ""
+    if {_r} starts with "ether_":
+        set {_theme} to "ether"
+        set {_slot} to {_r}
+        replace all "ether_" in {_slot} with ""
+    else if {_r} starts with "flame_":
+        set {_theme} to "flame"
+        set {_slot} to {_r}
+        replace all "flame_" in {_slot} with ""
+    else if {_r} starts with "vein_":
+        set {_theme} to "vein"
+        set {_slot} to {_r}
+        replace all "vein_" in {_slot} with ""
+    else if {_r} starts with "fortune_":
+        set {_theme} to "fortune"
+        set {_slot} to {_r}
+        replace all "fortune_" in {_slot} with ""
+    else if {_r} starts with "void_":
+        set {_theme} to "void"
+        set {_slot} to {_r}
+        replace all "void_" in {_slot} with ""
+    if {_theme} is "":
+        return {_out::*}
+    if {_slot} is "":
+        return {_out::*}
+    set {_base} to altarLocalRecipeSlotBaseName({_slot})
+    add "Ключ Пустоты" to {_out::*}
+    add "Ключ Возврата" to {_out::*}
+    add {_base} to {_out::*}
+    if {_theme} is "ether":
+        add "Алмазный блок" to {_out::*}
+        add "Аметистовый осколок" to {_out::*}
+    else if {_theme} is "flame":
+        add "Золотой блок" to {_out::*}
+        add "Огненный стержень" to {_out::*}
+    else if {_theme} is "vein":
+        add "Изумрудный блок" to {_out::*}
+        add "Слизь" to {_out::*}
+    else if {_theme} is "fortune":
+        add "Золотой блок" to {_out::*}
+        add "Лазурит" to {_out::*}
+    else if {_theme} is "void":
+        add "Обсидиан" to {_out::*}
+        add "Эндер-жемчуг" to {_out::*}
+    return {_out::*}
+
+function altarLocalRecipePageLore(rid: text) :: texts:
+    delete {_lore::*}
+    set {_name} to altarLocalRecipeName({_rid})
+    add "&6Рецепт: &f%{_name}%" to {_lore::*}
+    set {_ing::*} to altarLocalRecipeIngredients({_rid})
+    loop {_ing::*}:
+        add "&8 • &f%loop-value%" to {_lore::*}
+    set {_r} to {_rid} in lower case
+    if {_r} starts with "omni_":
+        add "&7Слоты 0–4: все 5 предметов одного типа" to {_lore::*}
+    else:
+        add "&7Слоты 0–4 воронки, порядок любой" to {_lore::*}
+    return {_lore::*}
+
+function diaryPageItemForLocalRecipe(rid: text) :: item:
+    set {_r} to {_rid} in lower case
+    if {_r} is "":
+        return air
+    set {_name} to altarLocalRecipeName({_r})
+    set {_page} to paper named "&6Страница дневника приключенца"
+    set {_lore::*} to altarLocalRecipePageLore({_r})
+    add "&8ПКМ: изучить как свиток" to {_lore::*}
+    add "&0EVODIARY:recipe_local::%{_r}%" to {_lore::*}
+    set lore of {_page} to {_lore::*}
+    return {_page}
+
+function artifactRuinRandomDiaryPageItem() :: item:
+    set {_ids::*} to altarLocalRecipeIds()
+    if size of {_ids::*} <= 0:
+        return diaryPageItemForLocalRecipe("ether_pick")
+    set {_pick} to random element out of {_ids::*}
+    set {_pg} to diaryPageItemForLocalRecipe({_pick})
+    if {_pg} is air:
+        return diaryPageItemForLocalRecipe("ether_pick")
+    return {_pg}
 
 function isEtherTrashBlock(b: block) :: boolean:
     if {_b} is stone:
@@ -6170,12 +6449,72 @@ function diaryRecipeTextByItem(it: item) :: text:
         return "recipe_local::flame_pick"
     if {_nmLow} contains "жильная кирка":
         return "recipe_local::vein_pick"
-    if {_nmLow} contains "кирка шахтёра":
+    if {_nmLow} contains "кирка удачи":
         return "recipe_local::fortune_pick"
-    if {_nmLow} contains "кирка бездны":
+    if {_nmLow} contains "кирка пустоты":
         return "recipe_local::void_pick"
     if {_nmLow} contains "омни-кирка":
         return "recipe_local::omni_pick"
+    if {_nmLow} contains "пульс эфира":
+        return "recipe_local::ether_sword"
+    if {_nmLow} contains "заря разлома":
+        return "recipe_local::flame_sword"
+    if {_nmLow} contains "сечение жилы":
+        return "recipe_local::vein_sword"
+    if {_nmLow} contains "клинок созвездия":
+        return "recipe_local::fortune_sword"
+    if {_nmLow} contains "разрез бездны":
+        return "recipe_local::void_sword"
+    if {_nmLow} contains "клинок шести искр":
+        return "recipe_local::omni_sword"
+    if {_nmLow} contains "эфирный венец":
+        return "recipe_local::ether_helm"
+    if {_nmLow} contains "пепельная корона":
+        return "recipe_local::flame_helm"
+    if {_nmLow} contains "шлем корней":
+        return "recipe_local::vein_helm"
+    if {_nmLow} contains "венец миража":
+        return "recipe_local::fortune_helm"
+    if {_nmLow} contains "маска бездны":
+        return "recipe_local::void_helm"
+    if {_nmLow} contains "омни-венец":
+        return "recipe_local::omni_helm"
+    if {_nmLow} contains "эфирная мантия":
+        return "recipe_local::ether_chest"
+    if {_nmLow} contains "кираса угольника":
+        return "recipe_local::flame_chest"
+    if {_nmLow} contains "кираса плети":
+        return "recipe_local::vein_chest"
+    if {_nmLow} contains "нагрудник охотника":
+        return "recipe_local::fortune_chest"
+    if {_nmLow} contains "грудь истощения":
+        return "recipe_local::void_chest"
+    if {_nmLow} contains "омни-мантия":
+        return "recipe_local::omni_chest"
+    if {_nmLow} contains "эфирные поножи":
+        return "recipe_local::ether_legs"
+    if {_nmLow} contains "поножи раскала":
+        return "recipe_local::flame_legs"
+    if {_nmLow} contains "поножи узора":
+        return "recipe_local::vein_legs"
+    if {_nmLow} contains "поножи добычи":
+        return "recipe_local::fortune_legs"
+    if {_nmLow} contains "поножи сгущения":
+        return "recipe_local::void_legs"
+    if {_nmLow} contains "омни-поножи":
+        return "recipe_local::omni_legs"
+    if {_nmLow} contains "эфирные сапоги":
+        return "recipe_local::ether_boots"
+    if {_nmLow} contains "сапоги пепла":
+        return "recipe_local::flame_boots"
+    if {_nmLow} contains "сапоги укоренения":
+        return "recipe_local::vein_boots"
+    if {_nmLow} contains "сапоги следопыта":
+        return "recipe_local::fortune_boots"
+    if {_nmLow} contains "сапоги фазового шага":
+        return "recipe_local::void_boots"
+    if {_nmLow} contains "омни-сапоги":
+        return "recipe_local::omni_boots"
     set {_gearRid} to altarGearRecipeIdFromItem({_it})
     if {_gearRid} is not "":
         return {_gearRid}
@@ -6259,26 +6598,11 @@ function openAdventurerJournalPage(p: player, page: number):
             else if {_txt} starts with "recipe_local::":
                 set {_rid} to {_txt}
                 replace all "recipe_local::" in {_rid} with ""
-                if {_rid} is "ether_pick":
-                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fЭфирная кирка" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата" and "&8 • &fАлмазная кирка" and "&8 • &fАлмазный блок" and "&8 • &fАметистовый осколок"
-                else if {_rid} is "flame_pick":
-                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fПламенная кирка" and "&8 • &fЭфирная кирка" and "&8 • &fЗолотой блок" and "&8 • &fОгненный стержень" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата"
-                else if {_rid} is "vein_pick":
-                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fЖильная кирка" and "&8 • &fЭфирная кирка" and "&8 • &fИзумрудный блок" and "&8 • &fСлизь" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата"
-                else if {_rid} is "fortune_pick":
-                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fКирка Шахтёра" and "&8 • &fЭфирная кирка" and "&8 • &fЗолотой блок" and "&8 • &fЛазурит" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата"
-                else if {_rid} is "void_pick":
-                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fКирка Бездны" and "&8 • &fЭфирная кирка" and "&8 • &fОбсидиан" and "&8 • &fЭндер-жемчуг" and "&8 • &fКлюч Пустоты" and "&8 • &fКлюч Возврата"
-                else if {_rid} is "omni_pick":
-                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fОмни-кирка" and "&8 • &fПламенная кирка" and "&8 • &fЖильная кирка" and "&8 • &fКирка Шахтёра" and "&8 • &fКирка Бездны" and "&8 • &fЭфирная кирка"
-                else if {_txt} starts with "recipe_local::алтар_":
-                    set {_ridShow} to {_txt}
-                    replace all "recipe_local::" in {_ridShow} with ""
-                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Алтарный рецепт: &f%{_ridShow}%" and "&7Ключ Пустоты + Ключ Возврата + база + 2 катализатора" and "&7Омни = 5 предметов одного слота разных тем"
-                else if {_rid} is "player_head":
+                if {_rid} is "player_head":
                     set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&6Рецепт: &fГолова игрока" and "&8 • &fДёрн" and "&8 • &fЗолотое яблоко" and "&8 • &fАлмаз" and "&8 • &fНезерак" and "&8 • &fКамень Энда"
                 else:
-                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&7%{_txt}%"
+                    set {_lore::*} to altarLocalRecipePageLore({_rid})
+                    set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore {_lore::*}
             else:
                 set slot {_slot} of current inventory of {_p} to paper named "&fСтраница %{_idx}%" with lore "&7%{_txt}%"
         add 1 to {_slot}
@@ -14886,6 +15210,13 @@ on right click:
                 set {_name} to {ancient_scroll_recipes::%{_rid}%::name}
                 if {_name} is not set:
                     set {_name} to {_rid}
+                send title "&6Страница дневника" with subtitle "&f%{_name}%" to player for 2 seconds
+                send "{@prefix} &aРецепт со страницы добавлен в Дневник: &f%{_name}%" to player
+            else if {_entry} starts with "recipe_local::":
+                addDiaryPage(player, {_entry})
+                set {_rid} to {_entry}
+                replace all "recipe_local::" in {_rid} with ""
+                set {_name} to altarLocalRecipeName({_rid})
                 send title "&6Страница дневника" with subtitle "&f%{_name}%" to player for 2 seconds
                 send "{@prefix} &aРецепт со страницы добавлен в Дневник: &f%{_name}%" to player
             else:
